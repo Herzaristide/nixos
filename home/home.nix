@@ -22,8 +22,7 @@
       settings = {
         user.name = "Herzaristide";
         user.email = "aristide.pichereau@gmail.com";
-      }
-  
+      };
     };
   };
 
