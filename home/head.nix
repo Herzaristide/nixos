@@ -19,7 +19,9 @@
     '')
   ];
 
-  # Default applications
+  # Default applications (force overwrites existing mimeapps.list files)
+  xdg.configFile."mimeapps.list".force = true;
+  xdg.dataFile."applications/mimeapps.list".force = true;
   xdg.mimeApps = {
     enable = true;
     defaultApplications = {

@@ -24,7 +24,7 @@
 
       # Fenêtres transparentes et bords arrondis
       decoration = {
-        rounding = 12;
+        rounding = 4;
         active_opacity = 0.95;
         inactive_opacity = 0.9;
       };
@@ -38,13 +38,22 @@
         ",preferred,auto,1"
       ];
 
+      # Autostart: Cursor on ws 1, Chrome on ws 4
+      exec-once = [
+        "cursor"
+        "google-chrome-stable --user-data-dir=$HOME/.config/google-chrome-$(hostname)"
+      ];
+
       # Workspaces: 1–3 on VGA (main), 4 on HDMI. special:gemini = overlay (scratchpad)
+      # Lock apps to workspaces (syntax moderne)
       workspace = [
         "1, monitor:VGA-1, default:true"
         "2, monitor:VGA-1"
         "3, monitor:VGA-1"
         "4, monitor:HDMI-A-1"
         "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:80 120 120 120, gapsin:30"
+        "1, class:^(Cursor)$"
+        "4, class:^(Google-chrome)$"
       ];
 
       # Minimal binds - terminal, apps

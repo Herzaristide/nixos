@@ -5,6 +5,13 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # XDG Portal (for file picker, screen sharing in Hyprland)
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
+    config.common.default = "*";
+  };
+
   # X11 (for XWayland) and Hyprland
   services.xserver.enable = true;
   services.displayManager.sddm.enable = true;
