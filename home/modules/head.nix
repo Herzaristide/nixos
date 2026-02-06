@@ -14,18 +14,24 @@
     settings = {
       "$mod" = "SUPER";
 
-      # Monitors: VGA-1 primary (scale 1.5), HDMI-1 rotated left (transform 3), fallback for laptop/autres
+      # French keyboard
+      input = {
+        kb_layout = "fr";
+        kb_variant = "";
+      };
+
+      # Monitors: HDMI-1 vertical left, VGA-1 main right (scale 1.6)
       monitor = [
-        "VGA-1,1920x1080@60,0x0,1.5"
-        "HDMI-1,1920x1080@74.97,1280x0,1.5,transform,3"
-        ",preferred,auto,1.5"
+        "HDMI-1,1920x1080@74.97,0x0,1.33,transform,3"
+        "VGA-1,1920x1080@60,675x0,1.33"
+        ",preferred,auto,1.33"
       ];
 
       # Minimal binds - terminal, apps
       bind = [
         "$mod, Return, exec, ghostty"
         "$mod, C, exec, cursor"
-        "$mod, B, exec, google-chrome-stable"
+        "$mod, B, exec, bash -c 'google-chrome-stable --user-data-dir=$HOME/.config/google-chrome-$(hostname)'"
         "$mod, Q, killactive"
         "$mod, M, exit"
         "$mod, V, togglefloating"
