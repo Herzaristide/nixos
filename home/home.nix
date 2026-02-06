@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ./modules/zsh.nix
+    ./modules/shell
   ] ++ (if head then [
     ./head.nix
   ] else []);
@@ -23,13 +23,6 @@
         user.name = "Herzaristide";
         user.email = "aristide.pichereau@gmail.com";
       };
-    };
-
-    yazi = {
-      enable = true;
-      # settings = { };  # ~/.config/yazi/yazi.toml
-      # keymap = { };    # ~/.config/yazi/keymap.toml
-      # theme = { };     # ~/.config/yazi/theme.toml
     };
   };
 

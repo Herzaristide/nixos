@@ -37,4 +37,5 @@
 
   # SSD maintenance — periodic TRIM
   services.fstrim.enable = true;
+
 }

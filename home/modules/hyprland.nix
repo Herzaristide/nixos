@@ -15,14 +15,23 @@ in
     settings = {
       "$mod" = "SUPER";
 
-      # French keyboard
+      # French keyboard + mouse sans accélération (plus fluide, 1:1)
       input = {
         kb_layout = "fr";
         kb_variant = "";
+        accel_profile = "flat";
+        force_no_accel = true;
       };
 
       cursor = {
         no_hardware_cursors = 1;
+      };
+
+      # GPU: moins d'effets pour GT 630 + nouveau (blur/ombres coûtent cher)
+      decoration = {
+        rounding = 4;
+        active_opacity = 1.0;
+        inactive_opacity = 1.0;
       };
 
       # Special workspace apparaît depuis le bas
@@ -31,19 +40,12 @@ in
         "specialWorkspaceOut, 1, 8, default, slidevert bottom"
       ];
 
-      # Fenêtres transparentes et bords arrondis
-      decoration = {
-        rounding = 4;
-        active_opacity = 0.95;
-        inactive_opacity = 0.9;
-      };
-
-      # Monitors: HDMI-A-1 left, VGA-1 right, centrés sur l'axe Y.
-      # HDMI: 2560x1440 portrait, scale 1.60 → 900×1600 logical. VGA: 1920x1080, scale 1.33 → 1444×812 logical.
-      # Centrage Y: HDMI centre 800, VGA y = 800 - 406 = 394
+      # Monitors: HDMI-A-1 left (portrait), VGA-1 right, côte à côte sans gap
+      # HDMI: 1920x1080 portrait, scale 1.33 → logical 812×1444
+      # VGA: 1920x1080, scale 1.33 → logical 1444×812. Pos x=812 (à droite de HDMI), y centré: 722-406=316
       monitor = [
-        "HDMI-A-1,2560x1440@74.97,0x0,1.60,transform,1"
-        "VGA-1,1920x1080@60,900x394,1.33"
+        "HDMI-A-1,1920x1080@60,0x0,1.33,transform,1"
+        "VGA-1,1920x1080@60,812x316,1.33"
         ",preferred,auto,1"
       ];
 

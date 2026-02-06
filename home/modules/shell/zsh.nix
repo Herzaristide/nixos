@@ -14,6 +14,10 @@
       ".." = "cd ..";
       "..." = "cd ../..";
     };
+    initExtra = ''
+      if [[ -o interactive ]]; then
+        nf
+      fi
+    '';
   };
 }
-

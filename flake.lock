@@ -39,7 +39,24 @@
     "root": {
       "inputs": {
         "home-manager": "home-manager",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "synthwave84-yazi": "synthwave84-yazi"
+      }
+    },
+    "synthwave84-yazi": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1763911738,
+        "narHash": "sha256-AqNrojdWCcALz1xRfHAsAEOqjLSIuKKibaaibw33d44=",
+        "owner": "Miuzarte",
+        "repo": "synthwave84.yazi",
+        "rev": "865bef996c67621bb9e8bffad21da882e1f3baa8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Miuzarte",
+        "repo": "synthwave84.yazi",
+        "type": "github"
       }
     }
   },

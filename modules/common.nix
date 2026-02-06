@@ -82,9 +82,6 @@
       gcc
 
       # Container & k8s tools
-      kubectl
-      k9s            # TUI for Kubernetes
-      helm
       podman-compose
     ];
 
@@ -105,22 +102,6 @@
       dockerCompat = false;  # don't alias docker → podman (Docker is already enabled)
       defaultNetwork.settings.dns_enabled = true;
     };
-
-    # k3s — lightweight Kubernetes cluster
-    services.k3s = {
-      enable = true;
-      role = "server";
-      extraFlags = toString [
-        "--write-kubeconfig-mode=644"  # readable kubeconfig without sudo
-        "--container-runtime-endpoint=unix:///run/containerd/containerd.sock"
-      ];
-    };
-
-    # Open firewall ports for k3s
-    networking.firewall.allowedTCPPorts = [
-      6443  # k3s API server
-    ];
-
 
     # System state version
     system.stateVersion = "25.11";
