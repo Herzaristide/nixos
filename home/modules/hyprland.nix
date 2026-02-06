@@ -1,13 +1,18 @@
 { config, pkgs, lib, ... }:
 
 let
-  # Cursor projects to auto-start: one per workspace (title match uses folder basename)
+  # Cursor projects: un workspace + une instance Cursor par projet
   cursorWorkspaceProjects = [
-    { workspace = 1; path = "/etc/nixos"; }
-    # { workspace = 2; path = "/home/aristide/projects/foo"; }
+    { path = "/etc/nixos"; }
+    # { path = "/home/aristide/projects/foo"; }
   ];
-  cursorExecOnce = map (p: "cursor ${lib.escapeShellArg p.path}") cursorWorkspaceProjects;
-  cursorWorkspaceRules = map (p: "${toString p.workspace}, class:^(Cursor)$, title:.*${lib.escapeRegex (builtins.baseNameOf p.path)}.*") cursorWorkspaceProjects;
+  cursorWithWorkspace = lib.imap1 (i: p: { workspace = i; path = p.path; }) cursorWorkspaceProjects;
+  cursorExecOnce = map (p: "cursor ${lib.escapeShellArg p.path}") cursorWithWorkspace;
+  cursorWorkspaceDefs = map (p: "${toString p.workspace}, monitor:VGA-1${if p.workspace == 1 then ", default:true" else ""}") cursorWithWorkspace;
+  cursorWorkspaceRules = map (p: "${toString p.workspace}, class:^(Cursor)$, title:.*${lib.escapeRegex (builtins.baseNameOf p.path)}.*") cursorWithWorkspace;
+  # Workspaces libres sur VGA après les projets Cursor (ws 1–3 sur VGA)
+  maxCursorWs = builtins.length cursorWorkspaceProjects;
+  freeWorkspaces = map (i: "${toString (maxCursorWs + i)}, monitor:VGA-1") (lib.range 1 (lib.max 0 (3 - maxCursorWs)));
 in
 {
   wayland.windowManager.hyprland = {
@@ -56,14 +61,10 @@ in
 
       # Workspaces: 1–3 on VGA (main), 4 on HDMI. special:gemini = overlay (scratchpad)
       # Lock apps to workspaces (syntax moderne); Cursor per project by title (basename)
-      workspace = [
-        "1, monitor:VGA-1, default:true"
-        "2, monitor:VGA-1"
-        "3, monitor:VGA-1"
+      workspace = cursorWorkspaceDefs ++ freeWorkspaces ++ [
         "4, monitor:HDMI-A-1"
         "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:80 200 80 200, gapsin:30"
       ] ++ cursorWorkspaceRules ++ [
-        "1, class:^(Cursor)$"
         "4, class:^(Google-chrome)$"
       ];
 
@@ -84,13 +85,14 @@ in
         # Focus prev/next monitor (bracket keys)
         "$mod, bracketleft, focusmonitor, -1"
         "$mod, bracketright, focusmonitor, +1"
-        # Workspaces 1–3 on VGA (AZERTY: & é " sans shift, ou 1 2 3 avec shift)
+        # Workspaces (AZERTY: & é " = 1 2 3)
         "$mod, ampersand, workspace, 1"
         "$mod, eacute, workspace, 2"
         "$mod, quotedbl, workspace, 3"
         "$mod, 1, workspace, 1"
         "$mod, 2, workspace, 2"
         "$mod, 3, workspace, 3"
+        "$mod, 4, workspace, 4"
         # Workspace spécial Gemini (Super+G) – s'affiche en overlay
         "$mod, G, togglespecialworkspace, gemini"
       ];

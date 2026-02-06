@@ -83,6 +83,7 @@
 
       # Container & k8s tools
       podman-compose
+      ollama              # CLI pour ollama pull/run
     ];
 
     # User account
@@ -95,6 +96,12 @@
 
     # Docker
     virtualisation.docker.enable = true;
+
+    # Ollama — LLM local (ollama run llama3, etc.)
+    services.ollama = {
+      enable = true;
+      openFirewall = true;
+    };
 
     # Podman
     virtualisation.podman = {

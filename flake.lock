@@ -40,7 +40,8 @@
       "inputs": {
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
-        "synthwave84-yazi": "synthwave84-yazi"
+        "synthwave84-yazi": "synthwave84-yazi",
+        "zen-browser": "zen-browser"
       }
     },
     "synthwave84-yazi": {
@@ -56,6 +57,26 @@
       "original": {
         "owner": "Miuzarte",
         "repo": "synthwave84.yazi",
+        "type": "github"
+      }
+    },
+    "zen-browser": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1770266156,
+        "narHash": "sha256-vaoCK5o0y8rjBytkzy2E4ccsiWQnzmYXI0FF40co+eM=",
+        "owner": "youwen5",
+        "repo": "zen-browser-flake",
+        "rev": "60d34d6ff2bcf20487035897c36917d7222afc11",
+        "type": "github"
+      },
+      "original": {
+        "owner": "youwen5",
+        "repo": "zen-browser-flake",
         "type": "github"
       }
     }
