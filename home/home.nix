@@ -30,7 +30,10 @@
   home.packages = with pkgs; [
     claude-code
     yazi
+    htop
     direnv
+    sysstat
+    btop
   ];
 }
 

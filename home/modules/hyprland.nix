@@ -1,5 +1,14 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  # Cursor projects to auto-start: one per workspace (title match uses folder basename)
+  cursorWorkspaceProjects = [
+    { workspace = 1; path = "/etc/nixos"; }
+    # { workspace = 2; path = "/home/aristide/projects/foo"; }
+  ];
+  cursorExecOnce = map (p: "cursor ${lib.escapeShellArg p.path}") cursorWorkspaceProjects;
+  cursorWorkspaceRules = map (p: "${toString p.workspace}, class:^(Cursor)$, title:.*${lib.escapeRegex (builtins.baseNameOf p.path)}.*") cursorWorkspaceProjects;
+in
 {
   wayland.windowManager.hyprland = {
     enable = true;
@@ -38,20 +47,20 @@
         ",preferred,auto,1"
       ];
 
-      # Autostart: Cursor on ws 1, Chrome on ws 4
-      exec-once = [
-        "cursor"
+      # Autostart: Cursor with one project per workspace (see cursorWorkspaceProjects), Chrome on ws 4
+      exec-once = cursorExecOnce ++ [
         "google-chrome-stable --user-data-dir=$HOME/.config/google-chrome-$(hostname)"
       ];
 
       # Workspaces: 1–3 on VGA (main), 4 on HDMI. special:gemini = overlay (scratchpad)
-      # Lock apps to workspaces (syntax moderne)
+      # Lock apps to workspaces (syntax moderne); Cursor per project by title (basename)
       workspace = [
         "1, monitor:VGA-1, default:true"
         "2, monitor:VGA-1"
         "3, monitor:VGA-1"
         "4, monitor:HDMI-A-1"
-        "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:80 120 120 120, gapsin:30"
+        "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:80 200 80 200, gapsin:30"
+      ] ++ cursorWorkspaceRules ++ [
         "1, class:^(Cursor)$"
         "4, class:^(Google-chrome)$"
       ];
