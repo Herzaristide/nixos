@@ -20,11 +20,25 @@
         kb_variant = "";
       };
 
-      # Monitors: HDMI-1 vertical left, VGA-1 main right (scale 1.6)
+      cursor = {
+        no_hardware_cursors = 1;
+      };
+
+      # Monitors: HDMI-A-1 left, VGA-1 right, centrés sur l'axe Y.
+      # HDMI: 2560x1440 portrait, scale 1.60 → 900×1600 logical. VGA: 1920x1080, scale 1.33 → 1444×812 logical.
+      # Centrage Y: HDMI centre 800, VGA y = 800 - 406 = 394
       monitor = [
-        "HDMI-1,1920x1080@74.97,0x0,1.33,transform,3"
-        "VGA-1,1920x1080@60,675x0,1.33"
-        ",preferred,auto,1.33"
+        "HDMI-A-1,2560x1440@74.97,0x0,1.60,transform,1"
+        "VGA-1,1920x1080@60,900x394,1.33"
+        ",preferred,auto,1"
+      ];
+
+      # Workspaces: 1–3 on VGA (main), 4 on HDMI (single, no switching)
+      workspace = [
+        "1, monitor:VGA-1, default:true"
+        "2, monitor:VGA-1"
+        "3, monitor:VGA-1"
+        "4, monitor:HDMI-A-1"
       ];
 
       # Minimal binds - terminal, apps
@@ -41,6 +55,16 @@
         "$mod, right, movefocus, r"
         "$mod, up, movefocus, u"
         "$mod, down, movefocus, d"
+        # Focus prev/next monitor (bracket keys)
+        "$mod, bracketleft, focusmonitor, -1"
+        "$mod, bracketright, focusmonitor, +1"
+        # Workspaces 1–3 on VGA (AZERTY: & é " sans shift, ou 1 2 3 avec shift)
+        "$mod, ampersand, workspace, 1"
+        "$mod, eacute, workspace, 2"
+        "$mod, quotedbl, workspace, 3"
+        "$mod, 1, workspace, 1"
+        "$mod, 2, workspace, 2"
+        "$mod, 3, workspace, 3"
       ];
 
       bindm = [

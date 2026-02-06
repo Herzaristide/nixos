@@ -28,7 +28,9 @@
 
   # Packages available on all systems
   home.packages = with pkgs; [
-    # Add common packages here
+    claude-code
+    yazi
+    direnv
   ];
 }
 
