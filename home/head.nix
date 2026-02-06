@@ -19,6 +19,18 @@
     '')
   ];
 
+  # Default applications
+  xdg.mimeApps = {
+    enable = true;
+    defaultApplications = {
+      "text/html" = [ "google-chrome.desktop" ];
+      "x-scheme-handler/http" = [ "google-chrome.desktop" ];
+      "x-scheme-handler/https" = [ "google-chrome.desktop" ];
+      "x-scheme-handler/about" = [ "google-chrome.desktop" ];
+      "x-terminal-emulator" = [ "ghostty.desktop" ];
+    };
+  };
+
   # Gemini webapp (Chrome in app mode)
   xdg.desktopEntries.gemini = {
     name = "Gemini";

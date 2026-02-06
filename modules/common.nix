@@ -30,6 +30,9 @@
       LC_TIME = "fr_FR.UTF-8";
     };
 
+    # Zsh as default shell (required when users.users.aristide.shell = pkgs.zsh)
+    programs.zsh.enable = true;
+
     # User account
     users.users.aristide = {
       isNormalUser = true;
