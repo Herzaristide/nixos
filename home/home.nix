@@ -24,16 +24,19 @@
         user.email = "aristide.pichereau@gmail.com";
       };
     };
+
+    yazi = {
+      enable = true;
+      # settings = { };  # ~/.config/yazi/yazi.toml
+      # keymap = { };    # ~/.config/yazi/keymap.toml
+      # theme = { };     # ~/.config/yazi/theme.toml
+    };
   };
 
-  # Packages available on all systems
+  # Packages available on all systems (non-hardware)
   home.packages = with pkgs; [
     claude-code
-    yazi
-    htop
     direnv
-    sysstat
-    btop
   ];
 }
 

@@ -1,10 +1,6 @@
 { config, pkgs, ... }:
 
 {
-   # Bootloader
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
   # XDG Portal (for file picker, screen sharing in Hyprland)
   xdg.portal = {
     enable = true;
@@ -14,7 +10,8 @@
 
   # X11 (for XWayland) and Hyprland
   services.xserver.enable = true;
-  services.displayManager.sddm.enable = true;
+  services.xserver.displayManager.gdm.enable = true;
+
   programs.hyprland.enable = true;
   services.xserver.xkb = {
     layout = "fr";
