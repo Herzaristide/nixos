@@ -4,7 +4,7 @@
   imports = [
     ./modules/zsh.nix
   ] ++ (if head then [
-    ./modules/head.nix
+    ./head.nix
   ] else []);
 
   nixpkgs.config.allowUnfree = true;

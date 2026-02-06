@@ -36,6 +36,7 @@
       description = "aristide";
       extraGroups = [ "networkmanager" "wheel" "docker"];
       packages = with pkgs; [ ];
+      shell = pkgs.zsh;
     };
 
     # Docker
