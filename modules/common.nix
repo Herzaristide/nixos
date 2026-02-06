@@ -84,6 +84,10 @@
       # Container & k8s tools
       podman-compose
       ollama              # CLI pour ollama pull/run
+
+      # Development (SonarQube extension Cursor)
+      jdk17               # Java 17 LTS
+      nodejs_22           # Node.js 22 LTS
     ];
 
     # User account
