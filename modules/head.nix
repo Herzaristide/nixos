@@ -12,6 +12,12 @@
   services.xserver.enable = true;
   services.xserver.displayManager.gdm.enable = true;
 
+  # Auto-login (services.displayManager.autoLogin, pas gdm.autoLogin)
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = "aristide";
+  };
+
   programs.hyprland.enable = true;
   services.xserver.xkb = {
     layout = "fr";

@@ -35,8 +35,8 @@ in
       # GPU: moins d'effets pour GT 630 + nouveau (blur/ombres coûtent cher)
       decoration = {
         rounding = 4;
-        active_opacity = 1.0;
-        inactive_opacity = 1.0;
+        active_opacity = 0.95;
+        inactive_opacity = 0.90;
       };
 
       # Special workspace apparaît depuis le bas

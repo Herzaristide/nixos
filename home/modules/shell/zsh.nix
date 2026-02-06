@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   programs.zsh = {
@@ -14,7 +14,7 @@
       ".." = "cd ..";
       "..." = "cd ../..";
     };
-    initExtra = ''
+    initContent = lib.mkOrder 1000 ''
       if [[ -o interactive ]]; then
         nf
       fi
