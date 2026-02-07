@@ -35,8 +35,8 @@ in
       # GPU: moins d'effets pour GT 630 + nouveau (blur/ombres coûtent cher)
       decoration = {
         rounding = 4;
-        active_opacity = 0.95;
-        inactive_opacity = 0.90;
+        active_opacity = 0.90;
+        inactive_opacity = 0.80;
       };
 
       # Special workspace apparaît depuis le bas
@@ -54,8 +54,10 @@ in
         ",preferred,auto,1"
       ];
 
-      # Autostart: Cursor with one project per workspace (see cursorWorkspaceProjects), Chrome on ws 4
-      exec-once = cursorExecOnce ++ [
+      # Autostart: waybar, Cursor with one project per workspace (see cursorWorkspaceProjects), Chrome on ws 4
+      exec-once = [
+        "waybar"
+      ] ++ cursorExecOnce ++ [
         "google-chrome-stable --user-data-dir=$HOME/.config/google-chrome-$(hostname)"
       ];
 

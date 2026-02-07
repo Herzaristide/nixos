@@ -1,6 +1,10 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
+  imports = [
+    ./theme.nix
+  ];
+
   # XDG Portal (for file picker, screen sharing in Hyprland)
   xdg.portal = {
     enable = true;
