@@ -32,12 +32,13 @@
   networking.useDHCP = false;
   networking.useNetworkd = false;
 
-  # SSH - passwordless (key-based only)
+  # SSH - allow connections without authentication (WSL only, local access)
   services.openssh = {
     enable = true;
     settings = {
-      PasswordAuthentication = false;
-      KbdInteractiveAuthentication = false;
+      PasswordAuthentication = true;
+      PermitEmptyPasswords = true;
+      KbdInteractiveAuthentication = true;
       PermitRootLogin = "no";
     };
   };
