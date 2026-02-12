@@ -11,14 +11,7 @@
 
   config = {
 
-    # Bootloader (systemd-boot for UEFI; GRUB disabled)
-    boot.loader.grub.enable = false;
-    boot.loader.systemd-boot.enable = true;
-    boot.loader.efi.canTouchEfiVariables = true;
-
     nixpkgs.config.allowUnfree = true;
-    # Networking
-    networking.networkmanager.enable = true;
 
     # Timezone and locale
     time.timeZone = "Europe/Paris";
@@ -90,11 +83,10 @@
       nodejs_22           # Node.js 22 LTS
     ];
 
-    # User account
+    # User account (base configuration)
     users.users.aristide = {
       isNormalUser = true;
       description = "aristide";
-      extraGroups = [ "networkmanager" "wheel" "docker" "video" "render" "podman" ];
       shell = pkgs.zsh;
     };
 
