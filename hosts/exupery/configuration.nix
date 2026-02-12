@@ -48,4 +48,15 @@
     hashedPassword = null;  # No password hash - allows empty password
     initialHashedPassword = "";  # Set initial empty password
   };
+
+  # Configure PAM to allow empty passwords for SSH
+  security.pam.services.sshd = {
+    # Allow empty passwords (nullok option)
+    text = ''
+      auth       required     pam_unix.so     nullok
+      account    required     pam_unix.so
+      password   required     pam_unix.so     nullok
+      session    required     pam_unix.so
+    '';
+  };
 }
