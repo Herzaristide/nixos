@@ -32,4 +32,13 @@
   networking.useDHCP = false;
   networking.useNetworkd = false;
 
+  # SSH - passwordless (key-based only)
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = "no";
+    };
+  };
 }
