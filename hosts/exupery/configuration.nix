@@ -45,7 +45,6 @@
 
   # Allow user to have empty password for passwordless SSH access
   users.users.aristide = {
-    hashedPassword = null;  # Allow empty password
-    password = null;         # No password set
+    hashedPassword = "";  # Empty password - allows passwordless login
   };
 }
