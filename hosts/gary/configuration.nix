@@ -23,7 +23,6 @@
   networking.networkmanager.enable = true;
 
   # User groups
-  users.users.aristide.extraGroups = [ "networkmanager" "wheel" "docker" "video" "render" "podman" ];
 
   # --- GPU (NVIDIA GeForce GT 630 Rev. 2, GK208 / Kepler) — nouveau ---
   # Proprietary NVIDIA 470 crashes Hyprland (initDRMFormats); nouveau has proper GBM/Wayland support

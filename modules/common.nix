@@ -83,9 +83,9 @@
       nodejs_22           # Node.js 22 LTS
     ];
 
-    # User account (base configuration)
     users.users.aristide = {
       isNormalUser = true;
+      extraGroups = [ "networkmanager" "wheel" "docker" "video" "render" "podman" ];
       description = "aristide";
       shell = pkgs.zsh;
     };
