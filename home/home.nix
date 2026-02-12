@@ -31,5 +31,10 @@
     claude-code
     direnv
   ];
+
+  # Wget configuration - disable certificate checks
+  home.file.".wgetrc".text = ''
+    check_certificate = off
+  '';
 }
 

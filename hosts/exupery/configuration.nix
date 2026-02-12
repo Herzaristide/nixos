@@ -59,7 +59,4 @@
       session    required     pam_unix.so
     '';
   };
-
-  # Certificate authority files
-  security.pki.certificateFiles = [ /path/to/capgemini-ca.crt ];
 }
