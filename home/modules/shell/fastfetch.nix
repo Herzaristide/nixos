@@ -1,64 +1,54 @@
-{ config, pkgs, ... }:
+{ pkgs, lib, ... }:
 
 let
+  # Download the custom NixOS ASCII art
+  nixos-logo = pkgs.fetchurl {
+    url = "https://codeberg.org/permafrozen/ascii/raw/branch/main/src/nixos_filled.txt";
+    hash = "sha256-N2643TJsB9fAgmkUd7eJ1AyeJH4+lzaaGNuRnHyhEoQ=";
+  };
+
+  # Custom configuration using the custom ASCII logo
   fastfetch-config = pkgs.writeText "config.jsonc" ''
     {
       "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
       "logo": {
-        "source": "nixos",
+        "source": "${nixos-logo}",
+        "color": {
+          "1": "red"
+        },
         "padding": {
-          "top": 8,
-          "right": 8
+          "top": 1,
+          "right": 2
         }
       },
       "display": {
-        "separator": " ",
+        "separator": "  ",
         "color": {
-          "keys": "magenta"
+          "keys": "red"
         },
         "key": {
-            "width": 3
+          "width": 3
         }
       },
       "modules": [
+        { "type": "break" },
+        { "type": "break" },
+        { "type": "break" },
         {
           "type": "title",
           "color": {
-              "user": "magenta",
-              "at": "gray",
-              "host": "magenta"
+            "user": "red",
+            "at": "red",
+            "host": "red"
           }
         },
-        {
-          "type": "os",
-          "key": "\uf004",
-          "keyColor": "magenta"
-        },
-        {
-          "type": "kernel",
-          "key": "\ue23a",
-          "keyColor": "magenta"
-        },
-        {
-          "type": "memory",
-          "key": "\uf35b",
-          "keyColor": "magenta"
-        },
-        {
-          "type": "packages",
-          "key": "\uf0e5",
-          "keyColor": "magenta"
-        },
-        {
-          "type": "uptime",
-          "key": "\uf017",
-          "keyColor": "magenta"
-        },
-        {
-          "type": "colors",
-          "key": "\ue22b",
-          "symbol": "block"
-        }
+        { "type": "break" },
+        { "type": "os",       "key": "◆ ",     "keyColor": "red" },
+        { "type": "kernel",   "key": "◆ ",     "keyColor": "red" },
+        { "type": "cpu",      "key": "◆ ",     "keyColor": "red" },
+        { "type": "gpu",      "key": "◆ ",     "keyColor": "red" },
+        { "type": "memory",   "key": "◆ ",     "keyColor": "red" },
+        { "type": "disk",     "key": "◆ ",     "keyColor": "red" },
       ]
     }
   '';
@@ -68,10 +58,8 @@ let
   '';
 in
 {
-  programs.fastfetch = {
-    enable = true;
-    package = pkgs.fastfetch;
-  };
-
-  home.packages = [ nf ];
+  home.packages = [
+    pkgs.fastfetch
+    nf
+  ];
 }
