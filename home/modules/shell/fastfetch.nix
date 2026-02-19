@@ -25,7 +25,7 @@ let
           "type": "title",
           "color": {
               "user": "magenta",
-              "at": "grey",
+              "at": "gray",
               "host": "magenta"
           }
         },
