@@ -17,7 +17,9 @@
     gnome-online-accounts  # Google Drive in Nautilus via Settings > Online Accounts
     gnome-control-center   # Add Google account: run "gnome-control-center" → Online Accounts
     code-cursor
+    cursor-cli
     google-chrome
+    firefox
     ghostty
     (writeShellScriptBin "hypr-gemini-launch" ''
       google-chrome-stable --app=https://gemini.google.com --user-data-dir="$HOME/.config/google-chrome-$(hostname)" &
@@ -48,10 +50,10 @@
   xdg.mimeApps = {
     enable = true;
     defaultApplications = {
-      "text/html" = [ "google-chrome.desktop" ];
-      "x-scheme-handler/http" = [ "google-chrome.desktop" ];
-      "x-scheme-handler/https" = [ "google-chrome.desktop" ];
-      "x-scheme-handler/about" = [ "google-chrome.desktop" ];
+      "text/html" = [ "firefox.desktop" ];
+      "x-scheme-handler/http" = [ "firefox.desktop" ];
+      "x-scheme-handler/https" = [ "firefox.desktop" ];
+      "x-scheme-handler/about" = [ "firefox.desktop" ];
       "x-terminal-emulator" = [ "ghostty.desktop" ];
       "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
       "x-scheme-handler/file" = [ "org.gnome.Nautilus.desktop" ];
@@ -101,8 +103,8 @@
     startupNotify = true;
   };
 
-  # Set environment variables for Cursor/VSCode to use Chrome for opening links
+  # Set environment variables for Cursor/VSCode to use Firefox for opening links
   home.sessionVariables = {
-    BROWSER = "google-chrome";
+    BROWSER = "firefox";
   };
 }

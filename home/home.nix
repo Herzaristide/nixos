@@ -34,8 +34,6 @@
         user.name = "Herzaristide";
         user.email = "aristide.pichereau@gmail.com";
         credential.helper = "store";
-      };
-      extraConfig = {
         pull.rebase = true;
       };
     };

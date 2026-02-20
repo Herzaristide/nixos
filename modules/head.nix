@@ -19,7 +19,7 @@
 
   # X11 (for XWayland) and Hyprland
   services.xserver.enable = true;
-  services.xserver.displayManager.gdm.enable = true;
+  services.displayManager.gdm.enable = true;
 
   # Auto-login (services.displayManager.autoLogin, pas gdm.autoLogin)
   services.displayManager.autoLogin = {
