@@ -44,10 +44,33 @@
     };
     vscode = {
       enable = true;
+      package = pkgs.code-cursor;
       profiles = {
         default = {
           extensions = with pkgs.vscode-extensions; [
+            ms-python.python
+            charliermarsh.ruff
+            sonarsource.sonarlint-vscode
+            dbaeumer.vscode-eslint
+            esbenp.prettier-vscode
+            # direnv: per-directory environment activation
+            mkhl.direnv
+            # Nix: IDE support (nix-env-selector not in nixpkgs; install from marketplace if needed)
+            jnoortheen.nix-ide
+            # Tailwind CSS IntelliSense
+            bradlc.vscode-tailwindcss
+            # Docker
+            ms-azuretools.vscode-docker
           ];
+          userSettings = {
+            "[python]" = {
+              "editor.defaultFormatter" = "charliermarsh.ruff";
+              "editor.formatOnSave" = true;
+              "editor.codeActionsOnSave" = {
+                "source.fixAll.ruff" = "explicit";
+              };
+            };
+          };
         };
       };
     };
