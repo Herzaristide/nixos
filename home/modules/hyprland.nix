@@ -1,19 +1,5 @@
 { config, pkgs, lib, ... }:
 
-let
-  # Cursor projects: un workspace + une instance Cursor par projet
-  cursorWorkspaceProjects = [
-    { path = "/etc/nixos"; }
-    # { path = "/home/aristide/projects/foo"; }
-  ];
-  cursorWithWorkspace = lib.imap1 (i: p: { workspace = i; path = p.path; }) cursorWorkspaceProjects;
-  cursorExecOnce = map (p: "cursor ${lib.escapeShellArg p.path}") cursorWithWorkspace;
-  cursorWorkspaceDefs = map (p: "${toString p.workspace}, monitor:VGA-1${if p.workspace == 1 then ", default:true" else ""}") cursorWithWorkspace;
-  cursorWorkspaceRules = map (p: "${toString p.workspace}, class:^(Cursor)$, title:.*${lib.escapeRegex (builtins.baseNameOf p.path)}.*") cursorWithWorkspace;
-  # Workspaces libres sur VGA après les projets Cursor (ws 1–3 sur VGA)
-  maxCursorWs = builtins.length cursorWorkspaceProjects;
-  freeWorkspaces = map (i: "${toString (maxCursorWs + i)}, monitor:VGA-1") (lib.range 1 (lib.max 0 (3 - maxCursorWs)));
-in
 {
   wayland.windowManager.hyprland = {
     enable = true;
@@ -57,17 +43,13 @@ in
       # Autostart: waybar, Cursor with one project per workspace (see cursorWorkspaceProjects), Chrome on ws 4
       exec-once = [
         "waybar"
-      ] ++ cursorExecOnce ++ [
-        "google-chrome-stable --user-data-dir=$HOME/.config/google-chrome-$(hostname)"
       ];
 
       # Workspaces: 1–3 on VGA (main), 4 on HDMI. special:gemini = overlay (scratchpad)
       # Lock apps to workspaces (syntax moderne); Cursor per project by title (basename)
-      workspace = cursorWorkspaceDefs ++ freeWorkspaces ++ [
+      workspace = [
         "4, monitor:HDMI-A-1"
         "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:80 200 80 200, gapsin:30"
-      ] ++ cursorWorkspaceRules ++ [
-        "4, class:^(Google-chrome)$"
       ];
 
       # Minimal binds - terminal, apps
@@ -77,9 +59,6 @@ in
         "$mod, B, exec, bash -c 'google-chrome-stable --user-data-dir=$HOME/.config/google-chrome-$(hostname)'"
         "$mod, L, exec, bandlab-chrome"
         "$mod, E, exec, eraser--chrome"
-        "$mod, O, exec, lorien"
-        "$mod, A, exec, gromit-mpx --toggle"
-        "$mod, W, exec, bitwig-studio"
         "$mod, Q, killactive"
         "$mod, M, exit"
         "$mod, V, togglefloating"

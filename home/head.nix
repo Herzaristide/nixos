@@ -100,4 +100,9 @@
     categories = [ "Development" "Graphics" "Network" ];
     startupNotify = true;
   };
+
+  # Set environment variables for Cursor/VSCode to use Chrome for opening links
+  home.sessionVariables = {
+    BROWSER = "google-chrome";
+  };
 }

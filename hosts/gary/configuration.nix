@@ -57,4 +57,7 @@
   # SSD maintenance — periodic TRIM
   services.fstrim.enable = true;
 
+  # Nix experimental features
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
 }
