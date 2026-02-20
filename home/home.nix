@@ -35,6 +35,9 @@
         user.email = "aristide.pichereau@gmail.com";
         credential.helper = "store";
       };
+      extraConfig = {
+        pull.rebase = true;
+      };
     };
     direnv = {
       enable = true;
@@ -48,9 +51,6 @@
           extensions = with pkgs.vscode-extensions; [
           ];
         };
-      };
-      extraConfig = {
-        pull.rebase = true;
       };
     };
   };
