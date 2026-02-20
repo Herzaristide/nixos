@@ -14,6 +14,24 @@
   # Head configuration
   head = true;
 
+  # Bootloader (systemd-boot for UEFI; GRUB disabled)
+  boot.loader.grub.enable = false;
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
+  # Networking
+  networking.networkmanager.enable = true;
+
+  # SSH - allow password authentication
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = true;
+      KbdInteractiveAuthentication = true;
+      PermitRootLogin = "no";
+    };
+  };
+
   # --- GPU (NVIDIA, Zola: Prime Intel+Nvidia, Wayland) ---
   boot.kernelParams = [
     "nvidia-drm.modeset=1" # Enable mode setting for Wayland

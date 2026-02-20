@@ -1,53 +1,46 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   programs.starship = {
     enable = true;
-    enableZshIntegration = true;
+    enableFishIntegration = true;
 
     settings = {
       "$schema" = "https://starship.rs/config-schema.json";
 
-      format = lib.concatStrings [
-        "$directory"
-        "[>](fg:#ef4444 bg:#991b1b)"
-        "$git_branch"
-        "$git_status"
-        "[>](fg:#991b1b bg:#7f1d1d)"
-        "$time"
-        "[>](fg:#7f1d1d bg:#450a0a)"
-        "[>](fg:#450a0a)"
-        "\n$character"
-      ];
+      # Clean format matching fastfetch red theme
+      format = "$directory$git_branch$git_status$character";
 
       directory = {
-        style = "fg:#fef2f2 bg:#ef4444";
-        format = "[ $path ]($style)";
-        truncation_length = 3;
-        truncation_symbol = "…/";
+        format = "[◆ $path]($style) ";
+        style = "red";
+        truncate_to_repo = false;
+        use_os_path_sep = true;
+        # Show full absolute path including home directory
+        fish_style_pwd_dir_length = 0;
+        # Don't use ~ symbol, show full path
+        home_symbol = "/home/aristide/";
       };
 
       git_branch = {
-        symbol = "git";
-        style = "bg:#991b1b";
-        format = "[[ $symbol $branch ](fg:#fca5a5 bg:#991b1b)]($style)";
+        format = "[$symbol$branch]($style) ";
+        style = "red";
+        symbol = "";
       };
 
       git_status = {
-        style = "bg:#991b1b";
-        format = "[[($all_status$ahead_behind )](fg:#fca5a5 bg:#991b1b)]($style)";
-      };
-
-      time = {
-        disabled = false;
-        time_format = "%R";
-        style = "bg:#450a0a";
-        format = "[[  $time ](fg:#fca5a5 bg:#450a0a)]($style)";
+        format = "([$all_status$ahead_behind]($style)) ";
+        style = "red";
       };
 
       character = {
-        success_symbol = "[>](fg:#991b1b)";
-        error_symbol = "[>](fg:#991b1b)";
+        success_symbol = "[>](bold red)";
+        error_symbol = "[>](bold red)";
       };
     };
   };
