@@ -45,6 +45,7 @@
     vscode = {
       enable = true;
       package = pkgs.code-cursor;
+      mutableExtensionsDir = true;
       profiles = {
         default = {
           extensions = with pkgs.vscode-extensions; [
@@ -53,13 +54,11 @@
             sonarsource.sonarlint-vscode
             dbaeumer.vscode-eslint
             esbenp.prettier-vscode
-            # direnv: per-directory environment activation
             mkhl.direnv
-            # Nix: IDE support (nix-env-selector not in nixpkgs; install from marketplace if needed)
             jnoortheen.nix-ide
-            # Tailwind CSS IntelliSense
+            arrterian.nix-env-selector
             bradlc.vscode-tailwindcss
-            # Docker
+            ms-azuretools.vscode-containers
             ms-azuretools.vscode-docker
           ];
           userSettings = {
@@ -79,7 +78,7 @@
   # Packages available on all systems (non-hardware)
   home.packages = with pkgs; [
     claude-code
-    nixfmt # Nix formatter for VSCode Nix extension
+    nixfmt
   ];
 
   # Wget configuration - disable certificate checks
