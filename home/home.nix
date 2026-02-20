@@ -49,6 +49,9 @@
           ];
         };
       };
+      extraConfig = {
+        pull.rebase = true;
+      };
     };
   };
 
