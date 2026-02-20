@@ -1,4 +1,9 @@
-{ config, pkgs, inputs, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}:
 
 {
   imports = [
@@ -49,7 +54,10 @@
     comment = "Google Gemini AI";
     exec = "gemini-chrome";
     icon = "google-chrome";
-    categories = [ "Network" "Chat" ];
+    categories = [
+      "Network"
+      "Chat"
+    ];
     startupNotify = true;
   };
 }

@@ -1,14 +1,25 @@
-{ config, pkgs, inputs, head ? false, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  head ? false,
+  ...
+}:
 
 {
   imports = [
     ./modules/shell
-  ] ++ (if head then [
-    ./head.nix
-  ] else []);
+  ]
+  ++ (
+    if head then
+      [
+        ./head.nix
+      ]
+    else
+      [ ]
+  );
 
   nixpkgs.config.allowUnfree = true;
-
 
   # Home Manager settings
   home.username = "aristide";
@@ -22,6 +33,21 @@
       settings = {
         user.name = "Herzaristide";
         user.email = "aristide.pichereau@gmail.com";
+        credential.helper = "store";
+      };
+    };
+    direnv = {
+      enable = true;
+      nix-direnv.enable = true;
+      enableFishIntegration = true;
+    };
+    vscode = {
+      enable = true;
+      profiles = {
+        default = {
+          extensions = with pkgs.vscode-extensions; [
+          ];
+        };
       };
     };
   };
@@ -29,7 +55,11 @@
   # Packages available on all systems (non-hardware)
   home.packages = with pkgs; [
     claude-code
-    direnv
+    nixfmt # Nix formatter for VSCode Nix extension
   ];
-}
 
+  # Wget configuration - disable certificate checks
+  home.file.".wgetrc".text = ''
+    check_certificate = off
+  '';
+}

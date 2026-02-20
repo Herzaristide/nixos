@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ./zsh.nix
+    ./fish.nix
     ./yazi.nix
     ./fastfetch.nix
     ./starship.nix
