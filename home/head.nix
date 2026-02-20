@@ -13,9 +13,11 @@
 
   # Headful (GUI) packages for desktop/laptop systems
   home.packages = with pkgs; [
+    nautilus
+    gnome-online-accounts  # Google Drive in Nautilus via Settings > Online Accounts
+    gnome-control-center   # Add Google account: run "gnome-control-center" → Online Accounts
     code-cursor
     google-chrome
-    inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
     ghostty
     (writeShellScriptBin "hypr-gemini-launch" ''
       google-chrome-stable --app=https://gemini.google.com --user-data-dir="$HOME/.config/google-chrome-$(hostname)" &
@@ -23,6 +25,12 @@
     '')
     (writeShellScriptBin "gemini-chrome" ''
       exec google-chrome-stable --app=https://gemini.google.com --user-data-dir="$HOME/.config/google-chrome-$(hostname)"
+    '')
+    (writeShellScriptBin "bandlab-chrome" ''
+      exec google-chrome-stable --app=https://www.bandlab.com --user-data-dir="$HOME/.config/google-chrome-$(hostname)"
+    '')
+    (writeShellScriptBin "eraser-chrome" ''
+      exec google-chrome-stable --app=https://app.eraser.io --user-data-dir="$HOME/.config/google-chrome-$(hostname)"
     '')
   ];
 
@@ -45,6 +53,8 @@
       "x-scheme-handler/https" = [ "google-chrome.desktop" ];
       "x-scheme-handler/about" = [ "google-chrome.desktop" ];
       "x-terminal-emulator" = [ "ghostty.desktop" ];
+      "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
+      "x-scheme-handler/file" = [ "org.gnome.Nautilus.desktop" ];
     };
   };
 
@@ -58,6 +68,36 @@
       "Network"
       "Chat"
     ];
+    startupNotify = true;
+  };
+
+  # BandLab PWA (Chrome in app mode)
+  xdg.desktopEntries.bandlab = {
+    name = "BandLab";
+    comment = "Music Maker & Audio Editor";
+    exec = "bandlab-chrome";
+    icon = "google-chrome";
+    categories = [ "Audio" "Music" "Network" ];
+    startupNotify = true;
+  };
+
+  # Online Accounts - add Google Drive for Nautilus (opens GNOME Settings → Online Accounts)
+  xdg.desktopEntries.online-accounts = {
+    name = "Online Accounts";
+    comment = "Add Google Drive and other cloud accounts for Nautilus";
+    exec = "gnome-control-center online-accounts";
+    icon = "org.gnome.Settings-online-accounts-symbolic";
+    categories = [ "Settings" "System" ];
+    startupNotify = true;
+  };
+
+  # Eraser PWA (Chrome in app mode) - diagrams & docs for engineering teams
+  xdg.desktopEntries.eraser = {
+    name = "Eraser";
+    comment = "AI co-pilot for technical design and documentation";
+    exec = "eraser-chrome";
+    icon = "google-chrome";
+    categories = [ "Development" "Graphics" "Network" ];
     startupNotify = true;
   };
 }

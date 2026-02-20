@@ -110,16 +110,9 @@
 
     users.users.aristide = {
       isNormalUser = true;
-      extraGroups = [
-        "networkmanager"
-        "wheel"
-        "docker"
-        "video"
-        "render"
-        "podman"
-      ];
       description = "aristide";
       shell = pkgs.fish;
+      extraGroups = [ "networkmanager" "wheel" "docker" "video" "render" "podman" "audio" "storage" ];
     };
 
     # Docker
@@ -132,11 +125,11 @@
     };
 
     # Podman
-    # virtualisation.podman = {
-    #   enable = true;
-    #   dockerCompat = false; # don't alias docker → podman (Docker is already enabled)
-    #   defaultNetwork.settings.dns_enabled = true;
-    # };
+    virtualisation.podman = {
+     enable = true;
+     dockerCompat = false;
+     defaultNetwork.settings.dns_enabled = true;
+    };
 
     # System state version
     system.stateVersion = "25.11";

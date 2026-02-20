@@ -1,14 +1,21 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  c = config.lib.stylix.colors;
+in
 {
   programs.waybar = {
     enable = true;
     settings = {
       mainBar = {
         layer = "top";
-        position = "top";
-        height = 30;
-        spacing = 4;
+        position = "bottom";
+        height = 32;
+        spacing = 6;
+        margin-top = 0;
+        margin-bottom = 6;
+        margin-left = 8;
+        margin-right = 8;
 
         modules-left = [ "hyprland/workspaces" "hyprland/window" ];
         modules-center = [ "clock" ];
@@ -56,26 +63,32 @@
         };
       };
     };
-    style = ''
-      * {
-        border: none;
-        border-radius: 0;
-        min-height: 0;
-        font-family: sans-serif;
-        font-size: 13px;
-      }
+    # Appended after Stylix's palette-based CSS (uses @base00–base0F)
+    style = lib.mkAfter ''
       window#waybar {
-        background: transparent;
+        border-radius: 10px 10px 0 0;
+        background-color: ${c.withHashtag.base01};
+        border: 1px solid ${c.withHashtag.base02};
+        border-bottom: none;
+      }
+      tooltip {
+        border-radius: 8px;
+        border: 1px solid ${c.withHashtag.base02};
       }
       #workspaces button {
-        padding: 0 8px;
-        color: inherit;
+        padding: 0 10px;
+        border-radius: 6px;
+        margin: 2px 1px;
       }
       #workspaces button.active {
-        background: rgba(255, 255, 255, 0.15);
+        background-color: ${c.withHashtag.base02};
       }
       #clock, #pulseaudio, #network, #tray {
-        padding: 0 10px;
+        padding: 0 12px;
+        margin: 2px 0;
+      }
+      #window {
+        margin-left: 8px;
       }
     '';
   };
