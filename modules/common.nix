@@ -136,6 +136,7 @@
 
     # Home Manager
     home-manager = {
+      backupFileExtension = "bak";
       extraSpecialArgs = {
         inherit inputs;
         head = config.head;
