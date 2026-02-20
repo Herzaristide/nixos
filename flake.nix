@@ -11,10 +11,6 @@
       url = "github:Miuzarte/synthwave84.yazi";
       flake = false;
     };
-    zen-browser = {
-      url = "github:youwen5/zen-browser-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     stylix = {
       url = "github:nix-community/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -23,12 +19,18 @@
       url = "github:nix-community/NixOS-WSL";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    musnix = {
+      url = "github:musnix/musnix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, nixos-wsl, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, nixos-wsl, musnix, ... }@inputs: let
+    system = "x86_64-linux";
+  in {
     nixosConfigurations = {
       zola = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+        inherit system;
         modules = [
           ./hosts/zola/configuration.nix
         ];
@@ -36,7 +38,7 @@
       };
 
       gary = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+        inherit system;
         modules = [
           ./hosts/gary/configuration.nix
         ];
@@ -44,7 +46,7 @@
       };
 
       exupery = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+        inherit system;
         modules = [
           ./hosts/exupery/configuration.nix
         ];
