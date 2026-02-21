@@ -19,12 +19,23 @@
 
   # X11 (for XWayland) and Hyprland
   services.xserver.enable = true;
-  services.displayManager.gdm.enable = true;
 
-  # Auto-login (services.displayManager.autoLogin, pas gdm.autoLogin)
-  services.displayManager.autoLogin = {
+  # DMS Greeter (greetd + dms-greeter) — replaces GDM
+  programs.dank-material-shell.greeter = {
     enable = true;
-    user = "aristide";
+    compositor.name = "hyprland";
+    configHome = "/home/aristide";
+  };
+
+  # greetd autologin (bypasses greeter, starts Hyprland directly)
+  services.greetd.settings = rec {
+    initial_session = {
+      command = "${config.programs.hyprland.package}/bin/Hyprland";
+      user = "aristide";
+    };
+    default_session = {
+      user = "aristide";
+    };
   };
 
   programs.hyprland.enable = true;

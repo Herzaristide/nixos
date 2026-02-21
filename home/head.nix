@@ -2,17 +2,40 @@
   config,
   pkgs,
   inputs,
+  lib,
   ...
 }:
 
 {
   imports = [
     ./modules/hyprland.nix
-    ./modules/waybar.nix
+    inputs.dms.homeModules.dank-material-shell
+    inputs.danksearch.homeModules.dsearch
   ];
 
+  programs.dank-material-shell = {
+    enable = true;
+    systemd = {
+      enable = true;
+      restartIfChanged = true;
+    };
+      # Core features
+    enableSystemMonitoring = true;     # System monitoring widgets (dgop)
+    enableVPN = true;                  # VPN management widget
+    enableDynamicTheming = true;       # Wallpaper-based theming (matugen)
+    enableAudioWavelength = true;      # Audio visualizer (cava)
+    enableCalendarEvents = true;       # Calendar integration (khal)
+    enableClipboardPaste = true;       # Pasting items from the clipboard (wtype)
+  };
+
+  programs.dsearch.enable = true;
+
   # Headful (GUI) packages for desktop/laptop systems
+  # adw-gtk3, qt6ct: required for DMS matugen GTK/Qt application theming
   home.packages = with pkgs; [
+    adw-gtk3
+    qt6Packages.qt6ct
+    dgop
     nautilus
     gnome-online-accounts  # Google Drive in Nautilus via Settings > Online Accounts
     gnome-control-center   # Add Google account: run "gnome-control-center" → Online Accounts
@@ -35,14 +58,6 @@
       exec google-chrome-stable --app=https://app.eraser.io --user-data-dir="$HOME/.config/google-chrome-$(hostname)"
     '')
   ];
-
-  # Force-overwrite config files managed by Stylix (they may already exist on disk)
-  xdg.configFile."gtk-3.0/settings.ini".force = true;
-  xdg.configFile."gtk-3.0/gtk.css".force = true;
-  xdg.configFile."gtk-4.0/settings.ini".force = true;
-  xdg.configFile."gtk-4.0/gtk.css".force = true;
-  xdg.configFile."qt5ct/qt5ct.conf".force = true;
-  xdg.configFile."qt6ct/qt6ct.conf".force = true;
 
   # Default applications (force overwrites existing mimeapps.list files)
   xdg.configFile."mimeapps.list".force = true;

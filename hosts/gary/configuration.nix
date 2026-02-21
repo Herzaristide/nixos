@@ -4,6 +4,7 @@
   imports = [
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.default
+    inputs.dms.nixosModules.greeter
     ../../modules/common.nix
     ../../modules/head.nix
   ];
