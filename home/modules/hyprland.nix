@@ -3,6 +3,37 @@
 {
   wayland.windowManager.hyprland = {
     enable = true;
+    extraConfig = ''
+      # Qt theming via DMS matugen (qt6ct)
+      env = QT_QPA_PLATFORMTHEME,qt6ct
+      env = QT_QPA_PLATFORMTHEME_QT6,qt6ct
+
+      # DMS integration
+      # layerrule = noanim 1, ^(dms)$
+      misc {
+        disable_hyprland_logo = true
+        disable_splash_rendering = true
+      }
+      # DMS keybindings (Super+Space launcher, Super+V clipboard, etc.)
+      bind = $mod, space, exec, dms ipc call spotlight toggle
+      bind = $mod, V, exec, dms ipc call clipboard toggle
+      bind = $mod, M, exec, dms ipc call processlist focusOrToggle
+      bind = $mod, comma, exec, dms ipc call settings focusOrToggle
+      bind = $mod, N, exec, dms ipc call notifications toggle
+      bind = $mod, Y, exec, dms ipc call dankdash wallpaper
+      bind = $mod, TAB, exec, dms ipc call hypr toggleOverview
+      bind = $mod ALT, L, exec, dms ipc call lock lock
+      bindel = , XF86AudioRaiseVolume, exec, dms ipc call audio increment 3
+      bindel = , XF86AudioLowerVolume, exec, dms ipc call audio decrement 3
+      bindl = , XF86AudioMute, exec, dms ipc call audio mute
+      bindel = , XF86MonBrightnessUp, exec, dms ipc call brightness increment 5
+      bindel = , XF86MonBrightnessDown, exec, dms ipc call brightness decrement 5
+      # Replaced by DMS: togglefloating on Shift+V, exit on Shift+M
+      bind = $mod, Shift+V, togglefloating
+      bind = $mod, Shift+M, exit
+      # DMS window rule
+      # windowrulev2 = float, class:^(org.quickshell)$
+    '';
     settings = {
       "$mod" = "SUPER";
 
@@ -40,10 +71,8 @@
         ",preferred,auto,1"
       ];
 
-      # Autostart: waybar, Cursor with one project per workspace (see cursorWorkspaceProjects), Chrome on ws 4
-      exec-once = [
-        "waybar"
-      ];
+      # Autostart: DMS starts via systemd (replaces Waybar)
+      exec-once = [ ];
 
       # Workspaces: 1–3 on VGA (main), 4 on HDMI. special:gemini = overlay (scratchpad)
       # Lock apps to workspaces (syntax moderne); Cursor per project by title (basename)
@@ -60,8 +89,6 @@
         "$mod, L, exec, bandlab-chrome"
         "$mod, E, exec, eraser--chrome"
         "$mod, Q, killactive"
-        "$mod, M, exit"
-        "$mod, V, togglefloating"
         "$mod, P, pseudo"
         "$mod, J, togglesplit"
         "$mod, left, movefocus, l"
