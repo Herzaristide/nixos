@@ -74,10 +74,14 @@
       # Autostart: DMS starts via systemd (replaces Waybar)
       exec-once = [ ];
 
-      # Workspaces: 1–3 on VGA (main), 4 on HDMI. special:gemini = overlay (scratchpad)
-      # Lock apps to workspaces (syntax moderne); Cursor per project by title (basename)
+      # Workspaces: 0 = left (HDMI), 1–5 = main (VGA). special:gemini = overlay (scratchpad)
       workspace = [
-        "4, monitor:HDMI-A-1"
+        "0, monitor:HDMI-A-1"
+        "1, monitor:VGA-1"
+        "2, monitor:VGA-1"
+        "3, monitor:VGA-1"
+        "4, monitor:VGA-1"
+        "5, monitor:VGA-1"
         "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:80 200 80 200, gapsin:30"
       ];
 
@@ -98,14 +102,18 @@
         # Focus prev/next monitor (bracket keys)
         "$mod, bracketleft, focusmonitor, -1"
         "$mod, bracketright, focusmonitor, +1"
-        # Workspaces (AZERTY: & é " = 1 2 3)
+        # Workspaces: 0 = left monitor, 1–5 = main (AZERTY: & é " ' ( = 1 2 3 4 5)
+        "$mod, 0, workspace, 0"
         "$mod, ampersand, workspace, 1"
         "$mod, eacute, workspace, 2"
         "$mod, quotedbl, workspace, 3"
+        "$mod, apostrophe, workspace, 4"
+        "$mod, parenleft, workspace, 5"
         "$mod, 1, workspace, 1"
         "$mod, 2, workspace, 2"
         "$mod, 3, workspace, 3"
         "$mod, 4, workspace, 4"
+        "$mod, 5, workspace, 5"
         # Workspace spécial Gemini (Super+G) – s'affiche en overlay
         "$mod, G, togglespecialworkspace, gemini"
       ];
