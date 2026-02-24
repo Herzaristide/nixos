@@ -112,7 +112,7 @@
       isNormalUser = true;
       description = "aristide";
       shell = pkgs.fish;
-      extraGroups = [ "networkmanager" "wheel" "docker" "video" "render" "podman" "audio" "storage" ];
+      extraGroups = [ "networkmanager" "wheel" "docker" "video" "render" "podman" "audio" "storage" "greeter" ];
     };
 
     # Docker
@@ -140,6 +140,8 @@
       extraSpecialArgs = {
         inherit inputs;
         head = config.head;
+        wallpaperPath = if config.head then ((config.theme or { initialWallpaper = null; }).initialWallpaper or null) else null;
+        wallpaperFolder = if config.head then ((config.theme or { wallpaperFolder = "wallpapers"; }).wallpaperFolder or "wallpapers") else "wallpapers";
       };
       users.aristide = import ../home/home.nix;
     };
