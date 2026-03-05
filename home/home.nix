@@ -21,14 +21,6 @@
 
   nixpkgs.config.allowUnfree = true;
 
-  # Mouse cursor theme (Hyprland, GTK apps)
-  home.pointerCursor = {
-    gtk.enable = true;
-    package = pkgs.phinger-cursors;
-    name = "phinger-cursors-dark";
-    size = 32;
-  };
-
   # Home Manager settings
   home.username = "aristide";
   home.homeDirectory = "/home/aristide";
@@ -50,42 +42,12 @@
       nix-direnv.enable = true;
       enableFishIntegration = true;
     };
-    vscode = {
-      enable = true;
-      package = pkgs.code-cursor;
-      mutableExtensionsDir = true;
-      profiles = {
-        default = {
-          extensions = with pkgs.vscode-extensions; [
-            ms-python.python
-            charliermarsh.ruff
-            sonarsource.sonarlint-vscode
-            dbaeumer.vscode-eslint
-            esbenp.prettier-vscode
-            mkhl.direnv
-            jnoortheen.nix-ide
-            arrterian.nix-env-selector
-            bradlc.vscode-tailwindcss
-            ms-azuretools.vscode-containers
-            ms-azuretools.vscode-docker
-          ];
-          userSettings = {
-            "[python]" = {
-              "editor.defaultFormatter" = "charliermarsh.ruff";
-              "editor.formatOnSave" = true;
-              "editor.codeActionsOnSave" = {
-                "source.fixAll.ruff" = "explicit";
-              };
-            };
-          };
-        };
-      };
-    };
   };
 
   # Packages available on all systems (non-hardware)
   home.packages = with pkgs; [
     claude-code
+    cursor-cli
     nixfmt
   ];
 

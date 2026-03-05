@@ -34,6 +34,46 @@
 
   programs.dsearch.enable = true;
 
+  # Mouse cursor theme (Hyprland, GTK apps)
+  home.pointerCursor = {
+    gtk.enable = true;
+    package = pkgs.phinger-cursors;
+    name = "phinger-cursors-dark";
+    size = 32;
+  };
+
+  programs.vscode = {
+    enable = true;
+    package = pkgs.code-cursor;
+    mutableExtensionsDir = true;
+    profiles = {
+      default = {
+        extensions = with pkgs.vscode-extensions; [
+          ms-python.python
+          charliermarsh.ruff
+          sonarsource.sonarlint-vscode
+          dbaeumer.vscode-eslint
+          esbenp.prettier-vscode
+          mkhl.direnv
+          jnoortheen.nix-ide
+          arrterian.nix-env-selector
+          bradlc.vscode-tailwindcss
+          ms-azuretools.vscode-containers
+          ms-azuretools.vscode-docker
+        ];
+        userSettings = {
+          "[python]" = {
+            "editor.defaultFormatter" = "charliermarsh.ruff";
+            "editor.formatOnSave" = true;
+            "editor.codeActionsOnSave" = {
+              "source.fixAll.ruff" = "explicit";
+            };
+          };
+        };
+      };
+    };
+  };
+
   # Headful (GUI) packages for desktop/laptop systems
   # adw-gtk3, qt6ct: required for DMS matugen GTK/Qt application theming
   home.packages = with pkgs; [
