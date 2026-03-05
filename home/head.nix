@@ -20,16 +20,16 @@
       restartIfChanged = true;
     };
     # Core features
-    enableSystemMonitoring = true;     # System monitoring widgets (dgop)
-    enableVPN = true;                  # VPN management widget
-    enableDynamicTheming = true;       # Wallpaper-based theming (matugen)
-    enableAudioWavelength = true;      # Audio visualizer (cava)
-    enableCalendarEvents = true;       # Calendar integration (khal)
-    enableClipboardPaste = true;       # Pasting items from the clipboard (wtype)
+    enableSystemMonitoring = true; # System monitoring widgets (dgop)
+    enableVPN = true; # VPN management widget
+    enableDynamicTheming = true; # Wallpaper-based theming (matugen)
+    enableAudioWavelength = true; # Audio visualizer (cava)
+    enableCalendarEvents = true; # Calendar integration (khal)
+    enableClipboardPaste = true; # Pasting items from the clipboard (wtype)
 
     # Full DMS settings from ~/.config/DankMaterialShell/settings.json.bak
     # Override showDock and appLauncherViewMode to match live preferences
-    settings = (import ./dms-settings.nix) // {};
+    settings = (import ./dms-settings.nix) // { };
   };
 
   programs.dsearch.enable = true;
@@ -58,6 +58,9 @@
           jnoortheen.nix-ide
           arrterian.nix-env-selector
           bradlc.vscode-tailwindcss
+          golang.go
+          hashicorp.terraform
+          rust-lang.rust-analyzer
           ms-azuretools.vscode-containers
           ms-azuretools.vscode-docker
         ];
@@ -69,6 +72,62 @@
               "source.fixAll.ruff" = "explicit";
             };
           };
+          "[javascript]" = {
+            "editor.defaultFormatter" = "esbenp.prettier-vscode";
+            "editor.formatOnSave" = true;
+          };
+          "[javascriptreact]" = {
+            "editor.defaultFormatter" = "esbenp.prettier-vscode";
+            "editor.formatOnSave" = true;
+          };
+          "[typescript]" = {
+            "editor.defaultFormatter" = "esbenp.prettier-vscode";
+            "editor.formatOnSave" = true;
+          };
+          "[typescriptreact]" = {
+            "editor.defaultFormatter" = "esbenp.prettier-vscode";
+            "editor.formatOnSave" = true;
+          };
+          "[json]" = {
+            "editor.defaultFormatter" = "esbenp.prettier-vscode";
+            "editor.formatOnSave" = true;
+          };
+          "[jsonc]" = {
+            "editor.defaultFormatter" = "esbenp.prettier-vscode";
+            "editor.formatOnSave" = true;
+          };
+          "[go]" = {
+            "editor.defaultFormatter" = "golang.go";
+            "editor.formatOnSave" = true;
+          };
+          "[terraform]" = {
+            "editor.defaultFormatter" = "hashicorp.terraform";
+            "editor.formatOnSave" = true;
+          };
+          "[terraform-vars]" = {
+            "editor.defaultFormatter" = "hashicorp.terraform";
+            "editor.formatOnSave" = true;
+          };
+          "[rust]" = {
+            "editor.defaultFormatter" = "rust-lang.rust-analyzer";
+            "editor.formatOnSave" = true;
+          };
+          "[nix]" = {
+            "editor.defaultFormatter" = "jnoortheen.nix-ide";
+            "editor.formatOnSave" = true;
+          };
+          "nix.enableLanguageServer" = true;
+          "nix.serverPath" = "${pkgs.nixd}/bin/nixd";
+          "nix.serverSettings" = {
+            "nixd" = {
+              "formatting" = {
+                "command" = [ "${pkgs.nixfmt}/bin/nixfmt" ];
+              };
+            };
+          };
+          "sonarlint.pathToNodeExecutable" = "${pkgs.nodejs_22}/bin/node";
+          "window.openFoldersInNewWindow" = "on";
+          "workbench.activityBar.location" = "top";
         };
       };
     };
@@ -81,10 +140,9 @@
     qt6Packages.qt6ct
     dgop
     nautilus
-    gnome-online-accounts  # Google Drive in Nautilus via Settings > Online Accounts
-    gnome-control-center   # Add Google account: run "gnome-control-center" → Online Accounts
+    gnome-online-accounts # Google Drive in Nautilus via Settings > Online Accounts
+    gnome-control-center # Add Google account: run "gnome-control-center" → Online Accounts
     code-cursor
-    cursor-cli
     google-chrome
     firefox
     ghostty
@@ -138,7 +196,11 @@
     comment = "Music Maker & Audio Editor";
     exec = "bandlab-chrome";
     icon = "google-chrome";
-    categories = [ "Audio" "Music" "Network" ];
+    categories = [
+      "Audio"
+      "Music"
+      "Network"
+    ];
     startupNotify = true;
   };
 
@@ -148,7 +210,10 @@
     comment = "Add Google Drive and other cloud accounts for Nautilus";
     exec = "gnome-control-center online-accounts";
     icon = "org.gnome.Settings-online-accounts-symbolic";
-    categories = [ "Settings" "System" ];
+    categories = [
+      "Settings"
+      "System"
+    ];
     startupNotify = true;
   };
 
@@ -158,7 +223,11 @@
     comment = "AI co-pilot for technical design and documentation";
     exec = "eraser-chrome";
     icon = "google-chrome";
-    categories = [ "Development" "Graphics" "Network" ];
+    categories = [
+      "Development"
+      "Graphics"
+      "Network"
+    ];
     startupNotify = true;
   };
 
