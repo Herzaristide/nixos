@@ -9,6 +9,7 @@
 {
   imports = [
     ./modules/shell
+    ./vscode-remote.nix
   ]
   ++ (
     if head then

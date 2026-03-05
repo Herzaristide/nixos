@@ -18,6 +18,9 @@
 
     nixpkgs.config.allowUnfree = true;
 
+    # Required by nixd (Nix IDE) when evaluating flake-based options/expressions.
+    nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
     # Timezone and locale
     time.timeZone = "Europe/Paris";
     i18n.defaultLocale = "en_US.UTF-8";
