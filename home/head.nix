@@ -125,6 +125,11 @@
               };
             };
           };
+          "editor.tabSize" = 2;
+          "editor.insertSpaces" = false;
+          "editor.detectIndentation" = false;
+          "editor.wordWrap" = "on";
+          "workbench.editor.wrapTabs" = true;
           "sonarlint.pathToNodeExecutable" = "${pkgs.nodejs_22}/bin/node";
           "window.openFoldersInNewWindow" = "on";
           "workbench.activityBar.location" = "top";

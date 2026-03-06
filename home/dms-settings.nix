@@ -91,14 +91,46 @@
 
   # Control center widget sliders
   controlCenterWidgets = [
-    { id = "volumeSlider"; enabled = true; width = 50; }
-    { id = "brightnessSlider"; enabled = true; width = 50; }
-    { id = "wifi"; enabled = true; width = 50; }
-    { id = "bluetooth"; enabled = true; width = 50; }
-    { id = "audioOutput"; enabled = true; width = 50; }
-    { id = "audioInput"; enabled = true; width = 50; }
-    { id = "nightMode"; enabled = true; width = 50; }
-    { id = "darkMode"; enabled = true; width = 50; }
+    {
+      id = "volumeSlider";
+      enabled = true;
+      width = 50;
+    }
+    {
+      id = "brightnessSlider";
+      enabled = true;
+      width = 50;
+    }
+    {
+      id = "wifi";
+      enabled = true;
+      width = 50;
+    }
+    {
+      id = "bluetooth";
+      enabled = true;
+      width = 50;
+    }
+    {
+      id = "audioOutput";
+      enabled = true;
+      width = 50;
+    }
+    {
+      id = "audioInput";
+      enabled = true;
+      width = 50;
+    }
+    {
+      id = "nightMode";
+      enabled = true;
+      width = 50;
+    }
+    {
+      id = "darkMode";
+      enabled = true;
+      width = 50;
+    }
   ];
 
   # Workspaces
@@ -185,9 +217,18 @@
   cursorSettings = {
     theme = "System Default";
     size = 24;
-    niri = { hideWhenTyping = false; hideAfterInactiveMs = 0; };
-    hyprland = { hideOnKeyPress = false; hideOnTouch = false; inactiveTimeout = 0; };
-    dwl = { cursorHideTimeout = 0; };
+    niri = {
+      hideWhenTyping = false;
+      hideAfterInactiveMs = 0;
+    };
+    hyprland = {
+      hideOnKeyPress = false;
+      hideOnTouch = false;
+      inactiveTimeout = 0;
+    };
+    dwl = {
+      cursorHideTimeout = 0;
+    };
   };
 
   launcherLogoMode = "apps";
@@ -357,7 +398,14 @@
   # Power menu
   powerActionConfirm = true;
   powerActionHoldDuration = 0.5;
-  powerMenuActions = [ "reboot" "logout" "poweroff" "lock" "suspend" "restart" ];
+  powerMenuActions = [
+    "reboot"
+    "logout"
+    "poweroff"
+    "lock"
+    "suspend"
+    "restart"
+  ];
   powerMenuDefaultAction = "logout";
   powerMenuGridLayout = false;
   customPowerActionLock = "";
@@ -391,11 +439,32 @@
       name = "Main Bar";
       enabled = true;
       position = 0;
-      screenPreferences = [ { name = "VGA-1"; model = "C27R50x"; } ];
+      screenPreferences = [
+        {
+          name = "VGA-1";
+          model = "C27R50x";
+        }
+      ];
       showOnLastDisplay = true;
-      leftWidgets = [ "launcherButton" "workspaceSwitcher" "focusedWindow" ];
-      centerWidgets = [ "music" "clock" "weather" ];
-      rightWidgets = [ "systemTray" "clipboard" "cpuUsage" "memUsage" "notificationButton" "battery" "controlCenterButton" ];
+      leftWidgets = [
+        "launcherButton"
+        "workspaceSwitcher"
+        "focusedWindow"
+      ];
+      centerWidgets = [
+        "music"
+        "clock"
+        "weather"
+      ];
+      rightWidgets = [
+        "systemTray"
+        "clipboard"
+        "cpuUsage"
+        "memUsage"
+        "notificationButton"
+        "battery"
+        "controlCenterButton"
+      ];
       spacing = 0;
       innerPadding = 2;
       bottomGap = -10;
@@ -439,7 +508,19 @@
   desktopClockStyle = "analog";
   desktopClockTransparency = 0.8;
   desktopClockColorMode = "primary";
-  desktopClockCustomColor = { r = 1; g = 1; b = 1; a = 1; hsvHue = -1; hsvSaturation = 0; hsvValue = 1; hslHue = -1; hslSaturation = 0; hslLightness = 1; valid = true; };
+  desktopClockCustomColor = {
+    r = 1;
+    g = 1;
+    b = 1;
+    a = 1;
+    hsvHue = -1;
+    hsvSaturation = 0;
+    hsvValue = 1;
+    hslHue = -1;
+    hslSaturation = 0;
+    hslLightness = 1;
+    valid = true;
+  };
   desktopClockShowDate = true;
   desktopClockShowAnalogNumbers = false;
   desktopClockShowAnalogSeconds = true;
@@ -453,7 +534,19 @@
   systemMonitorShowHeader = true;
   systemMonitorTransparency = 0.8;
   systemMonitorColorMode = "primary";
-  systemMonitorCustomColor = { r = 1; g = 1; b = 1; a = 1; hsvHue = -1; hsvSaturation = 0; hsvValue = 1; hslHue = -1; hslSaturation = 0; hslLightness = 1; valid = true; };
+  systemMonitorCustomColor = {
+    r = 1;
+    g = 1;
+    b = 1;
+    a = 1;
+    hsvHue = -1;
+    hsvSaturation = 0;
+    hsvValue = 1;
+    hslHue = -1;
+    hslSaturation = 0;
+    hslLightness = 1;
+    valid = true;
+  };
   systemMonitorShowCpu = true;
   systemMonitorShowCpuGraph = true;
   systemMonitorShowCpuTemp = true;

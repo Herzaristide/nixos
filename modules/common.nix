@@ -19,7 +19,10 @@
     nixpkgs.config.allowUnfree = true;
 
     # Required by nixd (Nix IDE) when evaluating flake-based options/expressions.
-    nix.settings.experimental-features = [ "nix-command" "flakes" ];
+    nix.settings.experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
 
     # Timezone and locale
     time.timeZone = "Europe/Paris";
@@ -115,7 +118,17 @@
       isNormalUser = true;
       description = "aristide";
       shell = pkgs.fish;
-      extraGroups = [ "networkmanager" "wheel" "docker" "video" "render" "podman" "audio" "storage" "greeter" ];
+      extraGroups = [
+        "networkmanager"
+        "wheel"
+        "docker"
+        "video"
+        "render"
+        "podman"
+        "audio"
+        "storage"
+        "greeter"
+      ];
     };
 
     # Docker
@@ -129,9 +142,9 @@
 
     # Podman
     virtualisation.podman = {
-     enable = true;
-     dockerCompat = false;
-     defaultNetwork.settings.dns_enabled = true;
+      enable = true;
+      dockerCompat = false;
+      defaultNetwork.settings.dns_enabled = true;
     };
 
     # System state version
@@ -143,8 +156,16 @@
       extraSpecialArgs = {
         inherit inputs;
         head = config.head;
-        wallpaperPath = if config.head then ((config.theme or { initialWallpaper = null; }).initialWallpaper or null) else null;
-        wallpaperFolder = if config.head then ((config.theme or { wallpaperFolder = "wallpapers"; }).wallpaperFolder or "wallpapers") else "wallpapers";
+        wallpaperPath =
+          if config.head then
+            ((config.theme or { initialWallpaper = null; }).initialWallpaper or null)
+          else
+            null;
+        wallpaperFolder =
+          if config.head then
+            ((config.theme or { wallpaperFolder = "wallpapers"; }).wallpaperFolder or "wallpapers")
+          else
+            "wallpapers";
       };
       users.aristide = import ../home/home.nix;
     };
