@@ -84,6 +84,12 @@ let
         };
       };
     };
+    "editor.tabSize" = 4;
+    "editor.insertSpaces" = false;
+    "editor.tabSizeType" = "fixed";
+    "editor.detectIndentation" = false;
+    "editor.wordWrap" = "on";
+    "workbench.editor.wrapTabs" = true;
     "sonarlint.pathToNodeExecutable" = "${pkgs.nodejs_22}/bin/node";
     "window.openFoldersInNewWindow" = "on";
     "workbench.activityBar.location" = "top";
