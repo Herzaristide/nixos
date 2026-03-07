@@ -67,11 +67,11 @@
         "specialWorkspaceOut, 1, 8, default, slidevert bottom"
       ];
 
-      # Monitors: HDMI-A-1 (externe, primaire), eDP-1 (intégré laptop, secondaire)
-      # Quand HDMI débranché: eDP-1 seul (fallback). eDP-1 peut passer en veille (DPMS).
+      # Monitors: HDMI-A-1 preferred when plugged, eDP-1 fallback when HDMI unplugged
+      # Order matters: first = primary. HDMI at 0x0; eDP auto when both connected.
       monitor = [
         "HDMI-A-1,1920x1080@60,0x0,1.33"
-        "eDP-1,preferred,auto,1.33"
+        "eDP-1,preferred,auto-left,1.33"
         ",preferred,auto,1.33"
       ];
 

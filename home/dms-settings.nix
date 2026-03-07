@@ -440,9 +440,14 @@
       enabled = true;
       position = 0;
       maxWorkspaceIcons = 5;
+      # HDMI when plugged, else eDP-1 (laptop built-in). Order = priority.
       screenPreferences = [
         {
-          name = "preferred";
+          name = "HDMI-A-1";
+          model = "";
+        }
+        {
+          name = "eDP-1";
           model = "";
         }
       ];
