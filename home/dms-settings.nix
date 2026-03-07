@@ -34,7 +34,7 @@
   padHours12Hour = false;
   useFahrenheit = false;
   windSpeedUnit = "kmh";
-  nightModeEnabled = false;
+  nightModeEnabled = true;
 
   # Animations
   animationSpeed = 1;
@@ -293,7 +293,7 @@
   gtkThemingEnabled = false;
   qtThemingEnabled = false;
   syncModeWithPortal = true;
-  terminalsAlwaysDark = false;
+  terminalsAlwaysDark = true;
   runDmsMatugenTemplates = true;
   matugenTemplateGtk = true;
   matugenTemplateNiri = true;
@@ -439,10 +439,11 @@
       name = "Main Bar";
       enabled = true;
       position = 0;
+      maxWorkspaceIcons = 5;
       screenPreferences = [
         {
-          name = "VGA-1";
-          model = "C27R50x";
+          name = "preferred";
+          model = "";
         }
       ];
       showOnLastDisplay = true;

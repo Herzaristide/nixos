@@ -11,9 +11,14 @@
   services.gvfs.enable = true;
 
   # XDG Portal (for file picker, screen sharing in Hyprland)
+  # xdg-desktop-portal-gtk exposes color-scheme (dark mode) to Chrome/Gemini, etc.
+  # xdph alone doesn't implement the appearance protocol
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
+    extraPortals = [
+      pkgs.xdg-desktop-portal-hyprland
+      pkgs.xdg-desktop-portal-gtk
+    ];
     config.common.default = "*";
   };
 
@@ -26,6 +31,16 @@
     compositor.name = "hyprland";
     configHome = "/home/aristide";
   };
+
+  # Steam — gaming (Proton for Windows games like TemTem)
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;
+    dedicatedServer.openFirewall = true;
+  };
+
+  # GameMode — CPU/GPU optimizations when running games
+  programs.gamemode.enable = true;
 
   # greetd autologin (bypasses greeter, starts Hyprland directly)
   services.greetd.settings = rec {

@@ -138,6 +138,14 @@
     };
   };
 
+  # Dark mode by default (GTK, GNOME apps, XDG portal)
+  dconf.settings."org/gnome/desktop/interface" = {
+    color-scheme = "prefer-dark";
+  };
+  gtk.gtk3.extraConfig = {
+    "gtk-application-prefer-dark-theme" = true;
+  };
+
   # Headful (GUI) packages for desktop/laptop systems
   # adw-gtk3, qt6ct: required for DMS matugen GTK/Qt application theming
   home.packages = with pkgs; [
