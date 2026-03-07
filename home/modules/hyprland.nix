@@ -67,22 +67,22 @@
         "specialWorkspaceOut, 1, 8, default, slidevert bottom"
       ];
 
-      # Monitors: HDMI-A-1 left (horizontal), VGA-1 right, côte à côte sans gap
-      # HDMI: 1920x1080 horizontal, scale 1.33 → logical 1444×812
-      # VGA: 1920x1080, scale 1.33 → logical 1444×812. Pos x=1444 (à droite de HDMI), y=0 (aligned)
+      # Monitors: HDMI-A-1 (externe, primaire), eDP-1 (intégré laptop, secondaire)
+      # Quand HDMI débranché: eDP-1 seul (fallback). eDP-1 peut passer en veille (DPMS).
       monitor = [
         "HDMI-A-1,1920x1080@60,0x0,1.33"
-        #"VGA-1,1920x1080@60,1444x0,1.33"
+        "eDP-1,preferred,auto,1.33"
         ",preferred,auto,1.33"
       ];
 
       # Autostart: DMS starts via systemd (replaces Waybar)
       exec-once = [ ];
 
-      # Workspaces: 0 = left (HDMI), 1–5 = main (VGA). special:gemini = overlay (scratchpad)
+      # Workspaces: 1 = HDMI (externe), 2 = preferred/eDP-1. special:gemini = overlay (scratchpad)
       workspace = [
         "1, monitor:HDMI-A-1"
         "2, monitor:preferred"
+        "3, monitor:eDP-1"
         "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:80 200 80 200, gapsin:30"
       ];
 
