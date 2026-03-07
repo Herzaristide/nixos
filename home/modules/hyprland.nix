@@ -67,13 +67,13 @@
         "specialWorkspaceOut, 1, 8, default, slidevert bottom"
       ];
 
-      # Monitors: HDMI-A-1 left (portrait), VGA-1 right, côte à côte sans gap
-      # HDMI: 1920x1080 portrait, scale 1.33 → logical 812×1444
-      # VGA: 1920x1080, scale 1.33 → logical 1444×812. Pos x=812 (à droite de HDMI), y centré: 722-406=316
+      # Monitors: HDMI-A-1 left (horizontal), VGA-1 right, côte à côte sans gap
+      # HDMI: 1920x1080 horizontal, scale 1.33 → logical 1444×812
+      # VGA: 1920x1080, scale 1.33 → logical 1444×812. Pos x=1444 (à droite de HDMI), y=0 (aligned)
       monitor = [
-        "HDMI-A-1,1920x1080@60,0x0,1.33,transform,1"
-        "VGA-1,1920x1080@60,812x316,1.33"
-        ",preferred,auto,1"
+        "HDMI-A-1,1920x1080@60,0x0,1.33"
+        #"VGA-1,1920x1080@60,1444x0,1.33"
+        ",preferred,auto,1.33"
       ];
 
       # Autostart: DMS starts via systemd (replaces Waybar)
@@ -81,12 +81,8 @@
 
       # Workspaces: 0 = left (HDMI), 1–5 = main (VGA). special:gemini = overlay (scratchpad)
       workspace = [
-        "0, monitor:HDMI-A-1"
-        "1, monitor:VGA-1"
-        "2, monitor:VGA-1"
-        "3, monitor:VGA-1"
-        "4, monitor:VGA-1"
-        "5, monitor:VGA-1"
+        "1, monitor:HDMI-A-1"
+        "2, monitor:preferred"
         "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:80 200 80 200, gapsin:30"
       ];
 

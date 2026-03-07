@@ -65,6 +65,7 @@
     # System-level packages
     environment.systemPackages = with pkgs; [
       # Monitoring & diagnostics
+      upower
       htop
       btop
       iotop
@@ -128,6 +129,7 @@
         "audio"
         "storage"
         "greeter"
+        "gamemode"
       ];
     };
 
