@@ -9,30 +9,7 @@
 {
   imports = [
     ./modules/hyprland.nix
-    inputs.dms.homeModules.dank-material-shell
-    inputs.danksearch.homeModules.dsearch
   ];
-
-  programs.dank-material-shell = {
-    enable = true;
-    systemd = {
-      enable = true;
-      restartIfChanged = true;
-    };
-    # Core features
-    enableSystemMonitoring = true; # System monitoring widgets (dgop)
-    enableVPN = true; # VPN management widget
-    enableDynamicTheming = true; # Wallpaper-based theming (matugen)
-    enableAudioWavelength = true; # Audio visualizer (cava)
-    enableCalendarEvents = true; # Calendar integration (khal)
-    enableClipboardPaste = true; # Pasting items from the clipboard (wtype)
-
-    # Full DMS settings from ~/.config/DankMaterialShell/settings.json.bak
-    # Override showDock and appLauncherViewMode to match live preferences
-    settings = (import ./dms-settings.nix) // { };
-  };
-
-  programs.dsearch.enable = true;
 
   # Mouse cursor theme (Hyprland, GTK apps)
   home.pointerCursor = {
@@ -198,6 +175,6 @@
 
   # Set environment variables for Cursor/VSCode to use Firefox for opening links
   home.sessionVariables = {
-    BROWSER = "firefox";
+    BROWSER = "google-chrome";
   };
 }
