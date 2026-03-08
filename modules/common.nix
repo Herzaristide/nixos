@@ -107,6 +107,9 @@
       gcc
 
       # Container & k8s tools
+      kubectl
+      helm
+      k9s
       podman-compose
       ollama # CLI pour ollama pull/run
 
@@ -158,16 +161,6 @@
       extraSpecialArgs = {
         inherit inputs;
         head = config.head;
-        wallpaperPath =
-          if config.head then
-            ((config.theme or { initialWallpaper = null; }).initialWallpaper or null)
-          else
-            null;
-        wallpaperFolder =
-          if config.head then
-            ((config.theme or { wallpaperFolder = "wallpapers"; }).wallpaperFolder or "wallpapers")
-          else
-            "wallpapers";
       };
       users.aristide = import ../home/home.nix;
     };
