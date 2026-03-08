@@ -23,19 +23,6 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Networking - static IP (adjust interface with `ip link`, gateway and subnet to match your LAN)
-  networking.networkmanager.enable = false;
-  networking.useDHCP = false;
-  networking.defaultGateway = "192.168.1.1";
-  networking.nameservers = [ "192.168.1.1" "8.8.8.8" ];
-  networking.interfaces.eno1 = {
-    useDHCP = false;
-    ipv4.addresses = [{
-      address = "192.168.1.10";
-      prefixLength = 24;
-    }];
-  };
-
   # SSH - allow password authentication
   services.openssh = {
     enable = true;
