@@ -32,12 +32,19 @@
 
   # SDDM display manager (login screen)
   # Prefer HDMI over integrated: NVIDIA (card1) drives HDMI, Intel (card0) drives eDP on zola
+  # This ensures external monitors work even when lid is closed
   services.displayManager.environment = {
     WLR_DRM_DEVICES = "/dev/dri/card1:/dev/dri/card0";
   };
   services.displayManager.sddm = {
     enable = true;
     wayland.enable = true;
+    # Show greeter on all available monitors (important for laptop with lid closed)
+    settings = {
+      General = {
+        DisplayServer = "wayland";
+      };
+    };
   };
   services.displayManager.defaultSession = "hyprland";
 

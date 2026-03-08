@@ -104,7 +104,6 @@
         "$mod, bracketleft, focusmonitor, -1"
         "$mod, bracketright, focusmonitor, +1"
         # Workspaces: 0 = left monitor, 1–5 = main (AZERTY: & é " ' ( = 1 2 3 4 5)
-        "$mod, 0, workspace, 0"
         "$mod, ampersand, workspace, 1"
         "$mod, eacute, workspace, 2"
         "$mod, quotedbl, workspace, 3"
@@ -122,6 +121,13 @@
       bindm = [
         "$mod, mouse:272, movewindow"
         "$mod, mouse:273, resizewindow"
+      ];
+
+      # Lid switch handling: disable laptop display when lid closed
+      # Note: This uses the switch: syntax which requires Hyprland 0.45+
+      bindl = [
+        ", switch:on:Lid Switch, exec, hyprctl keyword monitor 'eDP-1,disable'"
+        ", switch:off:Lid Switch, exec, hyprctl keyword monitor 'eDP-1,preferred,auto-left,1.33'"
       ];
     };
   };
