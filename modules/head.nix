@@ -31,6 +31,10 @@
   services.xserver.enable = true;
 
   # SDDM display manager (login screen)
+  # Prefer HDMI over integrated: NVIDIA (card1) drives HDMI, Intel (card0) drives eDP on zola
+  services.displayManager.environment = {
+    WLR_DRM_DEVICES = "/dev/dri/card1:/dev/dri/card0";
+  };
   services.displayManager.sddm = {
     enable = true;
     wayland.enable = true;
@@ -52,7 +56,6 @@
     layout = "fr";
     variant = "";
   };
-  console.keyMap = "fr";
 
   # Audio
   services.pulseaudio.enable = false;
