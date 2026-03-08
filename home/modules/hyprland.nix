@@ -78,12 +78,12 @@
       # Autostart: DMS starts via systemd (replaces Waybar)
       exec-once = [ ];
 
-      # Workspaces: 1 = HDMI (externe), 2 = preferred/eDP-1. special:gemini = overlay (scratchpad)
+      # Workspaces: 1 = HDMI (externe), 2 = preferred/eDP-1. special:claude = overlay (scratchpad)
       workspace = [
         "1, monitor:HDMI-A-1"
         "2, monitor:preferred"
         "3, monitor:eDP-1"
-        "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:80 200 80 200, gapsin:30"
+        "special:claude, on-created-empty:hypr-claude-launch, gapsout:80 200 80 200, gapsin:30"
       ];
 
       # Minimal binds - terminal, apps
@@ -91,8 +91,6 @@
         "$mod, Return, exec, ghostty"
         "$mod, C, exec, cursor"
         "$mod, B, exec, bash -c 'google-chrome-stable --user-data-dir=$HOME/.config/google-chrome-$(hostname)'"
-        "$mod, L, exec, bandlab-chrome"
-        "$mod, E, exec, eraser--chrome"
         "$mod, Q, killactive"
         "$mod, P, pseudo"
         "$mod, J, togglesplit"
@@ -115,8 +113,8 @@
         "$mod, 3, workspace, 3"
         "$mod, 4, workspace, 4"
         "$mod, 5, workspace, 5"
-        # Workspace spécial Gemini (Super+G) – s'affiche en overlay
-        "$mod, G, togglespecialworkspace, gemini"
+        # Workspace spécial Claude (Super+G) – s'affiche en overlay
+        "$mod, G, togglespecialworkspace, claude"
       ];
 
       bindm = [

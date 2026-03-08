@@ -45,9 +45,9 @@
   # X11 video drivers
   services.xserver.videoDrivers = [ "nvidia" ];
 
-  # Environment variables for NVIDIA
+  # Environment variables for NVIDIA + Intel VA-API for video (Chrome, etc.)
   environment.variables = {
-    LIBVA_DRIVER_NAME = "nvidia"; # Hardware video acceleration
+    LIBVA_DRIVER_NAME = "iHD"; # Use Intel iGPU for video decode - avoids nvidia-vaapi bugs in Chrome
     XDG_SESSION_TYPE = "wayland"; # Force Wayland
     GBM_BACKEND = "nvidia-drm"; # Graphics backend for Wayland
     __GLX_VENDOR_LIBRARY_NAME = "nvidia"; # Use Nvidia driver for GLX
@@ -98,6 +98,7 @@
       # package = nvidiaDriverChannel; # Uncomment and define if using custom driver channel
       enable32Bit = true;
       extraPackages = with pkgs; [
+        intel-media-driver # Chrome video decode on Intel iGPU (avoids nvidia-vaapi bugs)
         nvidia-vaapi-driver
         libva-vdpau-driver
         libvdpau-va-gl
