@@ -10,7 +10,6 @@
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.default
     ../../modules/common.nix
-    ../../modules/head.nix
   ];
 
   # Hostname
