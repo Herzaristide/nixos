@@ -3,6 +3,14 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    claude-desktop = {
+      url = "github:k3d3/claude-desktop-linux-flake";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
     dms = {
       url = "github:AvengeMedia/DankMaterialShell/stable";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -29,34 +37,45 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, nixos-wsl, musnix, dms, danksearch, ... }@inputs: let
-    system = "x86_64-linux";
-  in {
-    nixosConfigurations = {
-      zola = nixpkgs.lib.nixosSystem {
-        inherit system;
-        modules = [
-          ./hosts/zola/configuration.nix
-        ];
-        specialArgs = { inherit inputs; };
-      };
+  outputs =
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      nixos-wsl,
+      musnix,
+      dms,
+      danksearch,
+      ...
+    }@inputs:
+    let
+      system = "x86_64-linux";
+    in
+    {
+      nixosConfigurations = {
+        zola = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./hosts/zola/configuration.nix
+          ];
+          specialArgs = { inherit inputs; };
+        };
 
-      gary = nixpkgs.lib.nixosSystem {
-        inherit system;
-        modules = [
-          ./hosts/gary/configuration.nix
-        ];
-        specialArgs = { inherit inputs; };
-      };
+        gary = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./hosts/gary/configuration.nix
+          ];
+          specialArgs = { inherit inputs; };
+        };
 
-      exupery = nixpkgs.lib.nixosSystem {
-        inherit system;
-        modules = [
-          ./hosts/exupery/configuration.nix
-        ];
-        specialArgs = { inherit inputs; };
+        exupery = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./hosts/exupery/configuration.nix
+          ];
+          specialArgs = { inherit inputs; };
+        };
       };
     };
-  };
 }
-

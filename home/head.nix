@@ -149,6 +149,7 @@
   # Headful (GUI) packages for desktop/laptop systems
   # adw-gtk3, qt6ct: required for DMS matugen GTK/Qt application theming
   home.packages = with pkgs; [
+    inputs.claude-desktop.packages.${pkgs.system}.default
     adw-gtk3
     qt6Packages.qt6ct
     dgop
@@ -159,18 +160,9 @@
     google-chrome
     firefox
     ghostty
-    (writeShellScriptBin "hypr-gemini-launch" ''
-      google-chrome-stable --app=https://gemini.google.com --user-data-dir="$HOME/.config/google-chrome-$(hostname)" &
-      ghostty --class=gemini-term &
-    '')
-    (writeShellScriptBin "gemini-chrome" ''
-      exec google-chrome-stable --app=https://gemini.google.com --user-data-dir="$HOME/.config/google-chrome-$(hostname)"
-    '')
-    (writeShellScriptBin "bandlab-chrome" ''
-      exec google-chrome-stable --app=https://www.bandlab.com --user-data-dir="$HOME/.config/google-chrome-$(hostname)"
-    '')
-    (writeShellScriptBin "eraser-chrome" ''
-      exec google-chrome-stable --app=https://app.eraser.io --user-data-dir="$HOME/.config/google-chrome-$(hostname)"
+    (writeShellScriptBin "hypr-claude-launch" ''
+      claude-desktop &
+      ghostty --class=claude-term &
     '')
   ];
 
@@ -190,33 +182,6 @@
     };
   };
 
-  # Gemini webapp (Chrome in app mode)
-  xdg.desktopEntries.gemini = {
-    name = "Gemini";
-    comment = "Google Gemini AI";
-    exec = "gemini-chrome";
-    icon = "google-chrome";
-    categories = [
-      "Network"
-      "Chat"
-    ];
-    startupNotify = true;
-  };
-
-  # BandLab PWA (Chrome in app mode)
-  xdg.desktopEntries.bandlab = {
-    name = "BandLab";
-    comment = "Music Maker & Audio Editor";
-    exec = "bandlab-chrome";
-    icon = "google-chrome";
-    categories = [
-      "Audio"
-      "Music"
-      "Network"
-    ];
-    startupNotify = true;
-  };
-
   # Online Accounts - add Google Drive for Nautilus (opens GNOME Settings → Online Accounts)
   xdg.desktopEntries.online-accounts = {
     name = "Online Accounts";
@@ -226,20 +191,6 @@
     categories = [
       "Settings"
       "System"
-    ];
-    startupNotify = true;
-  };
-
-  # Eraser PWA (Chrome in app mode) - diagrams & docs for engineering teams
-  xdg.desktopEntries.eraser = {
-    name = "Eraser";
-    comment = "AI co-pilot for technical design and documentation";
-    exec = "eraser-chrome";
-    icon = "google-chrome";
-    categories = [
-      "Development"
-      "Graphics"
-      "Network"
     ];
     startupNotify = true;
   };
