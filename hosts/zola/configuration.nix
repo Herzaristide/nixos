@@ -27,6 +27,14 @@
   # Networking
   networking.networkmanager.enable = true;
 
+  # Lid close handling: don't suspend when docked with external monitors
+  # When lid is closed, systemd-logind will ignore it (Hyprland handles display disable)
+  services.logind = {
+    lidSwitch = "ignore"; # Don't suspend on lid close (let Hyprland handle it)
+    lidSwitchDocked = "ignore"; # Also ignore when docked
+    lidSwitchExternalPower = "ignore"; # Ignore when on AC power
+  };
+
   # SSH - allow password authentication
   services.openssh = {
     enable = true;
