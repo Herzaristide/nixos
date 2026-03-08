@@ -23,6 +23,23 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Static IP (systemd-networkd; disable NetworkManager for declarative config)
+  networking.networkmanager.enable = true;
+  networking.useDHCP = false;
+  networking.interfaces.eth0 = {
+    ipv4.addresses = [
+      {
+        address = "192.168.1.100";
+        prefixLength = 24;
+      }
+    ];
+  };
+  networking.defaultGateway = "192.168.1.1";
+  networking.nameservers = [
+    "192.168.1.1"
+    "8.8.8.8"
+  ];
+
   # SSH - allow password authentication
   services.openssh = {
     enable = true;
