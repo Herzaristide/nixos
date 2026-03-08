@@ -1,4 +1,9 @@
-{ config, pkgs, inputs, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}:
 
 {
   imports = [
@@ -39,7 +44,7 @@
     "nvidia.NVreg_PreserveVideoMemoryAllocations=1" # Improves resume after sleep
     "nvidia.NVreg_RegistryDwords=PowerMizerEnable=0x1;PerfLevelSrc=0x2222;PowerMizerLevel=0x3;PowerMizerDefault=0x3;PowerMizerDefaultAC=0x3" # Performance/power optimizations
   ];
-  boot.blacklistedKernelModules = ["nouveau"];
+  boot.blacklistedKernelModules = [ "nouveau" ];
 
   # X11 video drivers
   services.xserver.videoDrivers = [ "nvidia" ];
@@ -80,8 +85,7 @@
         # Optimized configuration for switchable graphics laptops
         offload = {
           enable = false; # Mode optimized for power saving
-          enableOffloadCmd =
-            false; # Allows running applications with dedicated GPU
+          enableOffloadCmd = false; # Allows running applications with dedicated GPU
         };
         # sync.enable disabled as offload is generally better for laptops
         sync.enable = true;
@@ -119,7 +123,7 @@
 
   # Nix cache for CUDA
   nix.settings = {
-    substituters = ["https://cuda-maintainers.cachix.org"];
+    substituters = [ "https://cuda-maintainers.cachix.org" ];
     trusted-public-keys = [
       "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
     ];

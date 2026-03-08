@@ -24,6 +24,9 @@
       "flakes"
     ];
 
+    # Virtual console (TTY) — French AZERTY for all hosts
+    console.keyMap = "fr";
+
     # Timezone and locale
     time.timeZone = "Europe/Paris";
     i18n.defaultLocale = "en_US.UTF-8";
