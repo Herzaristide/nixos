@@ -151,6 +151,7 @@
   home.packages = with pkgs; [
     inputs.claude-desktop.packages.${pkgs.system}.default
     adw-gtk3
+    discord
     qt6Packages.qt6ct
     dgop
     nautilus
