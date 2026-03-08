@@ -26,7 +26,7 @@
   # Static IP (systemd-networkd; disable NetworkManager for declarative config)
   networking.networkmanager.enable = true;
   networking.useDHCP = false;
-  networking.interfaces.eth0 = {
+  networking.interfaces.wlp39s0 = {
     ipv4.addresses = [
       {
         address = "192.168.1.100";
