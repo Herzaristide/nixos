@@ -75,14 +75,16 @@
         ",preferred,auto,1.33"
       ];
 
-      # Autostart: DMS starts via systemd (replaces Waybar)
-      exec-once = [ ];
+      # Autostart: Quickshell bar at bottom
+      exec-once = [ "qs -p ${config.xdg.configHome}/quickshell/bar.qml" ];
 
-      # Workspaces: 1 = HDMI (externe), 2 = preferred/eDP-1. special:claude = overlay (scratchpad)
+      # Workspaces: 1–5 on same screen (HDMI when plugged, eDP fallback when not)
       workspace = [
-        "1, monitor:HDMI-A-1"
+        "1, monitor:preferred"
         "2, monitor:preferred"
-        "3, monitor:eDP-1"
+        "3, monitor:preferred"
+        "4, monitor:preferred"
+        "5, monitor:preferred"
         "special:claude, on-created-empty:hypr-claude-launch, gapsout:80 200 80 200, gapsin:30"
       ];
 
