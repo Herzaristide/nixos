@@ -1,4 +1,9 @@
-{ config, pkgs, inputs, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}:
 
 {
   imports = [
@@ -25,12 +30,12 @@
   # X11 (for XWayland) and Hyprland
   services.xserver.enable = true;
 
-  # DMS Greeter (greetd + dms-greeter) — replaces GDM
-  programs.dank-material-shell.greeter = {
+  # SDDM display manager (login screen)
+  services.displayManager.sddm = {
     enable = true;
-    compositor.name = "hyprland";
-    configHome = "/home/aristide";
+    wayland.enable = true;
   };
+  services.displayManager.defaultSession = "hyprland";
 
   # Steam — gaming (Proton for Windows games like TemTem)
   programs.steam = {
@@ -41,17 +46,6 @@
 
   # GameMode — CPU/GPU optimizations when running games
   programs.gamemode.enable = true;
-
-  # greetd autologin (bypasses greeter, starts Hyprland directly)
-  services.greetd.settings = rec {
-    initial_session = {
-      command = "${config.programs.hyprland.package}/bin/Hyprland";
-      user = "aristide";
-    };
-    default_session = {
-      user = "aristide";
-    };
-  };
 
   programs.hyprland.enable = true;
   services.xserver.xkb = {
@@ -94,4 +88,3 @@
   # Printing
   services.printing.enable = true;
 }
-

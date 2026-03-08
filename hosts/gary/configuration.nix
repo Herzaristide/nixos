@@ -70,6 +70,8 @@
   services.k3s = {
     enable = true;
     role = "server";
-    openFirewall = true; # Allow API (6443) for remote kubectl
   };
+
+  # Allow K3s API (6443) for remote kubectl (k3s has no openFirewall option)
+  networking.firewall.allowedTCPPorts = [ 6443 ];
 }
