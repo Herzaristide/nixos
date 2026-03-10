@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sudo parted:*)",
+      "Bash(sudo mkfs.ext4:*)",
+      "Bash(blkid:*)",
+      "Bash(nixfmt:*)"
+    ]
+  }
+}

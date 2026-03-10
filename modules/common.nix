@@ -93,6 +93,7 @@
       iperf3 # bandwidth testing
 
       # Filesystem & disk
+      parted
       tree
       fd # fast find
       ripgrep # fast grep
