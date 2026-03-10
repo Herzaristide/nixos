@@ -61,6 +61,20 @@
     "nvidia_uvm"
   ];
 
+  # HDD mounts
+  fileSystems."/mnt/hdd1" = {
+    device = "/dev/disk/by-uuid/516f5bb5-72b9-47da-b6bb-7b193ac1cd86";
+    fsType = "ext4";
+  };
+  fileSystems."/mnt/hdd2" = {
+    device = "/dev/disk/by-uuid/c25498c3-b03c-43cc-8650-f8183873ceec";
+    fsType = "ext4";
+  };
+  fileSystems."/mnt/hdd3" = {
+    device = "/dev/disk/by-uuid/85a42e9c-ace0-4ecc-a04a-e2e722345d5c";
+    fsType = "ext4";
+  };
+
   # SSD maintenance — periodic TRIM
   services.fstrim.enable = true;
 
