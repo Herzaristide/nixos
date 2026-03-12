@@ -2,23 +2,35 @@
 
 {
   # Shared VSCode extensions list - used by both local VSCode and remote servers
-  extensions = with pkgs.vscode-extensions; [
-    ms-python.python
-    charliermarsh.ruff
-    sonarsource.sonarlint-vscode
-    dbaeumer.vscode-eslint
-    esbenp.prettier-vscode
-    mkhl.direnv
-    jnoortheen.nix-ide
-    arrterian.nix-env-selector
-    bradlc.vscode-tailwindcss
-    golang.go
-    hashicorp.terraform
-    rust-lang.rust-analyzer
-    ms-azuretools.vscode-containers
-    ms-azuretools.vscode-docker
-    anthropic.claude-code
-  ];
+  extensions =
+    with pkgs.vscode-extensions;
+    [
+      ms-python.python
+      charliermarsh.ruff
+      sonarsource.sonarlint-vscode
+      dbaeumer.vscode-eslint
+      esbenp.prettier-vscode
+      mkhl.direnv
+      jnoortheen.nix-ide
+      arrterian.nix-env-selector
+      bradlc.vscode-tailwindcss
+      golang.go
+      hashicorp.terraform
+      rust-lang.rust-analyzer
+      ms-azuretools.vscode-containers
+      ms-azuretools.vscode-docker
+      anthropic.claude-code
+      bierner.markdown-mermaid
+    ]
+    ++ [
+      # Extensions from marketplace (not in nixpkgs)
+      (pkgs.vscode-utils.extensionFromVscodeMarketplace {
+        name = "vscode-mermaid-chart";
+        publisher = "MermaidChart";
+        version = "2.6.0";
+        sha256 = "sha256-tgZokvZLlzj2/CQt8q1e1EK/rLfLgL/dNt9cbfwmxOk=";
+      })
+    ];
 
   # Shared VSCode settings - used by both local VSCode and remote servers
   settings = {
@@ -91,5 +103,27 @@
     "sonarlint.pathToNodeExecutable" = "${pkgs.nodejs_22}/bin/node";
     "window.openFoldersInNewWindow" = "on";
     "workbench.activityBar.location" = "top";
+    "mcp" = {
+      "servers" = {
+        "context7" = {
+          "command" = "${pkgs.nodejs_22}/bin/npx";
+          "args" = [
+            "-y"
+            "@upstash/context7-mcp@latest"
+          ];
+        };
+        "playwright" = {
+          "command" = "${pkgs.nodejs_22}/bin/npx";
+          "args" = [ "@playwright/mcp@latest" ];
+        };
+        "docker" = {
+          "command" = "${pkgs.nodejs_22}/bin/npx";
+          "args" = [
+            "-y"
+            "@docker/mcp-server"
+          ];
+        };
+      };
+    };
   };
 }
