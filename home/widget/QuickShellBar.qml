@@ -1,8 +1,12 @@
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
+import Quickshell.Services.Pipewire
+import Quickshell.Services.SystemTray
 import QtQuick
 import QtQuick.Layouts
+
+import "components" as Components
 
 PanelWindow {
 	property var modelData
@@ -11,8 +15,10 @@ PanelWindow {
 	anchors.bottom: true
 	anchors.left: true
 	anchors.right: true
-	implicitHeight: 30
-	color: "#1a1b26"
+	implicitHeight: 44
+
+	// Autumn forest inspired colors matching wallpaper
+	color: "#1a1a1a"
 
 	// Get current monitor's active workspace
 	property var currentMonitor: {
@@ -27,91 +33,121 @@ PanelWindow {
 	}
 
 	property int activeWorkspaceId: currentMonitor?.activeWorkspace?.id ?? -1
+	property var activeWindow: currentMonitor?.activeWindow ?? null
+
+	// Glassmorphic background effect
+	Rectangle {
+		anchors.fill: parent
+		color: "transparent"
+
+		Rectangle {
+			anchors.fill: parent
+			color: "#1a1a1a"
+			opacity: 0.88
+		}
+
+		// Top border accent - autumn gradient
+		Rectangle {
+			anchors.top: parent.top
+			anchors.left: parent.left
+			anchors.right: parent.right
+			height: 2
+			gradient: Gradient {
+				orientation: Gradient.Horizontal
+				GradientStop { position: 0.0; color: "#DC143C" }
+				GradientStop { position: 0.33; color: "#FF6347" }
+				GradientStop { position: 0.66; color: "#FF7F50" }
+				GradientStop { position: 1.0; color: "#D2691E" }
+			}
+		}
+	}
 
 	RowLayout {
 		anchors.fill: parent
-		anchors.margins: 8
-		spacing: 8
+		anchors.leftMargin: 16
+		anchors.rightMargin: 16
+		anchors.topMargin: 6
+		anchors.bottomMargin: 6
+		spacing: 12
 
-		// Workspace buttons (1-5 as configured in hyprland.nix)
+		// Left section: Workspaces + Active Window
 		RowLayout {
-			spacing: 4
+			spacing: 12
+			Layout.fillWidth: false
 
-			Repeater {
-				model: 5
+			// Workspaces
+			Components.Workspaces {
+				activeWorkspaceId: parent.parent.parent.activeWorkspaceId
+			}
 
-				Rectangle {
-					required property int index
-					property int workspaceId: index + 1
-					property bool isActive: activeWorkspaceId === workspaceId
-					property bool hasWindows: {
-						const workspaces = Hyprland.workspaces
-						if (!workspaces) return false
-						for (let i = 0; i < workspaces.length; i++) {
-							if (workspaces[i].id === workspaceId && workspaces[i].windows.length > 0) {
-								return true
-							}
-						}
-						return false
-					}
+			// Separator
+			Rectangle {
+				Layout.preferredWidth: 1
+				Layout.preferredHeight: 24
+				color: "#4a4a4a"
+				opacity: 0.5
+			}
 
-					Layout.preferredWidth: 40
-					Layout.preferredHeight: 22
-					radius: 4
-					color: isActive ? "#7aa2f7" : "#414868"
-
-					Text {
-						anchors.centerIn: parent
-						text: parent.workspaceId
-						color: parent.isActive ? "#1a1b26" : "#a9b1d6"
-						font.pixelSize: 12
-						font.bold: parent.isActive
-					}
-
-					MouseArea {
-						anchors.fill: parent
-						cursorShape: Qt.PointingHandCursor
-						onClicked: {
-							Hyprland.dispatch("workspace", parent.workspaceId.toString())
-						}
-					}
-
-					// Indicator for workspaces with windows
-					Rectangle {
-						width: 4
-						height: 4
-						radius: 2
-						anchors.horizontalCenter: parent.horizontalCenter
-						anchors.bottom: parent.bottom
-						anchors.bottomMargin: 3
-						visible: parent.hasWindows
-						color: "#9ece6a"
-					}
-				}
+			// Active window title
+			Components.WindowTitle {
+				activeWindow: parent.parent.parent.activeWindow
 			}
 		}
 
 		Item { Layout.fillWidth: true }
 
-		// Monitor name
-		Text {
-			text: modelData.name
-			color: "#565f89"
-			font.pixelSize: 12
+		// Center section: System Tray
+		Components.SystemTrayComponent {
+			Layout.alignment: Qt.AlignCenter
 		}
 
-		// Clock
-		Text {
-			id: clock
-			color: "#a9b1d6"
-			font.pixelSize: 14
-			text: Qt.formatDateTime(new Date(), "HH:mm")
-			Timer {
-				interval: 1000
-				running: true
-				repeat: true
-				onTriggered: clock.text = Qt.formatDateTime(new Date(), "HH:mm")
+		Item { Layout.fillWidth: true }
+
+		// Right section: System info + Clock
+		RowLayout {
+			spacing: 8
+			Layout.fillWidth: false
+
+			// System stats
+			Components.SystemStats {}
+
+			// Separator
+			Rectangle {
+				Layout.preferredWidth: 1
+				Layout.preferredHeight: 24
+				color: "#4a4a4a"
+				opacity: 0.5
 			}
+
+			// Network
+			Components.Network {}
+
+			// Separator
+			Rectangle {
+				Layout.preferredWidth: 1
+				Layout.preferredHeight: 24
+				color: "#4a4a4a"
+				opacity: 0.5
+			}
+
+			// Audio
+			Components.Audio {}
+
+			// Battery (only on laptop)
+			Components.Battery {
+				visible: modelData.name.includes("eDP")
+			}
+
+			// Separator
+			Rectangle {
+				Layout.preferredWidth: 1
+				Layout.preferredHeight: 24
+				color: "#4a4a4a"
+				opacity: 0.5
+			}
+
+			// Clock
+			Components.Clock {}
 		}
 	}
 }

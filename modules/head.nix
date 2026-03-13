@@ -29,21 +29,21 @@
   # X11 (for XWayland) and Hyprland
   services.xserver.enable = true;
 
-  # DMS greeter (Dank Material Shell login screen) — replaces GDM
-  services.displayManager.dms-greeter = {
+  # Greetd with autologin directly to Hyprland (no greeter needed)
+  # Use start-hyprland, not Hyprland: the wrapper sets XDG vars, portals, screen sharing
+  services.greetd = {
     enable = true;
-    compositor = {
-      name = "hyprland";
-      customConfig = ''
-        input {
-          kb_layout = "fr";
-          kb_variant = "";
-        }
-      '';
+    settings = {
+      initial_session = {
+        command = "${config.programs.hyprland.package}/bin/start-hyprland";
+        user = "aristide";
+      };
+      default_session = {
+        command = "${config.programs.hyprland.package}/bin/start-hyprland";
+        user = "aristide";
+      };
     };
-    configHome = "/home/aristide"; # Sync DMS theme (matugen, settings) to greeter
   };
-  services.displayManager.defaultSession = "hyprland";
 
   # Steam — gaming (Proton for Windows games like TemTem)
   programs.steam = {

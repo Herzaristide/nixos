@@ -34,8 +34,8 @@
       bindel = , XF86MonBrightnessUp, exec, dms ipc call brightness increment 5
       bindel = , XF86MonBrightnessDown, exec, dms ipc call brightness decrement 5
       # Replaced by DMS: togglefloating on Shift+V, exit on Shift+M
-      bind = $mod, Shift+V, togglefloating
-      bind = $mod, Shift+M, exit
+      bind = $mod SHIFT, V, togglefloating
+      bind = $mod SHIFT, M, exit
       # DMS window rule
       # windowrulev2 = float, class:^(org.quickshell)$
     '';
@@ -78,6 +78,8 @@
       # Autostart: Quickshell bar at bottom, then switch to workspace 1
       exec-once = [
         "qs -p ${config.xdg.configHome}/quickshell/bar.qml"
+        "swww-daemon"
+        "swww img /etc/nixos/src/wallpaper.jpg --transition-type=fade"
       ];
 
       # Workspaces: 1–5 on same screen (HDMI when plugged, eDP fallback when not)
@@ -123,9 +125,10 @@
       ];
 
       # Lid switch handling: disable laptop display when lid closed, switch focus to HDMI
+      # Move workspaces 1–5 to HDMI first (otherwise they stay on disabled eDP and become unreachable)
       # Note: This uses the switch: syntax which requires Hyprland 0.45+
       bindl = [
-        ", switch:on:Lid Switch, exec, hyprctl keyword monitor 'eDP-1,disable' && hyprctl dispatch focusmonitor HDMI-A-1"
+        ", switch:on:Lid Switch, exec, sh -c 'for i in 1 2 3 4 5; do hyprctl dispatch moveworkspacetomonitor \$i HDMI-A-1; done; hyprctl keyword monitor \"eDP-1,disable\"; hyprctl dispatch focusmonitor HDMI-A-1'"
         ", switch:off:Lid Switch, exec, hyprctl keyword monitor 'eDP-1,preferred,auto-left,1.33'"
       ];
     };
