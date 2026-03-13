@@ -64,7 +64,8 @@
     ghostty
     material-symbols
     swww # Wallpaper daemon for Wayland
-    (writeShellScriptBin "hypr-claude-launch" "claude-desktop & wezterm")
+    (writeShellScriptBin "hypr-claude-launch"
+      "claude-pwa & wezterm")
     (writeShellScriptBin "claude-pwa"
       "google-chrome-stable --app=https://claude.ai --user-data-dir=$HOME/.config/google-chrome-$(hostname)")
   ];

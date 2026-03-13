@@ -13,24 +13,30 @@ RowLayout {
 	Rectangle {
 		Layout.preferredWidth: 28
 		Layout.preferredHeight: 28
-		radius: 14
-		color: audioMouseArea.containsMouse ? "#414868" : "transparent"
+		radius: 3
+		color: audioMouseArea.containsMouse ? "#1a1a1a" : "#0d0d0d"
+		border.color: audioMouseArea.containsMouse ? "#ffffff" : "#3a3a3a"
+		border.width: 2
 
 		Behavior on color {
+			ColorAnimation { duration: 150 }
+		}
+
+		Behavior on border.color {
 			ColorAnimation { duration: 150 }
 		}
 
 		Text {
 			anchors.centerIn: parent
 			text: {
-				if (muted || volume === 0) return "󰖁"
-				if (volume < 0.33) return "󰕿"
-				if (volume < 0.66) return "󰖀"
-				return "󰕾"
+				if (muted || volume === 0) return "volume_off"
+				if (volume < 0.33) return "volume_mute"
+				if (volume < 0.66) return "volume_down"
+				return "volume_up"
 			}
-			color: muted ? "#565f89" : "#9ece6a"
+			color: muted ? "#666666" : "#e0e0e0"
 			font.pixelSize: 16
-			font.family: "Material Design Icons"
+			font.family: "Material Symbols Rounded"
 		}
 
 		MouseArea {
@@ -56,7 +62,7 @@ RowLayout {
 
 	Text {
 		text: Math.round(volume * 100) + "%"
-		color: muted ? "#565f89" : "#a9b1d6"
+		color: muted ? "#666666" : "#e0e0e0"
 		font.pixelSize: 12
 		font.weight: Font.Medium
 	}

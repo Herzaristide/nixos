@@ -15,10 +15,16 @@ RowLayout {
 
 			Layout.preferredWidth: 32
 			Layout.preferredHeight: 32
-			radius: 16
-			color: trayMouseArea.containsMouse ? "#414868" : "transparent"
+			radius: 3
+			color: trayMouseArea.containsMouse ? "#1a1a1a" : "transparent"
+			border.color: trayMouseArea.containsMouse ? "#ffffff" : "transparent"
+			border.width: 2
 
 			Behavior on color {
+				ColorAnimation { duration: 150 }
+			}
+
+			Behavior on border.color {
 				ColorAnimation { duration: 150 }
 			}
 
@@ -38,7 +44,7 @@ RowLayout {
 			Text {
 				anchors.centerIn: parent
 				text: trayIcon.visible ? "" : (modelData.title?.substring(0, 1) ?? "?")
-				color: "#a9b1d6"
+				color: "#e0e0e0"
 				font.pixelSize: 12
 				font.weight: Font.Bold
 			}
