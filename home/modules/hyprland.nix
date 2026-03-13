@@ -92,9 +92,10 @@
 
       # Minimal binds - terminal, apps
       bind = [
-        "$mod, Return, exec, ghostty"
+        "$mod, Return, exec, wezterm"
         "$mod, C, exec, cursor"
         "$mod, B, exec, bash -c 'google-chrome-stable --user-data-dir=$HOME/.config/google-chrome-$(hostname)'"
+        "$mod, D, exec, discord"
         "$mod, Q, killactive"
         "$mod, P, pseudo"
         "$mod, J, togglesplit"
