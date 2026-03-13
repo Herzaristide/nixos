@@ -29,50 +29,11 @@
     "gtk-application-prefer-dark-theme" = true;
   };
 
-  # Quickshell bar (simple bottom bar)
-  xdg.configFile."quickshell/bar.qml" = {
-    text = ''
-      import Quickshell
-      import Quickshell.Wayland
-      import QtQuick
-      import QtQuick.Layouts
-
-      PanelWindow {
-        anchors.bottom: true
-        anchors.left: true
-        anchors.right: true
-        implicitHeight: 30
-        color: "#1a1b26"
-
-        RowLayout {
-          anchors.fill: parent
-          anchors.margins: 8
-          spacing: 8
-
-          Text {
-            text: "Quickshell"
-            color: "#a9b1d6"
-            font.pixelSize: 14
-          }
-
-          Item { Layout.fillWidth: true }
-
-          Text {
-            id: clock
-            color: "#a9b1d6"
-            font.pixelSize: 14
-            text: Qt.formatDateTime(new Date(), "HH:mm")
-            Timer {
-              interval: 1000
-              running: true
-              repeat: true
-              onTriggered: clock.text = Qt.formatDateTime(new Date(), "HH:mm")
-            }
-          }
-        }
-      }
-    '';
-  };
+  # Quickshell bar (workspace-enabled bottom bar)
+  # Creates bars on both HDMI-A-1 (external) and eDP-1 (laptop)
+  # Shows Hyprland workspaces 1-5 with click-to-switch functionality
+  xdg.configFile."quickshell/bar.qml".source = ./widget/bar.qml;
+  xdg.configFile."quickshell/QuickShellBar.qml".source = ./widget/QuickShellBar.qml;
 
   # Headful (GUI) packages for desktop/laptop systems
   # adw-gtk3, qt6ct: required for DMS matugen GTK/Qt application theming
