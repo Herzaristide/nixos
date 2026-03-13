@@ -17,18 +17,16 @@ RowLayout {
 	Rectangle {
 		Layout.preferredWidth: 28
 		Layout.preferredHeight: 28
-		radius: 14
+		radius: 3
 		visible: root.windowTitle !== ""
-
-		gradient: Gradient {
-			GradientStop { position: 0.0; color: "#7aa2f7" }
-			GradientStop { position: 1.0; color: "#2ac3de" }
-		}
+		color: "#0d0d0d"
+		border.color: "#ffffff"
+		border.width: 2
 
 		Text {
 			anchors.centerIn: parent
 			text: root.windowClass.length > 0 ? root.windowClass[0].toUpperCase() : ""
-			color: "#1a1b26"
+			color: "#ffffff"
 			font.pixelSize: 14
 			font.weight: Font.Bold
 		}
@@ -46,7 +44,7 @@ RowLayout {
 			id: titleText
 			anchors.verticalCenter: parent.verticalCenter
 			text: root.windowTitle
-			color: "#c0caf5"
+			color: "#e0e0e0"
 			font.pixelSize: 13
 			font.weight: Font.Medium
 			elide: Text.ElideRight
@@ -71,7 +69,7 @@ RowLayout {
 			gradient: Gradient {
 				orientation: Gradient.Horizontal
 				GradientStop { position: 0.0; color: "transparent" }
-				GradientStop { position: 1.0; color: "#16161e" }
+				GradientStop { position: 1.0; color: "#000000" }
 			}
 		}
 	}
@@ -80,7 +78,7 @@ RowLayout {
 	Text {
 		visible: root.windowTitle === ""
 		text: "Desktop"
-		color: "#565f89"
+		color: "#666666"
 		font.pixelSize: 12
 		font.italic: true
 	}

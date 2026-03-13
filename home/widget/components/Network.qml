@@ -7,28 +7,30 @@ RowLayout {
 	spacing: 6
 
 	property string networkStatus: "disconnected"
-	property string networkIcon: "󰖪"
-	property string networkColor: "#565f89"
+	property string networkIcon: "wifi_off"
+	property string networkColor: "#666666"
 
 	Rectangle {
 		Layout.preferredWidth: 28
 		Layout.preferredHeight: 28
-		radius: 14
-		color: "#414868"
+		radius: 3
+		color: "#0d0d0d"
+		border.color: "#3a3a3a"
+		border.width: 2
 
 		Text {
 			anchors.centerIn: parent
 			text: networkIcon
 			color: networkColor
 			font.pixelSize: 16
-			font.family: "Material Design Icons"
+			font.family: "Material Symbols Rounded"
 		}
 	}
 
 	Text {
 		id: networkText
 		text: networkStatus
-		color: "#a9b1d6"
+		color: "#e0e0e0"
 		font.pixelSize: 12
 		font.weight: Font.Medium
 		visible: networkStatus !== "disconnected"
@@ -48,17 +50,17 @@ RowLayout {
 
 					if (state === 'connected') {
 						if (type === 'wifi') {
-							networkIcon = "󰖩"
-							networkColor = "#9ece6a"
+							networkIcon = "wifi"
+							networkColor = "#e0e0e0"
 							networkStatus = "WiFi"
 						} else if (type === 'ethernet') {
-							networkIcon = "󰈀"
-							networkColor = "#7aa2f7"
+							networkIcon = "lan"
+							networkColor = "#e0e0e0"
 							networkStatus = "Ethernet"
 						}
 					} else {
-						networkIcon = "󰖪"
-						networkColor = "#f7768e"
+						networkIcon = "wifi_off"
+						networkColor = "#ff5555"
 						networkStatus = "disconnected"
 					}
 				}

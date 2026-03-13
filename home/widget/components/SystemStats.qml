@@ -13,22 +13,24 @@ RowLayout {
 		Rectangle {
 			Layout.preferredWidth: 28
 			Layout.preferredHeight: 28
-			radius: 14
-			color: "#414868"
+			radius: 3
+			color: "#0d0d0d"
+			border.color: "#3a3a3a"
+			border.width: 2
 
 			Text {
 				anchors.centerIn: parent
-				text: "󰻠"
-				color: "#7aa2f7"
-				font.pixelSize: 14
-				font.family: "Material Design Icons"
+				text: "memory"
+				color: "#cccccc"
+				font.pixelSize: 13
+				font.family: "Material Symbols Rounded"
 			}
 		}
 
 		Text {
 			id: cpuText
 			text: "0%"
-			color: "#a9b1d6"
+			color: "#e0e0e0"
 			font.pixelSize: 12
 			font.weight: Font.Medium
 		}
@@ -43,7 +45,7 @@ RowLayout {
 					const cpu = parseFloat(data.trim())
 					if (!isNaN(cpu)) {
 						cpuText.text = cpu.toFixed(0) + "%"
-						cpuText.color = cpu > 80 ? "#f7768e" : (cpu > 50 ? "#e0af68" : "#a9b1d6")
+						cpuText.color = cpu > 80 ? "#ff5555" : (cpu > 50 ? "#ffaa55" : "#e0e0e0")
 					}
 				}
 			}

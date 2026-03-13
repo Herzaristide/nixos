@@ -8,30 +8,32 @@ RowLayout {
 
 	property int batteryPercent: 0
 	property bool batteryCharging: false
-	property string batteryIcon: "󰂎"
-	property string batteryColor: "#a9b1d6"
+	property string batteryIcon: "battery_0_bar"
+	property string batteryColor: "#e0e0e0"
 
 	// Separator (only shown when battery is visible)
 	Rectangle {
 		Layout.preferredWidth: 1
 		Layout.preferredHeight: 24
-		color: "#414868"
-		opacity: 0.5
+		color: "#3a3a3a"
+		opacity: 0.8
 		visible: parent.visible
 	}
 
 	Rectangle {
 		Layout.preferredWidth: 28
 		Layout.preferredHeight: 28
-		radius: 14
-		color: "#414868"
+		radius: 3
+		color: "#0d0d0d"
+		border.color: "#3a3a3a"
+		border.width: 2
 
 		Text {
 			anchors.centerIn: parent
 			text: batteryIcon
 			color: batteryColor
 			font.pixelSize: 16
-			font.family: "Material Design Icons"
+			font.family: "Material Symbols Rounded"
 		}
 	}
 
@@ -70,29 +72,29 @@ RowLayout {
 
 	function updateBatteryIcon() {
 		if (batteryCharging) {
-			batteryIcon = "󰂄"
-			batteryColor = "#9ece6a"
+			batteryIcon = "battery_charging_full"
+			batteryColor = "#aaffaa"
 		} else if (batteryPercent <= 10) {
-			batteryIcon = "󰂎"
-			batteryColor = "#f7768e"
+			batteryIcon = "battery_0_bar"
+			batteryColor = "#ff5555"
 		} else if (batteryPercent <= 20) {
-			batteryIcon = "󰁺"
-			batteryColor = "#e0af68"
+			batteryIcon = "battery_1_bar"
+			batteryColor = "#ffaa55"
 		} else if (batteryPercent <= 30) {
-			batteryIcon = "󰁻"
-			batteryColor = "#e0af68"
+			batteryIcon = "battery_2_bar"
+			batteryColor = "#ffaa55"
 		} else if (batteryPercent <= 50) {
-			batteryIcon = "󰁽"
-			batteryColor = "#a9b1d6"
+			batteryIcon = "battery_3_bar"
+			batteryColor = "#e0e0e0"
 		} else if (batteryPercent <= 70) {
-			batteryIcon = "󰁿"
-			batteryColor = "#a9b1d6"
+			batteryIcon = "battery_4_bar"
+			batteryColor = "#e0e0e0"
 		} else if (batteryPercent <= 90) {
-			batteryIcon = "󰂁"
-			batteryColor = "#9ece6a"
+			batteryIcon = "battery_5_bar"
+			batteryColor = "#e0e0e0"
 		} else {
-			batteryIcon = "󰁹"
-			batteryColor = "#9ece6a"
+			batteryIcon = "battery_full"
+			batteryColor = "#e0e0e0"
 		}
 	}
 

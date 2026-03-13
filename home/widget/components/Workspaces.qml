@@ -29,42 +29,35 @@ RowLayout {
 
 			Layout.preferredWidth: isActive ? 56 : 32
 			Layout.preferredHeight: 32
-			radius: 16
+			radius: 3
 
 			// Smooth width animation
 			Behavior on Layout.preferredWidth {
 				NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
 			}
 
-			// Background with autumn gradient when active
-			gradient: isActive ? activeGradient : null
-			color: isActive ? "transparent" : (hasWindows ? "#3a3a3a" : "#2a2a2a")
+			// Minimalist geometric design - black bg with white accents
+			color: isActive ? "#1a1a1a" : (hasWindows ? "#0d0d0d" : "transparent")
+			border.color: isActive ? "#ffffff" : (hasWindows ? "#4a4a4a" : "#2a2a2a")
+			border.width: 2
 
-			Gradient {
-				id: activeGradient
-				orientation: Gradient.Horizontal
-				GradientStop { position: 0.0; color: "#DC143C" }
-				GradientStop { position: 0.5; color: "#FF6347" }
-				GradientStop { position: 1.0; color: "#FF7F50" }
-			}
-
-			// Glowing border for active workspace
+			// Subtle glow for active workspace
 			Rectangle {
 				anchors.fill: parent
-				anchors.margins: -2
-				radius: parent.radius + 2
+				anchors.margins: -3
+				radius: parent.radius
 				color: "transparent"
-				border.color: "#FF6347"
-				border.width: isActive ? 2 : 0
-				opacity: isActive ? 0.6 : 0
+				border.color: "#ffffff"
+				border.width: isActive ? 1 : 0
+				opacity: isActive ? 0.3 : 0
 				z: -1
 
-				// Pulsing glow effect
+				// Gentle pulsing glow
 				SequentialAnimation on opacity {
 					running: isActive
 					loops: Animation.Infinite
-					NumberAnimation { from: 0.6; to: 0.9; duration: 1200; easing.type: Easing.InOutSine }
-					NumberAnimation { from: 0.9; to: 0.6; duration: 1200; easing.type: Easing.InOutSine }
+					NumberAnimation { from: 0.2; to: 0.4; duration: 1500; easing.type: Easing.InOutSine }
+					NumberAnimation { from: 0.4; to: 0.2; duration: 1500; easing.type: Easing.InOutSine }
 				}
 			}
 
@@ -74,37 +67,37 @@ RowLayout {
 				width: parent.width
 				height: parent.height
 
-				// Number for active workspace
+				// Number for active workspace - white on dark
 				Text {
 					anchors.centerIn: parent
 					text: parent.parent.workspaceId
-					color: parent.parent.isActive ? "#1a1a1a" : "#c0c0c0"
+					color: "#ffffff"
 					font.pixelSize: 14
-					font.weight: parent.parent.isActive ? Font.Bold : Font.Medium
+					font.weight: Font.Bold
 					visible: parent.parent.isActive
-
-					// Subtle text shadow for depth
-					style: parent.parent.isActive ? Text.Raised : Text.Normal
-					styleColor: parent.parent.isActive ? "#FF7F50" : "transparent"
 				}
 
-				// Dot for inactive workspaces with windows - autumn orange
+				// Geometric diamond for inactive workspaces with windows
 				Rectangle {
 					anchors.centerIn: parent
-					width: 6
-					height: 6
-					radius: 3
-					color: "#FF7F50"
+					width: 7
+					height: 7
+					rotation: 45
+					color: "transparent"
+					border.color: "#cccccc"
+					border.width: 2
 					visible: !parent.parent.isActive && parent.parent.hasWindows
 				}
 
-				// Small dot for empty workspaces
+				// Small circle for empty workspaces
 				Rectangle {
 					anchors.centerIn: parent
-					width: 4
-					height: 4
-					radius: 2
-					color: "#5a5a5a"
+					width: 5
+					height: 5
+					radius: 2.5
+					color: "transparent"
+					border.color: "#444444"
+					border.width: 1
 					visible: !parent.parent.isActive && !parent.parent.hasWindows
 				}
 			}

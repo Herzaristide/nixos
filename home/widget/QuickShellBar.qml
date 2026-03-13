@@ -15,10 +15,22 @@ PanelWindow {
 	anchors.bottom: true
 	anchors.left: true
 	anchors.right: true
-	implicitHeight: 44
+	implicitHeight: 48
 
-	// Autumn forest inspired colors matching wallpaper
-	color: "#1a1a1a"
+	// Transparent window background
+	color: "transparent"
+
+	// Minimalist geometric background panel
+	Rectangle {
+		anchors.fill: parent
+		anchors.margins: 4
+		anchors.bottomMargin: 0
+		radius: 4
+		color: "#0a0a0a"
+		border.color: "#2a2a2a"
+		border.width: 1
+		opacity: 0.9
+	}
 
 	// Get current monitor's active workspace
 	property var currentMonitor: {
@@ -34,33 +46,6 @@ PanelWindow {
 
 	property int activeWorkspaceId: currentMonitor?.activeWorkspace?.id ?? -1
 	property var activeWindow: currentMonitor?.activeWindow ?? null
-
-	// Glassmorphic background effect
-	Rectangle {
-		anchors.fill: parent
-		color: "transparent"
-
-		Rectangle {
-			anchors.fill: parent
-			color: "#1a1a1a"
-			opacity: 0.88
-		}
-
-		// Top border accent - autumn gradient
-		Rectangle {
-			anchors.top: parent.top
-			anchors.left: parent.left
-			anchors.right: parent.right
-			height: 2
-			gradient: Gradient {
-				orientation: Gradient.Horizontal
-				GradientStop { position: 0.0; color: "#DC143C" }
-				GradientStop { position: 0.33; color: "#FF6347" }
-				GradientStop { position: 0.66; color: "#FF7F50" }
-				GradientStop { position: 1.0; color: "#D2691E" }
-			}
-		}
-	}
 
 	RowLayout {
 		anchors.fill: parent
@@ -78,14 +63,6 @@ PanelWindow {
 			// Workspaces
 			Components.Workspaces {
 				activeWorkspaceId: parent.parent.parent.activeWorkspaceId
-			}
-
-			// Separator
-			Rectangle {
-				Layout.preferredWidth: 1
-				Layout.preferredHeight: 24
-				color: "#4a4a4a"
-				opacity: 0.5
 			}
 
 			// Active window title
@@ -111,24 +88,8 @@ PanelWindow {
 			// System stats
 			Components.SystemStats {}
 
-			// Separator
-			Rectangle {
-				Layout.preferredWidth: 1
-				Layout.preferredHeight: 24
-				color: "#4a4a4a"
-				opacity: 0.5
-			}
-
 			// Network
 			Components.Network {}
-
-			// Separator
-			Rectangle {
-				Layout.preferredWidth: 1
-				Layout.preferredHeight: 24
-				color: "#4a4a4a"
-				opacity: 0.5
-			}
 
 			// Audio
 			Components.Audio {}
@@ -136,14 +97,6 @@ PanelWindow {
 			// Battery (only on laptop)
 			Components.Battery {
 				visible: modelData.name.includes("eDP")
-			}
-
-			// Separator
-			Rectangle {
-				Layout.preferredWidth: 1
-				Layout.preferredHeight: 24
-				color: "#4a4a4a"
-				opacity: 0.5
 			}
 
 			// Clock
