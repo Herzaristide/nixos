@@ -51,10 +51,7 @@
     google-chrome
     firefox
     ghostty
-    (writeShellScriptBin "hypr-claude-launch" ''
-      claude-desktop &
-      ghostty --class=claude-term &
-    '')
+    (writeShellScriptBin "hypr-claude-launch" "claude-desktop & wezterm")
   ];
 
   # Default applications (force overwrites existing mimeapps.list files)
