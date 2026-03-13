@@ -1,7 +1,8 @@
 local wezterm = require 'wezterm'
 local act = wezterm.action
 local config = wezterm.config_builder()
-config.default_domain = 'WSL:NixOS'
+-- default_domain 'WSL:NixOS' only exists on Windows; on Linux use local (default)
+-- config.default_domain = 'WSL:NixOS'
 
 -- Appearance
 config.color_scheme = 'Gruvbox Dark (Gogh)'
@@ -10,10 +11,10 @@ config.font_size = 10.0
 
 -- Transparent background
 config.window_background_opacity = 0.90
-config.win32_system_backdrop = 'Auto'
+config.win32_system_backdrop = 'Acrylic'
 
 -- Remove title bar for a cleaner look (optional)
-config.window_decorations = 'RESIZE'
+config.window_decorations = 'NONE'
 
 -- Padding
 config.window_padding = {
@@ -24,7 +25,7 @@ config.window_padding = {
 }
 
 -- Tab bar
--- config.hide_tab_bar_if_only_one_tab = true
+config.hide_tab_bar_if_only_one_tab = true
 config.tab_bar_at_bottom = true
 config.use_fancy_tab_bar = true
 config.tab_max_width = 25
