@@ -15,18 +15,19 @@
 
       # Clean format matching fastfetch red theme
       # Use a custom module to show number of running Docker containers on the right
-      format = "$directory$git_status$git_branch$fill${"$"}{custom.disk} ${"$"}{custom.docker}\n$character";
+      format = "${"$"}{custom.folder_size} ◆ $directory$git_status$git_branch$fill ${"$"}{custom.docker} ◆ ${"$"}{custom.disk}\n$character";
 
       directory = {
-        format = "[◆ $path]($style) ";
+        format = "[$path]($style) ";
         style = "red";
         truncate_to_repo = true;
         truncation_length = 1;
+        home_symbol = "aristide";
       };
 
       git_branch = {
         format = "[$symbol$branch]($style) ";
-        style = "red";
+        style = "bright-black";
         symbol = "";
         truncation_length = 8;
         truncation_symbol = "…";
@@ -42,14 +43,23 @@
       };
 
       character = {
-        success_symbol = "[&](bold red)";
-        error_symbol = "[&](bold red)";
+        success_symbol = "[❅](bold red)";
+        error_symbol = "[❅](bold red)";
+      };
+
+      # Custom module: size of the current folder
+      custom.folder_size = {
+        command = "ls -lA . 2>/dev/null | awk 'NR>1 && !/^d/ {s+=$5} END {if(s>=1073741824) printf \"%.1fG\",s/1073741824; else if(s>=1048576) printf \"%.1fM\",s/1048576; else printf \"%.0fK\",s/1024}'";
+        when = "true";
+        format = "[$output]($style)";
+        style = "red";
       };
 
       # Custom module: current disk mount point and usage
       custom.disk = {
-        command = "df -h . | awk 'NR==2 {print $6 \" \" $3 \"/\" $2}'";
-        format = "[💾 $output]($style)";
+        command = "df -h . | awk 'NR==2 {n=$1; sub(\".*/\",\"\",n); s=toupper(substr(n,1,4)); print s \"#\" $5}'";
+        when = "true";
+        format = "[$output]($style)";
         style = "red";
       };
 
@@ -57,7 +67,7 @@
       custom.docker = {
         command = "docker ps -q 2>/dev/null | wc -l | tr -d ' '";
         when = "docker ps -q 2>/dev/null | grep -q .";
-        format = "[🐳 $output]($style)";
+        format = "[$output]($style)";
         style = "red";
         disabled = false;
       };
