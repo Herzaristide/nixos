@@ -10,6 +10,7 @@
   imports = [
     ./modules/hyprland.nix
     ./modules/vscode.nix
+    ./modules/wezterm.nix
   ];
 
   # Mouse cursor theme (Hyprland, GTK apps)
