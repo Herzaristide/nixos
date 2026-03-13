@@ -75,16 +75,18 @@
         ",preferred,auto,1.33"
       ];
 
-      # Autostart: Quickshell bar at bottom
-      exec-once = [ "qs -p ${config.xdg.configHome}/quickshell/bar.qml" ];
+      # Autostart: Quickshell bar at bottom, then switch to workspace 1
+      exec-once = [
+        "qs -p ${config.xdg.configHome}/quickshell/bar.qml"
+      ];
 
       # Workspaces: 1–5 on same screen (HDMI when plugged, eDP fallback when not)
       workspace = [
-        "1, monitor:preferred"
-        "2, monitor:preferred"
-        "3, monitor:preferred"
-        "4, monitor:preferred"
-        "5, monitor:preferred"
+        #"1, monitor:preferred"
+        #"2, monitor:preferred"
+        #"3, monitor:preferred"
+        #"4, monitor:preferred"
+        #"5, monitor:preferred"
         "special:claude, on-created-empty:hypr-claude-launch, gapsout:80 200 80 200, gapsin:30"
       ];
 
@@ -109,11 +111,7 @@
         "$mod, quotedbl, workspace, 3"
         "$mod, apostrophe, workspace, 4"
         "$mod, parenleft, workspace, 5"
-        "$mod, 1, workspace, 1"
-        "$mod, 2, workspace, 2"
-        "$mod, 3, workspace, 3"
-        "$mod, 4, workspace, 4"
-        "$mod, 5, workspace, 5"
+
         # Workspace spécial Claude (Super+G) – s'affiche en overlay
         "$mod, G, togglespecialworkspace, claude"
       ];
@@ -123,10 +121,10 @@
         "$mod, mouse:273, resizewindow"
       ];
 
-      # Lid switch handling: disable laptop display when lid closed
+      # Lid switch handling: disable laptop display when lid closed, switch focus to HDMI
       # Note: This uses the switch: syntax which requires Hyprland 0.45+
       bindl = [
-        ", switch:on:Lid Switch, exec, hyprctl keyword monitor 'eDP-1,disable'"
+        ", switch:on:Lid Switch, exec, hyprctl keyword monitor 'eDP-1,disable' && hyprctl dispatch focusmonitor HDMI-A-1"
         ", switch:off:Lid Switch, exec, hyprctl keyword monitor 'eDP-1,preferred,auto-left,1.33'"
       ];
     };

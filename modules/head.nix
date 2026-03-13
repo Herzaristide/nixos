@@ -29,15 +29,19 @@
   # X11 (for XWayland) and Hyprland
   services.xserver.enable = true;
 
-  # GDM display manager (multi-monitor support out of the box via Mutter)
-  # Prefer HDMI over integrated: NVIDIA (card1) drives HDMI, Intel (card0) drives eDP on zola
-  services.displayManager.generic.environment = {
-    WLR_DRM_DEVICES = "/dev/dri/card1:/dev/dri/card0";
-  };
-
-  services.displayManager.gdm = {
+  # DMS greeter (Dank Material Shell login screen) — replaces GDM
+  services.displayManager.dms-greeter = {
     enable = true;
-    wayland = true;
+    compositor = {
+      name = "hyprland";
+      customConfig = ''
+        input {
+          kb_layout = "fr";
+          kb_variant = "";
+        }
+      '';
+    };
+    configHome = "/home/aristide"; # Sync DMS theme (matugen, settings) to greeter
   };
   services.displayManager.defaultSession = "hyprland";
 
