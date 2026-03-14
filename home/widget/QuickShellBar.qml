@@ -20,16 +20,29 @@ PanelWindow {
 	// Transparent window background
 	color: "transparent"
 
-	// Minimalist geometric background panel
+	// Minimalist white background panel with subtle shadow
 	Rectangle {
 		anchors.fill: parent
-		anchors.margins: 4
+		anchors.margins: 6
 		anchors.bottomMargin: 0
-		radius: 4
-		color: "#0a0a0a"
-		border.color: "#2a2a2a"
+		radius: 8
+		color: "#ffffff"
+		border.color: "#e0e0e0"
 		border.width: 1
-		opacity: 0.9
+		opacity: 0.95
+
+		layer.enabled: true
+		layer.effect: ShaderEffect {
+			property real shadowOpacity: 0.1
+			fragmentShader: "
+				varying highp vec2 qt_TexCoord0;
+				uniform sampler2D source;
+				uniform lowp float qt_Opacity;
+				void main() {
+					gl_FragColor = texture2D(source, qt_TexCoord0) * qt_Opacity;
+				}
+			"
+		}
 	}
 
 	// Get current monitor's active workspace
@@ -90,6 +103,9 @@ PanelWindow {
 
 			// Network
 			Components.Network {}
+
+			// Microphone
+			Components.Microphone {}
 
 			// Audio
 			Components.Audio {}

@@ -15,9 +15,9 @@ RowLayout {
 
 			Layout.preferredWidth: 32
 			Layout.preferredHeight: 32
-			radius: 3
-			color: trayMouseArea.containsMouse ? "#1a1a1a" : "transparent"
-			border.color: trayMouseArea.containsMouse ? "#ffffff" : "transparent"
+			radius: 6
+			color: trayMouseArea.containsMouse ? "#f5f5f5" : "#ffffff"
+			border.color: trayMouseArea.containsMouse ? "#000000" : "#e0e0e0"
 			border.width: 2
 
 			Behavior on color {
@@ -44,8 +44,8 @@ RowLayout {
 			Text {
 				anchors.centerIn: parent
 				text: trayIcon.visible ? "" : (modelData.title?.substring(0, 1) ?? "?")
-				color: "#e0e0e0"
-				font.pixelSize: 12
+				color: "#000000"
+				font.pixelSize: 13
 				font.weight: Font.Bold
 			}
 
@@ -69,6 +69,19 @@ RowLayout {
 					visible: parent.containsMouse
 					text: modelData.tooltip?.title ?? modelData.title ?? ""
 					delay: 500
+
+					background: Rectangle {
+						color: "#ffffff"
+						border.color: "#e0e0e0"
+						border.width: 1
+						radius: 4
+					}
+
+					contentItem: Text {
+						text: parent.text
+						color: "#000000"
+						font.pixelSize: 11
+					}
 				}
 			}
 		}
