@@ -29,36 +29,30 @@ RowLayout {
 
 			Layout.preferredWidth: isActive ? 56 : 32
 			Layout.preferredHeight: 32
-			radius: 3
+			radius: 6
 
 			// Smooth width animation
 			Behavior on Layout.preferredWidth {
 				NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
 			}
 
-			// Minimalist geometric design - black bg with white accents
-			color: isActive ? "#1a1a1a" : (hasWindows ? "#0d0d0d" : "transparent")
-			border.color: isActive ? "#ffffff" : (hasWindows ? "#4a4a4a" : "#2a2a2a")
+			// Minimalist white design with black accents
+			color: isActive ? "#000000" : (hasWindows ? "#f5f5f5" : "#ffffff")
+			border.color: isActive ? "#000000" : (hasWindows ? "#cccccc" : "#e0e0e0")
 			border.width: 2
 
-			// Subtle glow for active workspace
-			Rectangle {
-				anchors.fill: parent
-				anchors.margins: -3
-				radius: parent.radius
-				color: "transparent"
-				border.color: "#ffffff"
-				border.width: isActive ? 1 : 0
-				opacity: isActive ? 0.3 : 0
-				z: -1
+			Behavior on color {
+				ColorAnimation { duration: 200 }
+			}
 
-				// Gentle pulsing glow
-				SequentialAnimation on opacity {
-					running: isActive
-					loops: Animation.Infinite
-					NumberAnimation { from: 0.2; to: 0.4; duration: 1500; easing.type: Easing.InOutSine }
-					NumberAnimation { from: 0.4; to: 0.2; duration: 1500; easing.type: Easing.InOutSine }
-				}
+			Behavior on border.color {
+				ColorAnimation { duration: 200 }
+			}
+
+			// Subtle shadow for active workspace
+			layer.enabled: isActive
+			layer.effect: ShaderEffect {
+				property real shadowOpacity: 0.1
 			}
 
 			// Workspace number or indicator
@@ -67,7 +61,7 @@ RowLayout {
 				width: parent.width
 				height: parent.height
 
-				// Number for active workspace - white on dark
+				// Number for active workspace - white on black
 				Text {
 					anchors.centerIn: parent
 					text: parent.parent.workspaceId
@@ -77,27 +71,25 @@ RowLayout {
 					visible: parent.parent.isActive
 				}
 
-				// Geometric diamond for inactive workspaces with windows
+				// Filled circle for inactive workspaces with windows
 				Rectangle {
 					anchors.centerIn: parent
-					width: 7
-					height: 7
-					rotation: 45
-					color: "transparent"
-					border.color: "#cccccc"
-					border.width: 2
+					width: 8
+					height: 8
+					radius: 4
+					color: "#000000"
 					visible: !parent.parent.isActive && parent.parent.hasWindows
 				}
 
-				// Small circle for empty workspaces
+				// Empty circle for empty workspaces
 				Rectangle {
 					anchors.centerIn: parent
-					width: 5
-					height: 5
-					radius: 2.5
+					width: 6
+					height: 6
+					radius: 3
 					color: "transparent"
-					border.color: "#444444"
-					border.width: 1
+					border.color: "#cccccc"
+					border.width: 2
 					visible: !parent.parent.isActive && !parent.parent.hasWindows
 				}
 			}

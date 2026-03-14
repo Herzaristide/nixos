@@ -7,7 +7,7 @@ RowLayout {
 	// Date
 	Text {
 		text: Qt.formatDateTime(new Date(), "ddd dd MMM")
-		color: "#999999"
+		color: "#666666"
 		font.pixelSize: 12
 		font.weight: Font.Medium
 
@@ -23,9 +23,9 @@ RowLayout {
 	Rectangle {
 		Layout.preferredHeight: 32
 		Layout.preferredWidth: timeText.width + 20
-		radius: 3
-		color: "#1a1a1a"
-		border.color: "#ffffff"
+		radius: 6
+		color: "#000000"
+		border.color: "#000000"
 		border.width: 2
 
 		Text {

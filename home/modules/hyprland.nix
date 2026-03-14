@@ -98,6 +98,7 @@
         "$mod, C, exec, cursor"
         "$mod, B, exec, bash -c 'google-chrome-stable --user-data-dir=$HOME/.config/google-chrome-$(hostname)'"
         "$mod, D, exec, discord"
+        "$mod, F, exec, figma-linux"
         "$mod, Q, killactive"
         "$mod, P, pseudo"
         "$mod, J, togglesplit"

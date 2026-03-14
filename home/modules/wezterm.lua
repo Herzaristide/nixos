@@ -10,7 +10,7 @@ config.font = wezterm.font('JetBrains Mono', { weight = 'Regular' })
 config.font_size = 10.0
 
 -- Transparent background
-config.window_background_opacity = 0.90
+config.window_background_opacity = 0.75
 config.win32_system_backdrop = 'Acrylic'
 
 -- Remove title bar for a cleaner look (optional)

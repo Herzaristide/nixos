@@ -41,6 +41,7 @@
     ./widget/components/SystemTrayComponent.qml;
   xdg.configFile."quickshell/components/SystemStats.qml".source = ./widget/components/SystemStats.qml;
   xdg.configFile."quickshell/components/Network.qml".source = ./widget/components/Network.qml;
+  xdg.configFile."quickshell/components/Microphone.qml".source = ./widget/components/Microphone.qml;
   xdg.configFile."quickshell/components/Audio.qml".source = ./widget/components/Audio.qml;
   xdg.configFile."quickshell/components/Battery.qml".source = ./widget/components/Battery.qml;
   xdg.configFile."quickshell/components/Clock.qml".source = ./widget/components/Clock.qml;
@@ -51,6 +52,7 @@
   home.packages = with pkgs; [
     inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.default
     inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default
+    inputs.voicemode.packages.${pkgs.stdenv.hostPlatform.system}.default
     adw-gtk3
     discord
     qt6Packages.qt6ct
@@ -61,6 +63,7 @@
     code-cursor
     google-chrome
     firefox
+    figma-linux
     ghostty
     material-symbols
     swww # Wallpaper daemon for Wayland

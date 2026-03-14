@@ -39,6 +39,10 @@
       url = "git+https://git.outfoxxed.me/quickshell/quickshell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    voicemode = {
+      url = "github:mbailey/voicemode";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

@@ -7,8 +7,8 @@ let
     hash = "sha256-N2643TJsB9fAgmkUd7eJ1AyeJH4+lzaaGNuRnHyhEoQ=";
   };
 
-  # Custom configuration using the custom ASCII logo
-  fastfetch-config = pkgs.writeText "config.jsonc" ''
+  # Full configuration with hardware info
+  fastfetch-config-full = pkgs.writeText "config-full.jsonc" ''
     {
       "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
       "logo": {
@@ -53,8 +53,35 @@ let
     }
   '';
 
+  # Logo-only configuration for small terminals
+  fastfetch-config-logo = pkgs.writeText "config-logo.jsonc" ''
+    {
+      "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+      "logo": {
+        "source": "${nixos-logo}",
+        "color": {
+          "1": "red"
+        },
+        "padding": {
+          "top": 1,
+          "right": 0
+        },
+        "printRemaining": true
+      },
+      "modules": []
+    }
+  '';
+
   nf = pkgs.writeShellScriptBin "nf" ''
-    ${pkgs.fastfetch}/bin/fastfetch --config ${fastfetch-config} "$@"
+    # Get terminal width (default to 80 if tput fails)
+    COLS=$(${pkgs.ncurses}/bin/tput cols 2>/dev/null || echo 80)
+
+    # Use logo-only config if terminal width is less than 80 columns
+    if [ "$COLS" -lt 80 ]; then
+      ${pkgs.fastfetch}/bin/fastfetch --config ${fastfetch-config-logo} "$@"
+    else
+      ${pkgs.fastfetch}/bin/fastfetch --config ${fastfetch-config-full} "$@"
+    fi
   '';
 in
 {

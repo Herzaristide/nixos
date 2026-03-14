@@ -15,19 +15,19 @@ RowLayout {
 
 	// App icon (using first letter of class)
 	Rectangle {
-		Layout.preferredWidth: 28
-		Layout.preferredHeight: 28
-		radius: 3
+		Layout.preferredWidth: 32
+		Layout.preferredHeight: 32
+		radius: 6
 		visible: root.windowTitle !== ""
-		color: "#0d0d0d"
-		border.color: "#ffffff"
+		color: "#000000"
+		border.color: "#000000"
 		border.width: 2
 
 		Text {
 			anchors.centerIn: parent
 			text: root.windowClass.length > 0 ? root.windowClass[0].toUpperCase() : ""
 			color: "#ffffff"
-			font.pixelSize: 14
+			font.pixelSize: 15
 			font.weight: Font.Bold
 		}
 	}
@@ -35,7 +35,7 @@ RowLayout {
 	// Window title with fade effect for overflow
 	Item {
 		Layout.fillWidth: true
-		Layout.preferredHeight: 28
+		Layout.preferredHeight: 32
 		visible: root.windowTitle !== ""
 
 		clip: true
@@ -44,9 +44,9 @@ RowLayout {
 			id: titleText
 			anchors.verticalCenter: parent.verticalCenter
 			text: root.windowTitle
-			color: "#e0e0e0"
+			color: "#000000"
 			font.pixelSize: 13
-			font.weight: Font.Medium
+			font.weight: Font.DemiBold
 			elide: Text.ElideRight
 			width: parent.width
 
@@ -69,7 +69,7 @@ RowLayout {
 			gradient: Gradient {
 				orientation: Gradient.Horizontal
 				GradientStop { position: 0.0; color: "transparent" }
-				GradientStop { position: 1.0; color: "#000000" }
+				GradientStop { position: 1.0; color: "#ffffff" }
 			}
 		}
 	}
@@ -78,7 +78,7 @@ RowLayout {
 	Text {
 		visible: root.windowTitle === ""
 		text: "Desktop"
-		color: "#666666"
+		color: "#999999"
 		font.pixelSize: 12
 		font.italic: true
 	}

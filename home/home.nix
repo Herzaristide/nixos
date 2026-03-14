@@ -56,4 +56,8 @@
   home.file.".wgetrc".text = ''
     check_certificate = off
   '';
+
+  # Claude Code MCP servers (~/.claude.json)
+  # Figma remote MCP: authenticate via /mcp in Claude Code when first connecting.
+
 }
