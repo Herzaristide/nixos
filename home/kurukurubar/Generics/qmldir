@@ -1,0 +1,11 @@
+module qs.Generics
+AudioSlider 1.0 AudioSlider.qml
+BarCode 1.0 BarCode.qml
+CircularProgress 1.0 CircularProgress.qml
+GradientText 1.0 GradientText.qml
+MatIcon 1.0 MatIcon.qml
+MouseArea 1.0 MouseArea.qml
+Notification 1.0 Notification.qml
+NotificationPopup 1.0 NotificationPopup.qml
+ToggleButton 1.0 ToggleButton.qml
+TweakToggle 1.0 TweakToggle.qml

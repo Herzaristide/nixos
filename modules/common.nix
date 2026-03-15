@@ -24,6 +24,13 @@
       "flakes"
     ];
 
+    # Automatic garbage collection: delete builds older than 7 days
+    nix.gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 7d";
+    };
+
     # Virtual console (TTY) — French AZERTY for all hosts
     console.keyMap = "fr";
 

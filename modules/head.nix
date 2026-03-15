@@ -14,6 +14,9 @@
   services.udisks2.enable = true;
   services.gvfs.enable = true;
 
+  # Power profiles daemon (for kurukurubar power management widget)
+  services.power-profiles-daemon.enable = true;
+
   # XDG Portal (for file picker, screen sharing in Hyprland)
   # xdg-desktop-portal-gtk exposes color-scheme (dark mode) to Chrome/Gemini, etc.
   # xdph alone doesn't implement the appearance protocol
@@ -94,4 +97,37 @@
 
   # Printing
   services.printing.enable = true;
+
+  # Fonts for Waybar, Rofi, Hyprlock, kurukurubar, etc.
+  fonts.packages = with pkgs; [
+    nerd-fonts.monoid
+    nerd-fonts.caskaydia-mono # For kurukurubar
+    material-symbols # For kurukurubar Material Icons
+  ];
+
+  # Chromium: extensions, dark mode, favorites — all in NixOS config
+  programs.chromium = {
+    enable = true;
+    extensions = [
+      "fcoeoabgfenejglbffodgkkbkcdhcgfn" # Claude - Anthropic AI assistant
+      "ddkjiahejlhfcafbddmgiahcphecmpfh" # uBlock Origin Lite
+    ];
+    extraOpts = {
+      ManagedBookmarks = [
+        {
+          name = "GitHub";
+          url = "https://github.com";
+        }
+        {
+          name = "Claude";
+          url = "https://claude.ai";
+        }
+        {
+          name = "Figma";
+          url = "https://www.figma.com";
+        }
+      ];
+    };
+  };
+  environment.systemPackages = with pkgs; [ chromium ];
 }

@@ -1,4 +1,10 @@
-{ config, pkgs, inputs, lib, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  lib,
+  ...
+}:
 
 {
   imports = [
@@ -45,8 +51,8 @@
 
   # Allow user to have empty password for passwordless SSH access
   users.users.aristide = {
-    hashedPassword = null;  # No password hash - allows empty password
-    initialHashedPassword = "";  # Set initial empty password
+    hashedPassword = null; # No password hash - allows empty password
+    initialHashedPassword = ""; # Set initial empty password
   };
 
   # Configure PAM to allow empty passwords for SSH

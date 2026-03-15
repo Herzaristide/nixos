@@ -9,7 +9,8 @@
   wayland.windowManager.hyprland = {
     enable = true;
     extraConfig = ''
-      # Qt theming via DMS matugen (qt6ct)
+      # Dark mode + theming for all apps
+      env = GTK_THEME,adw-gtk3-dark
       env = QT_QPA_PLATFORMTHEME,qt6ct
       env = QT_QPA_PLATFORMTHEME_QT6,qt6ct
 
@@ -75,11 +76,19 @@
         ",preferred,auto,1.33"
       ];
 
-      # Autostart: Quickshell bar at bottom, then switch to workspace 1
+      # Autostart: Dark mode for portal/Chromium, then bar and wallpaper
       exec-once = [
-        "qs -p ${config.xdg.configHome}/quickshell/bar.qml"
-        "swww-daemon"
-        "swww img /etc/nixos/src/wallpaper.jpg --transition-type=fade"
+        "gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark"
+        "gsettings set org.gnome.desktop.interface color-scheme prefer-dark"
+
+        # Quickshell bar (local declarative kurukurubar - bottom-positioned)
+        "quickshell"
+
+        # Waybar (uncomment if using Waybar instead of kurukurubar)
+        # "waybar"
+
+        # Hyprpaper (uncomment if using hyprpaper instead of swww)
+        "hyprpaper"
       ];
 
       # Workspaces: 1–5 on same screen (HDMI when plugged, eDP fallback when not)
@@ -95,13 +104,22 @@
       # Minimal binds - terminal, apps
       bind = [
         "$mod, Return, exec, wezterm"
+        "$mod SHIFT, Return, exec, ghostty" # Ghostty terminal
+        "$mod, A, exec, claude-desktop"
         "$mod, C, exec, cursor"
-        "$mod, B, exec, bash -c 'google-chrome-stable --user-data-dir=$HOME/.config/google-chrome-$(hostname)'"
+        "$mod, E, exec, code"
+        "$mod, B, exec, chromium"
         "$mod, D, exec, discord"
         "$mod, F, exec, figma-linux"
+        "$mod, R, exec, pkill rofi || rofi -show drun" # App launcher (Super+R)
         "$mod, Q, killactive"
         "$mod, P, pseudo"
         "$mod, J, togglesplit"
+
+        # Rofi launcher
+        "$mod CTRL, space, exec, pkill rofi || rofi -show drun" # Rofi launcher (Ctrl+Super+Space)
+        "$mod SHIFT, R, exec, pkill quickshell; quickshell &" # Reload Quickshell bar
+        # "$mod SHIFT, R, exec, pkill waybar; waybar &" # Reload Waybar (alternative)
         "$mod, left, movefocus, l"
         "$mod, right, movefocus, r"
         "$mod, up, movefocus, u"
@@ -109,12 +127,27 @@
         # Focus prev/next monitor (bracket keys)
         "$mod, bracketleft, focusmonitor, -1"
         "$mod, bracketright, focusmonitor, +1"
-        # Workspaces: 0 = left monitor, 1–5 = main (AZERTY: & é " ' ( = 1 2 3 4 5)
+        # Workspaces: 1–9 (AZERTY: & é " ' ( - è _ ç = 1 2 3 4 5 6 7 8 9)
         "$mod, ampersand, workspace, 1"
         "$mod, eacute, workspace, 2"
         "$mod, quotedbl, workspace, 3"
         "$mod, apostrophe, workspace, 4"
         "$mod, parenleft, workspace, 5"
+        "$mod, minus, workspace, 6"
+        "$mod, egrave, workspace, 7"
+        "$mod, underscore, workspace, 8"
+        "$mod, ccedilla, workspace, 9"
+
+        # Move window to workspace 1-9
+        "$mod SHIFT, ampersand, movetoworkspace, 1"
+        "$mod SHIFT, eacute, movetoworkspace, 2"
+        "$mod SHIFT, quotedbl, movetoworkspace, 3"
+        "$mod SHIFT, apostrophe, movetoworkspace, 4"
+        "$mod SHIFT, parenleft, movetoworkspace, 5"
+        "$mod SHIFT, minus, movetoworkspace, 6"
+        "$mod SHIFT, egrave, movetoworkspace, 7"
+        "$mod SHIFT, underscore, movetoworkspace, 8"
+        "$mod SHIFT, ccedilla, movetoworkspace, 9"
 
         # Workspace spécial Claude (Super+G) – s'affiche en overlay
         "$mod, G, togglespecialworkspace, claude"
@@ -126,10 +159,10 @@
       ];
 
       # Lid switch handling: disable laptop display when lid closed, switch focus to HDMI
-      # Move workspaces 1–5 to HDMI first (otherwise they stay on disabled eDP and become unreachable)
+      # Move workspaces 1–9 to HDMI first (otherwise they stay on disabled eDP and become unreachable)
       # Note: This uses the switch: syntax which requires Hyprland 0.45+
       bindl = [
-        ", switch:on:Lid Switch, exec, sh -c 'for i in 1 2 3 4 5; do hyprctl dispatch moveworkspacetomonitor \$i HDMI-A-1; done; hyprctl keyword monitor \"eDP-1,disable\"; hyprctl dispatch focusmonitor HDMI-A-1'"
+        ", switch:on:Lid Switch, exec, sh -c 'for i in 1 2 3 4 5 6 7 8 9; do hyprctl dispatch moveworkspacetomonitor \$i HDMI-A-1; done; hyprctl keyword monitor \"eDP-1,disable\"; hyprctl dispatch focusmonitor HDMI-A-1'"
         ", switch:off:Lid Switch, exec, hyprctl keyword monitor 'eDP-1,preferred,auto-left,1.33'"
       ];
     };

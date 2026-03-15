@@ -10,7 +10,7 @@
     enable = true;
     enableFishIntegration = true;
 
-    settings = {
+    settings = lib.mkDefault {
       "$schema" = "https://starship.rs/config-schema.json";
 
       # Clean format matching fastfetch red theme
@@ -42,7 +42,7 @@
         symbol = " ";
       };
 
-      character = {
+      character = lib.mkDefault {
         success_symbol = "[❅](bold red)";
         error_symbol = "[❅](bold red)";
       };
