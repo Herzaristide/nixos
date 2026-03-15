@@ -9,7 +9,7 @@
 {
   imports = [
     ./modules/shell
-    ./modules/vscode-server.nix
+    ./modules/vscode/vscode-server.nix
   ]
   ++ (
     if head then
@@ -59,5 +59,4 @@
 
   # Claude Code MCP servers (~/.claude.json)
   # Figma remote MCP: authenticate via /mcp in Claude Code when first connecting.
-
 }

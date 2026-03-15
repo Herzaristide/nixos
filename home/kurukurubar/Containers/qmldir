@@ -1,0 +1,8 @@
+module qs.Containers
+CentralSwipable 1.0 CentralSwipable.qml
+Inbox 1.0 Inbox.qml
+KuruKuru 1.0 KuruKuru.qml
+LockScreenSurface 1.0 LockScreenSurface.qml
+Popup 1.0 Popup.qml
+Primary 1.0 Primary.qml
+TopBar 1.0 TopBar.qml
