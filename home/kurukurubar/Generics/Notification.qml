@@ -129,6 +129,9 @@ Rectangle {
             Layout.maximumWidth: ((root.width - notifIcon.width) * 0.75)
             color: Dat.Colors.current.primary
             elide: Text.ElideRight
+            font.family: "DejaVu Sans"
+            font.pointSize: 12
+            font.bold: true
             text: root.notif?.summary ?? "Kokomi"
           }
 
@@ -144,6 +147,7 @@ Rectangle {
 
               anchors.centerIn: parent
               color: Dat.Colors.current.tertiary
+              font.family: "DejaVu Sans"
               font.bold: true
               font.pointSize: 8
               text: root.notif?.appName ?? "idk"
@@ -156,6 +160,7 @@ Rectangle {
 
           anchors.top: infoRow.bottom
           color: Dat.Colors.current.on_surface
+          font.family: "DejaVu Sans"
           font.pointSize: 11
           text: root.notif?.body ?? "very cool body that is missing"
           textFormat: Text.MarkdownText
@@ -215,6 +220,7 @@ Rectangle {
 
                 anchors.centerIn: parent
                 color: Dat.Colors.current.on_secondary
+                font.family: "DejaVu Sans"
                 font.pointSize: 11
                 text: parent.modelData?.text ?? "activate"
               }

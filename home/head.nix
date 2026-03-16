@@ -29,6 +29,11 @@
     gtk-theme = "adw-gtk3-dark";
   };
   gtk = {
+    enable = true;
+    font = {
+      name = "DejaVu Sans";
+      size = 11;
+    };
     gtk3.extraConfig = {
       "gtk-application-prefer-dark-theme" = true;
     };
@@ -96,8 +101,8 @@
       "x-scheme-handler/figma" = [ "figma.desktop" ];
       "x-scheme-handler/cursor" = [ "cursor.desktop" ];
       "x-terminal-emulator" = [ "ghostty.desktop" ];
-      "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
-      "x-scheme-handler/file" = [ "org.gnome.Nautilus.desktop" ];
+      "inode/directory" = [ "yazi.desktop" ];
+      "x-scheme-handler/file" = [ "yazi.desktop" ];
     };
   };
 

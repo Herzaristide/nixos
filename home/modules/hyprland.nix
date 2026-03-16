@@ -91,13 +91,10 @@
         "hyprpaper"
       ];
 
-      # Workspaces: 1–5 on same screen (HDMI when plugged, eDP fallback when not)
+      # Workspaces: avoid persistent monitor binding (Hyprland has bugs with workspace-to-monitor).
+      # Use default:true so new windows go to ws 1; switch with Super+1..9 (AZERTY &é"'(-è_ç).
       workspace = [
-        #"1, monitor:preferred"
-        #"2, monitor:preferred"
-        #"3, monitor:preferred"
-        #"4, monitor:preferred"
-        #"5, monitor:preferred"
+        "1, default:true"
         "special:claude, on-created-empty:hypr-claude-launch, gapsout:80 200 80 200, gapsin:30"
       ];
 
@@ -158,11 +155,10 @@
         "$mod, mouse:273, resizewindow"
       ];
 
-      # Lid switch handling: disable laptop display when lid closed, switch focus to HDMI
-      # Move workspaces 1–9 to HDMI first (otherwise they stay on disabled eDP and become unreachable)
-      # Note: This uses the switch: syntax which requires Hyprland 0.45+
+      # Lid switch: when lid closes, move workspaces to HDMI then disable eDP (avoids workspaces stuck on disabled monitor).
+      # Only disable eDP if HDMI-A-1 is present, so laptop-only use is unchanged.
       bindl = [
-        ", switch:on:Lid Switch, exec, sh -c 'for i in 1 2 3 4 5 6 7 8 9; do hyprctl dispatch moveworkspacetomonitor \$i HDMI-A-1; done; hyprctl keyword monitor \"eDP-1,disable\"; hyprctl dispatch focusmonitor HDMI-A-1'"
+        ", switch:on:Lid Switch, exec, sh -c 'if hyprctl monitors -j | grep -q HDMI-A-1; then for i in 1 2 3 4 5 6 7 8 9; do hyprctl dispatch moveworkspacetomonitor \\$i HDMI-A-1; done; hyprctl keyword monitor \"eDP-1,disable\"; hyprctl dispatch focusmonitor HDMI-A-1; fi'"
         ", switch:off:Lid Switch, exec, hyprctl keyword monitor 'eDP-1,preferred,auto-left,1.33'"
       ];
     };

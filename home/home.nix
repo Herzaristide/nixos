@@ -35,7 +35,7 @@
         user.name = "Herzaristide";
         user.email = "aristide.pichereau@gmail.com";
         credential.helper = "store";
-        pull.rebase = true;
+        pull.rebase = false;
       };
     };
     direnv = {
