@@ -99,16 +99,37 @@
   services.printing.enable = true;
 
   # Fonts for Waybar, Rofi, Hyprlock, kurukurubar, etc.
-  fonts.packages = with pkgs; [
-    nerd-fonts.monoid
-    nerd-fonts.caskaydia-mono # For kurukurubar
-    material-symbols # For kurukurubar Material Icons
-    # System UI fonts (required for GTK apps like Nautilus)
-    dejavu_fonts # DejaVu Sans/Serif/Mono
-    liberation_ttf # Liberation Sans/Serif/Mono (metrics-compatible with Arial/Times/Courier)
-    noto-fonts # Google Noto Sans/Serif
-    noto-fonts-color-emoji # Emoji support
-  ];
+  fonts = {
+    enableDefaultPackages = true;
+    fontconfig = {
+      enable = true;
+      defaultFonts = {
+        serif = [
+          "DejaVu Serif"
+          "Noto Serif"
+        ];
+        sansSerif = [
+          "DejaVu Sans"
+          "Noto Sans"
+        ];
+        monospace = [
+          "DejaVu Sans Mono"
+          "Noto Sans Mono"
+        ];
+        emoji = [ "Noto Color Emoji" ];
+      };
+    };
+    packages = with pkgs; [
+      nerd-fonts.monoid
+      nerd-fonts.caskaydia-mono # For kurukurubar
+      material-symbols # For kurukurubar Material Icons
+      # System UI fonts (required for GTK apps like Nautilus)
+      dejavu_fonts # DejaVu Sans/Serif/Mono
+      liberation_ttf # Liberation Sans/Serif/Mono (metrics-compatible with Arial/Times/Courier)
+      noto-fonts # Google Noto Sans/Serif
+      noto-fonts-color-emoji # Emoji support
+    ];
+  };
 
   # Chromium: extensions, dark mode, favorites — all in NixOS config
   programs.chromium = {
