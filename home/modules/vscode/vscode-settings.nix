@@ -22,7 +22,6 @@
       # Remote development (SSH, WSL, Dev Containers) — for Cursor and VSCode
       ms-vscode-remote.remote-ssh
       ms-vscode-remote.remote-ssh-edit
-      ms-vscode-remote.remote-wsl
       ms-vscode-remote.remote-containers
       anthropic.claude-code
       bierner.markdown-mermaid
