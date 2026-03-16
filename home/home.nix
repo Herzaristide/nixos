@@ -27,17 +27,56 @@
   home.homeDirectory = "/home/aristide";
   home.stateVersion = "25.11";
 
+  # Services
+  services.ssh-agent.enable = true;
+
   # Programs available on all systems
   programs = {
     git = {
       enable = true;
-      settings = {
-        user.name = "Herzaristide";
-        user.email = "aristide.pichereau@gmail.com";
-        credential.helper = "store";
+      userName = "Herzaristide";
+      userEmail = "aristide.pichereau@gmail.com";
+
+      extraConfig = {
+        gpg.format = "ssh";
+        commit.gpgSign = true;
+        init.defaultBranch = "main";
         pull.rebase = false;
       };
+
+      signing = {
+        key = "~/.ssh/siddhartha.pub";
+        signByDefault = true;
+      };
     };
+
+    ssh = {
+      enable = true;
+      matchBlocks = {
+        # GitHub (clé siddhartha pour auth + signing)
+        "github.com" = {
+          hostname = "github.com";
+          user = "git";
+          identityFile = "~/.ssh/siddhartha";
+          identitiesOnly = true;
+        };
+        # GitLab (clé sisyphe)
+        "gitlab.com" = {
+          hostname = "gitlab.com";
+          user = "git";
+          identityFile = "~/.ssh/sisyphe";
+          identitiesOnly = true;
+        };
+        # Serveur gary (clé salammbo)
+        "gary" = {
+          hostname = "192.168.1.138";
+          user = "aristide";
+          identityFile = "~/.ssh/salammbo";
+          identitiesOnly = true;
+        };
+      };
+    };
+
     direnv = {
       enable = true;
       nix-direnv.enable = true;
@@ -51,12 +90,4 @@
     cursor-cli
     nixfmt
   ];
-
-  # Wget configuration - disable certificate checks
-  home.file.".wgetrc".text = ''
-    check_certificate = off
-  '';
-
-  # Claude Code MCP servers (~/.claude.json)
-  # Figma remote MCP: authenticate via /mcp in Claude Code when first connecting.
 }
