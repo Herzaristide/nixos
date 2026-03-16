@@ -25,10 +25,12 @@ Singleton {
     }
     watchChanges: true
 
-    onAdapterUpdated: writeAdapter()
+    // DISABLED: onAdapterUpdated and writeAdapter() corrupt the JSON file
+    // Matugen service generates the file; Quickshell should only read it
+    // onAdapterUpdated: writeAdapter()
     onFileChanged: reload()
 
-    // writes the defualt values if file not found
+    // writes the default values if file not found
     onLoadFailed: err => {
       if (err == FileViewError.FileNotFound) {
         writeAdapter();

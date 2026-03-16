@@ -135,10 +135,10 @@
   # Set wallpaper for kurukurubar to use
   xdg.configFile."background".source = "${inputs.self}/src/wallpaper.jpg";
 
-  # Matugen configuration for wallpaper-based color theming
-  xdg.configFile."matugen/config.toml".source = ../kurukurubar/matugen-config.toml;
-  xdg.configFile."matugen/templates/quickshell-colors.json".source =
-    ../kurukurubar/matugen-template.qml;
+  # Matugen config files removed - we use jq transformation instead due to matugen 3.1.0 template bug
+  # xdg.configFile."matugen/config.toml".source = ../kurukurubar/matugen-config.toml;
+  # xdg.configFile."matugen/templates/quickshell-colors.json".source =
+  #   ../kurukurubar/matugen-template.qml;
 
   # Systemd service to run matugen on wallpaper change
   systemd.user.services.matugen-kurukurubar = {
@@ -148,7 +148,17 @@
     };
     Service = {
       Type = "oneshot";
-      ExecStart = "${pkgs.matugen}/bin/matugen image ${config.home.homeDirectory}/.config/background --json hex -t scheme-tonal-spot";
+      # Workaround for matugen 3.1.0 template bug: use jq to transform JSON directly
+      # instead of relying on broken template processing
+      ExecStart = pkgs.writeShellScript "matugen-kurukurubar" ''
+        ${pkgs.matugen}/bin/matugen image ${config.home.homeDirectory}/.config/background --json hex -t scheme-tonal-spot 2>/dev/null | \
+        ${pkgs.jq}/bin/jq '{
+          colors: {
+            dark: (.colors | to_entries | map({key: .key, value: .value.dark}) | from_entries),
+            light: (.colors | to_entries | map({key: .key, value: .value.light}) | from_entries)
+          }
+        }' > ${config.home.homeDirectory}/.config/kurukurubar/colors.json
+      '';
       RemainAfterExit = true;
     };
     Install = {
