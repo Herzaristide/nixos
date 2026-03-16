@@ -34,16 +34,14 @@
   programs = {
     git = {
       enable = true;
-      userName = "Herzaristide";
-      userEmail = "aristide.pichereau@gmail.com";
-
-      extraConfig = {
+      settings = {
+        user.name = "Herzaristide";
+        user.email = "aristide.pichereau@gmail.com";
         gpg.format = "ssh";
         commit.gpgSign = true;
         init.defaultBranch = "main";
         pull.rebase = false;
       };
-
       signing = {
         key = "~/.ssh/siddhartha.pub";
         signByDefault = true;
@@ -52,6 +50,7 @@
 
     ssh = {
       enable = true;
+      enableDefaultConfig = false;
       matchBlocks = {
         # GitHub (clé siddhartha pour auth + signing)
         "github.com" = {
