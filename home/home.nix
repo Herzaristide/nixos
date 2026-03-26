@@ -27,6 +27,22 @@
   home.homeDirectory = "/home/aristide";
   home.stateVersion = "25.11";
 
+  # SSL certificate environment variables for all sessions
+  # Note: Corporate proxy (Capgemini) is intercepting SSL, requiring cert verification bypass for dev
+  home.sessionVariables = {
+    SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
+    NIX_SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
+    # Bypass SSL verification for development (corporate proxy issue)
+    NODE_TLS_REJECT_UNAUTHORIZED = "0";
+    GIT_SSL_NO_VERIFY = "true";
+  };
+
+  # Curl configuration to skip SSL verification (corporate proxy workaround)
+  home.file.".curlrc".text = "insecure\n";
+
+  # Wget configuration to skip SSL verification (corporate proxy workaround)
+  home.file.".wgetrc".text = "check_certificate = off\n";
+
   # Services
   services.ssh-agent.enable = true;
 
@@ -41,6 +57,11 @@
         commit.gpgSign = true;
         init.defaultBranch = "main";
         pull.rebase = false;
+        # Git Credential Manager (HTTPS); SSH remotes still use ssh config above
+        credential.helper = "${pkgs.git-credential-manager}/bin/git-credential-manager";
+        # GCM on Linux requires an explicit store; WSL has no Secret Service by default.
+        # plaintext: persistent (dev/WSL). Alternatives: cache, gpg (pass), secretservice (GUI).
+        credential.credentialStore = "plaintext";
       };
       signing = {
         key = "~/.ssh/siddhartha.pub";
@@ -60,12 +81,12 @@
           identitiesOnly = true;
         };
         # GitLab (clé sisyphe)
-        "gitlab.com" = {
-          hostname = "gitlab.com";
-          user = "git";
-          identityFile = "~/.ssh/sisyphe";
-          identitiesOnly = true;
-        };
+        #"gitlab.com" = {
+        #  hostname = "gitlab.com";
+        #  user = "git";
+        #  identityFile = "~/.ssh/sisyphe";
+        #  identitiesOnly = true;
+        #};
         # Serveur gary (clé salammbo)
         "gary" = {
           hostname = "192.168.1.138";
@@ -87,6 +108,8 @@
   home.packages = with pkgs; [
     claude-code
     cursor-cli
+	gemini-cli
+    git-credential-manager
     nixfmt
   ];
 }
