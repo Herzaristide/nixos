@@ -90,6 +90,7 @@
     role = "server";
   };
 
-  # Allow K3s API (6443) for remote kubectl (k3s has no openFirewall option)
-  networking.firewall.allowedTCPPorts = [ 6443 ];
+  # Firewall disabled for development server (allows access to all ports from other machines)
+  # WARNING: Only suitable for trusted local networks. Enable firewall and specify ports for production.
+  networking.firewall.enable = false;
 }
