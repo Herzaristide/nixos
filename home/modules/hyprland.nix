@@ -5,6 +5,36 @@
   ...
 }:
 
+let
+  # Re-apply "lid closed + external HDMI" layout after Hyprland restarts or config reload.
+  # Static `monitor = eDP-1,...` always re-enables the panel; runtime `keyword monitor disable` is lost.
+  # Lid bindl only fires on transitions, not when the session already started with the lid closed.
+  hyprClosedLidLayout = pkgs.writeShellScript "hypr-closed-lid-layout" ''
+    skip_lid_check=false
+    [ "''${1:-}" = --force ] && skip_lid_check=true
+
+    if [ "$skip_lid_check" != true ]; then
+      lid_closed=false
+      for f in /proc/acpi/button/lid/*/state; do
+        [ -r "$f" ] || continue
+        if grep -qi closed "$f"; then
+          lid_closed=true
+          break
+        fi
+      done
+      [ "$lid_closed" = true ] || exit 0
+    fi
+
+    if ! hyprctl monitors -j 2>/dev/null | grep -q HDMI-A-1; then
+      exit 0
+    fi
+    for i in 1 2 3 4 5; do
+      hyprctl dispatch moveworkspacetomonitor "$i" HDMI-A-1
+    done
+    hyprctl keyword monitor "eDP-1,disable"
+    hyprctl dispatch focusmonitor HDMI-A-1
+  '';
+in
 {
   wayland.windowManager.hyprland = {
     enable = true;
@@ -76,10 +106,18 @@
         ",preferred,auto,1.33"
       ];
 
+      # Runs on every config reload (e.g. home-manager switch); complements exec-once for cold start.
+      exec = [
+        "${hyprClosedLidLayout}"
+      ];
+
       # Autostart: Dark mode for portal/Chromium, then bar and wallpaper
       exec-once = [
         "gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark"
         "gsettings set org.gnome.desktop.interface color-scheme prefer-dark"
+
+        # Closed lid + HDMI: static monitor rules re-enable eDP after restart/rebuild before this ran.
+        "${hyprClosedLidLayout}"
 
         # Quickshell bar (local declarative kurukurubar - bottom-positioned)
         "quickshell"
@@ -92,7 +130,7 @@
       ];
 
       # Workspaces: avoid persistent monitor binding (Hyprland has bugs with workspace-to-monitor).
-      # Use default:true so new windows go to ws 1; switch with Super+1..9 (AZERTY &é"'(-è_ç).
+      # Use default:true so new windows go to ws 1; switch with Super+1..5 (AZERTY &é"'().
       workspace = [
         "1, default:true"
         "special:claude, on-created-empty:hypr-claude-launch, gapsout:80 200 80 200, gapsin:30"
@@ -124,14 +162,14 @@
         # Focus prev/next monitor (bracket keys)
         "$mod, bracketleft, focusmonitor, -1"
         "$mod, bracketright, focusmonitor, +1"
-        # Workspaces: 1–9 (AZERTY: & é " ' ( - è _ ç = 1 2 3 4 5 6 7 8 9)
+        # Workspaces: 1–5 (AZERTY: & é " ' ( = 1 2 3 4 5)
         "$mod, ampersand, workspace, 1"
         "$mod, eacute, workspace, 2"
         "$mod, quotedbl, workspace, 3"
         "$mod, apostrophe, workspace, 4"
         "$mod, parenleft, workspace, 5"
 
-        # Move window to workspace 1-9
+        # Move window to workspace 1–5
         "$mod SHIFT, ampersand, movetoworkspace, 1"
         "$mod SHIFT, eacute, movetoworkspace, 2"
         "$mod SHIFT, quotedbl, movetoworkspace, 3"
@@ -150,7 +188,7 @@
       # Lid switch: when lid closes, move workspaces to HDMI then disable eDP (avoids workspaces stuck on disabled monitor).
       # Only disable eDP if HDMI-A-1 is present, so laptop-only use is unchanged.
       bindl = [
-        ", switch:on:Lid Switch, exec, sh -c 'if hyprctl monitors -j | grep -q HDMI-A-1; then for i in 1 2 3 4 5 6 7 8 9; do hyprctl dispatch moveworkspacetomonitor \\$i HDMI-A-1; done; hyprctl keyword monitor \"eDP-1,disable\"; hyprctl dispatch focusmonitor HDMI-A-1; fi'"
+        ", switch:on:Lid Switch, exec, ${hyprClosedLidLayout} --force"
         ", switch:off:Lid Switch, exec, hyprctl keyword monitor 'eDP-1,preferred,auto-left,1.33'"
       ];
 
