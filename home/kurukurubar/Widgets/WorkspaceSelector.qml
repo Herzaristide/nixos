@@ -20,7 +20,7 @@ Rectangle {
     spacing: 4
 
     Repeater {
-      model: 9
+      model: 5
 
       Rectangle {
         id: workspaceButton

@@ -109,11 +109,11 @@ Item {
 
               GridLayout {
                 anchors.fill: parent
-                columns: 3
-                rows: 3
+                columns: 5
+                rows: 1
 
                 Repeater {
-                  model: 9
+                  model: 5
 
                   Rectangle {
                     required property int index
