@@ -9,6 +9,7 @@
 {
   imports = [
     ./modules/hyprland.nix
+    ./modules/vscode/cursor.nix
     ./modules/vscode/vscode.nix
     ./modules/wezterm.nix
     ./modules/quickshell.nix
@@ -84,11 +85,7 @@
     dgop
     nautilus
     gnome-online-accounts # Google Drive in Nautilus via Settings > Online Accounts
-    gnome-control-center # Add Google account: run "gnome-control-center" → Online Accounts
-    code-cursor
-    (pkgs.vscode-with-extensions.override {
-      vscodeExtensions = (import ./modules/vscode/vscode-settings.nix { inherit pkgs; }).extensions;
-    })
+    gnome-control-center # Add Google account: run "gnome-control-center" → Online
     figma-linux
     ghostty
     (writeShellScriptBin "hypr-claude-launch" "claude-pwa & wezterm")

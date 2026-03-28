@@ -1,42 +1,11 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
-{
-  # Shared VSCode extensions list - used by both local VSCode and remote servers
-  extensions =
-    with pkgs.vscode-extensions;
-    [
-      ms-python.python
-      charliermarsh.ruff
-      sonarsource.sonarlint-vscode
-      dbaeumer.vscode-eslint
-      esbenp.prettier-vscode
-      mkhl.direnv
-      jnoortheen.nix-ide
-      arrterian.nix-env-selector
-      bradlc.vscode-tailwindcss
-      golang.go
-      hashicorp.terraform
-      rust-lang.rust-analyzer
-      ms-azuretools.vscode-containers
-      ms-azuretools.vscode-docker
-      # Remote development (SSH, WSL, Dev Containers) — for Cursor and VSCode
-      ms-vscode-remote.remote-ssh
-      ms-vscode-remote.remote-ssh-edit
-      ms-vscode-remote.remote-containers
-      anthropic.claude-code
-      bierner.markdown-mermaid
-    ]
-    ++ [
-      # Extensions from marketplace (not in nixpkgs)
-      (pkgs.vscode-utils.extensionFromVscodeMarketplace {
-        name = "vscode-mermaid-chart";
-        publisher = "MermaidChart";
-        version = "2.6.0";
-        sha256 = "sha256-tgZokvZLlzj2/CQt8q1e1EK/rLfLgL/dNt9cbfwmxOk=";
-      })
-    ];
+let
+  # Cursor desktop extensions
+  extensions = with pkgs.vscode-extensions; [
+  ];
 
-  # Shared VSCode settings - used by both local VSCode and remote servers
+  # Cursor desktop settings
   settings = {
     "[python]" = {
       "editor.defaultFormatter" = "charliermarsh.ruff";
@@ -105,7 +74,7 @@
     "editor.wordWrap" = "on";
     "workbench.editor.wrapTabs" = true;
     "sonarlint.pathToNodeExecutable" = "${pkgs.nodejs_22}/bin/node";
-    "window.openFoldersInNewWindow" = "on";
+    # "window.openFoldersInNewWindow" = "on";
     "workbench.activityBar.location" = "top";
     "mcp" = {
       "servers" = {
@@ -130,4 +99,39 @@
       };
     };
   };
+
+  # Custom keybindings
+  keybindings = [
+    {
+      key = "alt+a";
+      command = "editor.action.commentLine";
+      when = "editorTextFocus && !editorReadonly";
+    }
+  ];
+in
+
+{
+  # Install Cursor with custom package
+  home.packages = [ pkgs.code-cursor ];
+
+  # Cursor desktop configuration (writes to ~/.config/Cursor/)
+  home.file.".config/Cursor/User/settings.json" = {
+    text = builtins.toJSON settings;
+  };
+
+  home.file.".config/Cursor/User/keybindings.json" = {
+    text = builtins.toJSON keybindings;
+  };
+
+  # Install extensions directory structure
+  home.file.".cursor/extensions/.keep".text = "";
+
+  # Link extensions to Cursor
+  home.activation.cursorExtensions = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    CURSOR_EXTENSIONS_DIR="$HOME/.cursor/extensions"
+    mkdir -p "$CURSOR_EXTENSIONS_DIR"
+    ${lib.concatMapStringsSep "\n" (ext: ''
+      ln -sf ${ext}/share/vscode/extensions/* "$CURSOR_EXTENSIONS_DIR/" 2>/dev/null || true
+    '') extensions}
+  '';
 }
