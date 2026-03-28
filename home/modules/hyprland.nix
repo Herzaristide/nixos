@@ -130,10 +130,6 @@
         "$mod, quotedbl, workspace, 3"
         "$mod, apostrophe, workspace, 4"
         "$mod, parenleft, workspace, 5"
-        "$mod, minus, workspace, 6"
-        "$mod, egrave, workspace, 7"
-        "$mod, underscore, workspace, 8"
-        "$mod, ccedilla, workspace, 9"
 
         # Move window to workspace 1-9
         "$mod SHIFT, ampersand, movetoworkspace, 1"
@@ -141,10 +137,6 @@
         "$mod SHIFT, quotedbl, movetoworkspace, 3"
         "$mod SHIFT, apostrophe, movetoworkspace, 4"
         "$mod SHIFT, parenleft, movetoworkspace, 5"
-        "$mod SHIFT, minus, movetoworkspace, 6"
-        "$mod SHIFT, egrave, movetoworkspace, 7"
-        "$mod SHIFT, underscore, movetoworkspace, 8"
-        "$mod SHIFT, ccedilla, movetoworkspace, 9"
 
         # Workspace spécial Claude (Super+G) – s'affiche en overlay
         "$mod, G, togglespecialworkspace, claude"
@@ -160,6 +152,34 @@
       bindl = [
         ", switch:on:Lid Switch, exec, sh -c 'if hyprctl monitors -j | grep -q HDMI-A-1; then for i in 1 2 3 4 5 6 7 8 9; do hyprctl dispatch moveworkspacetomonitor \\$i HDMI-A-1; done; hyprctl keyword monitor \"eDP-1,disable\"; hyprctl dispatch focusmonitor HDMI-A-1; fi'"
         ", switch:off:Lid Switch, exec, hyprctl keyword monitor 'eDP-1,preferred,auto-left,1.33'"
+      ];
+
+      # Window rules: float file pickers and small dialog windows (new 0.53+ syntax)
+      windowrule = [
+        # File chooser dialogs (Open/Save/Upload)
+        "match:title ^(Open File)(.*), float on"
+        "match:title ^(Select a File)(.*), float on"
+        "match:title ^(Choose Files)(.*), float on"
+        "match:title ^(Save File)(.*), float on"
+        "match:title ^(Save As)(.*), float on"
+        "match:title ^(Upload)(.*), float on"
+        "match:title ^(.*File Upload.*), float on"
+
+        # XDG desktop portal file chooser
+        "match:class ^(xdg-desktop-portal-gtk)$, float on"
+        "match:class ^(xdg-desktop-portal)$, float on"
+        "match:class ^(org.freedesktop.impl.portal.desktop.gtk)$, float on"
+
+        # Generic dialog windows
+        "match:title ^(.*)(Open|Save|Select|Choose|Upload|Download)(.*), float on"
+        "match:class ^(file_progress)$, float on"
+        "match:class ^(confirm)$, float on"
+        "match:class ^(dialog)$, float on"
+        "match:class ^(download)$, float on"
+        "match:class ^(notification)$, float on"
+        "match:class ^(error)$, float on"
+        "match:class ^(splash)$, float on"
+        "match:class ^(toolbar)$, float on"
       ];
     };
   };

@@ -114,14 +114,13 @@ in
   # Install Cursor with custom package
   home.packages = [ pkgs.code-cursor ];
 
-  # Cursor desktop configuration (writes to ~/.config/Cursor/)
-  home.file.".config/Cursor/User/settings.json" = {
-    text = builtins.toJSON settings;
-  };
-
-  home.file.".config/Cursor/User/keybindings.json" = {
-    text = builtins.toJSON keybindings;
-  };
+  home.activation.cursorUserConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    mkdir -p "$HOME/.config/Cursor/User"
+    install -m0644 ${pkgs.writeText "cursor-settings.json" (builtins.toJSON settings)} \
+      "$HOME/.config/Cursor/User/settings.json"
+    install -m0644 ${pkgs.writeText "cursor-keybindings.json" (builtins.toJSON keybindings)} \
+      "$HOME/.config/Cursor/User/keybindings.json"
+  '';
 
   # Install extensions directory structure
   home.file.".cursor/extensions/.keep".text = "";
