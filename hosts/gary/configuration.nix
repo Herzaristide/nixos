@@ -60,8 +60,8 @@
     "nvidia_modeset"
     "nvidia_uvm"
     "nouveau"
-    "radeon"     # AMD/ATI legacy GPUs
-    "amdgpu"     # AMD modern GPUs
+    "radeon" # AMD/ATI legacy GPUs
+    "amdgpu" # AMD modern GPUs
   ];
 
   # HDD mounts (optional - nofail allows boot without these disks)
@@ -75,14 +75,16 @@
     fsType = "ext4";
     options = [ "nofail" ];
   };
-  # fileSystems."/mnt/hdd3" = {
-  #  device = "/dev/disk/by-uuid/85a42e9c-ace0-4ecc-a04a-e2e722345d5c";
-  #  fsType = "ext4";
-  # };
-  # fileSystems."/mnt/hdd4" = {
-  #  device = "/dev/disk/by-uuid/0d58df3a-f3b2-4916-bbad-d7cd0f003720";
-  #  fsType = "ext4";
-  # };  
+  fileSystems."/mnt/hdd3" = {
+    device = "/dev/disk/by-uuid/85a42e9c-ace0-4ecc-a04a-e2e722345d5c";
+    fsType = "ext4";
+    options = [ "nofail" ];
+  };
+  fileSystems."/mnt/hdd4" = {
+    device = "/dev/disk/by-uuid/8f0502de-aeec-497c-a92a-76ce47fd26de";
+    fsType = "ext4";
+    options = [ "nofail" ];
+  };
 
   # SSD maintenance — periodic TRIM
   services.fstrim.enable = true;
