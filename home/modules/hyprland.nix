@@ -148,6 +148,7 @@ in
         "$mod, F, exec, figma-linux"
         "$mod, R, exec, pkill rofi || rofi -show drun" # App launcher (Super+R)
         "$mod, Q, killactive"
+        "$mod, T, togglefloating"
         "$mod, P, pseudo"
         "$mod, J, togglesplit"
 

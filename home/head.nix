@@ -12,7 +12,7 @@
     ./modules/vscode/cursor.nix
     ./modules/vscode/vscode.nix
     ./modules/wezterm.nix
-    ./modules/quickshell.nix
+    # ./modules/quickshell.nix
     ./modules/rofi.nix
   ];
 
@@ -56,25 +56,6 @@
     GTK_THEME = "adw-gtk3-dark";
   };
 
-  # OLD Quickshell config (replaced by kurukurubar from Zaphkiel)
-  # Uncomment below if you want to revert to the custom bar
-  # xdg.configFile."quickshell/bar.qml".source = ./widget/bar.qml;
-  # xdg.configFile."quickshell/QuickShellBar.qml".source = ./widget/QuickShellBar.qml;
-  # xdg.configFile."quickshell/components/qmldir".source = ./widget/components/qmldir;
-  # xdg.configFile."quickshell/components/Workspaces.qml".source = ./widget/components/Workspaces.qml;
-  # xdg.configFile."quickshell/components/WindowTitle.qml".source = ./widget/components/WindowTitle.qml;
-  # xdg.configFile."quickshell/components/SystemTrayComponent.qml".source =
-  #   ./widget/components/SystemTrayComponent.qml;
-  # xdg.configFile."quickshell/components/SystemStats.qml".source = ./widget/components/SystemStats.qml;
-  # xdg.configFile."quickshell/components/Network.qml".source = ./widget/components/Network.qml;
-  # xdg.configFile."quickshell/components/Microphone.qml".source = ./widget/components/Microphone.qml;
-  # xdg.configFile."quickshell/components/Audio.qml".source = ./widget/components/Audio.qml;
-  # xdg.configFile."quickshell/components/Battery.qml".source = ./widget/components/Battery.qml;
-  # xdg.configFile."quickshell/components/Clock.qml".source = ./widget/components/Clock.qml;
-
-  # Headful (GUI) packages for desktop/laptop systems
-  # adw-gtk3, qt6ct: required for DMS matugen GTK/Qt application theming
-  # material-symbols: icon font for Quickshell bar
   home.packages = with pkgs; [
     inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.default
     # inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default  # Now using kurukurubar
