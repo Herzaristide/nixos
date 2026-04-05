@@ -85,6 +85,14 @@
           ];
           specialArgs = { inherit inputs; };
         };
+
+        kafka = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./hosts/kafka/configuration.nix
+          ];
+          specialArgs = { inherit inputs; };
+        };
       };
     };
 }
