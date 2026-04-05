@@ -59,8 +59,46 @@
     }@inputs:
     let
       system = "x86_64-linux";
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+
+      etc-nixos-scripts = pkgs.stdenvNoCC.mkDerivation {
+        pname = "etc-nixos-scripts";
+        version = "0.1";
+        dontUnpack = true;
+        nativeBuildInputs = [ pkgs.makeWrapper ];
+        installPhase = ''
+          install -Dm755 ${./scripts/apply-nixos.sh} $out/bin/apply-nixos
+          install -Dm755 ${./install.sh} $out/bin/install-nixos
+          wrapProgram $out/bin/install-nixos --prefix PATH : "${
+            pkgs.lib.makeBinPath [
+              pkgs.git
+              pkgs.nixos-install-tools
+            ]
+          }"
+        '';
+        meta.description = "apply-nixos / install-nixos helpers for this flake";
+      };
     in
     {
+      packages.${system} = {
+        inherit etc-nixos-scripts;
+        apply-nixos = etc-nixos-scripts;
+      };
+
+      apps.${system} = {
+        apply-nixos = {
+          type = "app";
+          program = "${etc-nixos-scripts}/bin/apply-nixos";
+        };
+        install-nixos = {
+          type = "app";
+          program = "${etc-nixos-scripts}/bin/install-nixos";
+        };
+      };
+
       nixosConfigurations = {
         zola = nixpkgs.lib.nixosSystem {
           inherit system;
