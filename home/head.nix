@@ -24,11 +24,11 @@
     size = 32;
   };
 
+  # Disable dconf (not needed - GTK config below handles dark mode)
+  dconf.enable = false;
+
   # Dark mode system-wide (GTK, GNOME apps, XDG portal, Chromium)
-  dconf.settings."org/gnome/desktop/interface" = {
-    color-scheme = "prefer-dark";
-    gtk-theme = "adw-gtk3-dark";
-  };
+  # Note: dconf settings removed - GTK config below handles dark mode
   gtk = {
     enable = true;
     font = {
