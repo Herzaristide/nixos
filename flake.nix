@@ -64,13 +64,12 @@
         config.allowUnfree = true;
       };
 
-      etc-nixos-scripts = pkgs.stdenvNoCC.mkDerivation {
-        pname = "etc-nixos-scripts";
+      install-nixos-pkg = pkgs.stdenvNoCC.mkDerivation {
+        pname = "install-nixos";
         version = "0.1";
         dontUnpack = true;
         nativeBuildInputs = [ pkgs.makeWrapper ];
         installPhase = ''
-          install -Dm755 ${./scripts/apply-nixos.sh} $out/bin/apply-nixos
           install -Dm755 ${./install.sh} $out/bin/install-nixos
           wrapProgram $out/bin/install-nixos --prefix PATH : "${
             pkgs.lib.makeBinPath [
@@ -79,24 +78,15 @@
             ]
           }"
         '';
-        meta.description = "apply-nixos / install-nixos helpers for this flake";
+        meta.description = "Clone flake to /etc/nixos, regenerate hardware, rebuild";
       };
     in
     {
-      packages.${system} = {
-        inherit etc-nixos-scripts;
-        apply-nixos = etc-nixos-scripts;
-      };
+      packages.${system}.install-nixos = install-nixos-pkg;
 
-      apps.${system} = {
-        apply-nixos = {
-          type = "app";
-          program = "${etc-nixos-scripts}/bin/apply-nixos";
-        };
-        install-nixos = {
-          type = "app";
-          program = "${etc-nixos-scripts}/bin/install-nixos";
-        };
+      apps.${system}.install-nixos = {
+        type = "app";
+        program = "${install-nixos-pkg}/bin/install-nixos";
       };
 
       nixosConfigurations = {
