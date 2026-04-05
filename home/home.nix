@@ -72,6 +72,8 @@
     ssh = {
       enable = true;
       enableDefaultConfig = false;
+      # After the first unlock, keep keys in ssh-agent (no passphrase on every git/ssh)
+      addKeysToAgent = "yes";
       matchBlocks = {
         # GitHub (clé siddhartha pour auth + signing)
         "github.com" = {
