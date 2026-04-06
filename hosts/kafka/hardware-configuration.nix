@@ -37,21 +37,14 @@
   boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
 
-  # FIXME: Replace with actual root filesystem UUID
+  # FIXME: Replace with actual root filesystem UUID (kernels live in /boot on this partition for BIOS/MBR)
   fileSystems."/" = {
     device = "/dev/disk/by-uuid/REPLACE-WITH-ROOT-UUID";
     fsType = "ext4";
   };
 
-  # FIXME: Replace with actual boot partition UUID
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/REPLACE-WITH-BOOT-UUID";
-    fsType = "vfat";
-    options = [
-      "fmask=0077"
-      "dmask=0077"
-    ];
-  };
+  # No separate /boot vfat — that is for EFI. If you use a dedicated ext4 /boot partition,
+  # add it here (from nixos-generate-config on the machine).
 
   # FIXME: Replace with actual swap device UUID (or remove if no swap)
   swapDevices = [

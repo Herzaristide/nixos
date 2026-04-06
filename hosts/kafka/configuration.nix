@@ -18,10 +18,15 @@
   # Headless server (no GUI)
   head = false;
 
-  # Bootloader (systemd-boot for UEFI; GRUB disabled)
-  boot.loader.grub.enable = false;
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  # Legacy BIOS / MBR — GRUB installs to the disk MBR (no ESP)
+  boot.loader.systemd-boot.enable = false;
+  boot.loader.efi.canTouchEfiVariables = false;
+  boot.loader.grub = {
+    enable = true;
+    device = "/dev/sda"; # FIXME: whole disk (e.g. /dev/sda, /dev/nvme0n1), not /dev/sda1 — use lsblk -dpno NAME
+    efiSupport = false;
+    useOSProber = false;
+  };
 
   # Static IP (systemd-networkd; disable NetworkManager for declarative config)
   # FIXME: Adjust interface name and IP address for your network configuration
