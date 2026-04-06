@@ -96,6 +96,13 @@
           identityFile = "~/.ssh/salammbo";
           identitiesOnly = true;
         };
+        # Serveur kafka (NixOS headless, voir hosts/kafka/configuration.nix)
+        "kafka" = {
+          hostname = "192.168.1.64";
+          user = "aristide";
+          identityFile = "~/.ssh/salammbo";
+          identitiesOnly = true;
+        };
       };
     };
 
