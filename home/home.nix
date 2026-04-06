@@ -72,6 +72,8 @@
     ssh = {
       enable = true;
       enableDefaultConfig = false;
+      # After the first unlock, keep keys in ssh-agent (no passphrase on every git/ssh)
+      addKeysToAgent = "yes";
       matchBlocks = {
         # GitHub (clé siddhartha pour auth + signing)
         "github.com" = {
@@ -90,6 +92,13 @@
         # Serveur gary (clé salammbo)
         "gary" = {
           hostname = "192.168.1.138";
+          user = "aristide";
+          identityFile = "~/.ssh/salammbo";
+          identitiesOnly = true;
+        };
+        # Serveur kafka (NixOS headless, voir hosts/kafka/configuration.nix)
+        "kafka" = {
+          hostname = "192.168.1.64";
           user = "aristide";
           identityFile = "~/.ssh/salammbo";
           identitiesOnly = true;
