@@ -23,7 +23,7 @@
   boot.loader.efi.canTouchEfiVariables = false;
   boot.loader.grub = {
     enable = true;
-    device = "/dev/sda"; # FIXME: whole disk (e.g. /dev/sda, /dev/nvme0n1), not /dev/sda1 — use lsblk -dpno NAME
+    device = "/dev/sda";
     efiSupport = false;
     useOSProber = false;
   };
@@ -31,20 +31,6 @@
   # Static IP (systemd-networkd; disable NetworkManager for declarative config)
   # FIXME: Adjust interface name and IP address for your network configuration
   networking.networkmanager.enable = true;
-  networking.useDHCP = false;
-  networking.interfaces.wlp39s0 = {
-    ipv4.addresses = [
-      {
-        address = "192.168.1.101";
-        prefixLength = 24;
-      }
-    ];
-  };
-  networking.defaultGateway = "192.168.1.1";
-  networking.nameservers = [
-    "192.168.1.1"
-    "8.8.8.8"
-  ];
 
   # SSH - allow password authentication
   services.openssh = {
@@ -70,20 +56,12 @@
     "amdgpu" # AMD modern GPUs
   ];
 
-  # HDD mounts (optional - nofail allows boot without these disks)
-  # FIXME: Replace UUIDs with your actual disk UUIDs from `lsblk -f` or `blkid`
-  # Uncomment and configure the mounts you need:
-  #
-  # fileSystems."/mnt/hdd1" = {
-  #   device = "/dev/disk/by-uuid/YOUR-UUID-HERE";
-  #   fsType = "ext4";
-  #   options = [ "nofail" ];
-  # };
-  # fileSystems."/mnt/hdd2" = {
-  #   device = "/dev/disk/by-uuid/YOUR-UUID-HERE";
-  #   fsType = "ext4";
-  #   options = [ "nofail" ];
-  # };
+  # HDD mounts - Samsung HD161GJ (149GB) at /mnt/hdd1
+  fileSystems."/mnt/hdd1" = {
+    device = "/dev/disk/by-uuid/c2237143-9648-451c-a713-23368205effe";
+    fsType = "ext4";
+    options = [ "nofail" ];
+  };
 
   # SSD maintenance — periodic TRIM
   services.fstrim.enable = true;
