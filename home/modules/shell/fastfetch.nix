@@ -1,11 +1,8 @@
 { pkgs, lib, ... }:
 
 let
-  # Download the custom NixOS ASCII art
-  nixos-logo = pkgs.fetchurl {
-    url = "https://codeberg.org/permafrozen/ascii/raw/branch/main/src/nixos_filled.txt";
-    hash = "sha256-N2643TJsB9fAgmkUd7eJ1AyeJH4+lzaaGNuRnHyhEoQ=";
-  };
+  # ASCII art vendored in the flake (was fetchurl from Codeberg)
+  nixos-logo = ../../../src/nixos_logo.txt;
 
   # Full configuration with hardware info
   fastfetch-config-full = pkgs.writeText "config-full.jsonc" ''
