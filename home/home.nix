@@ -117,8 +117,9 @@
   home.packages = with pkgs; [
     claude-code
     cursor-cli
-	gemini-cli
+    gemini-cli
     git-credential-manager
     nixfmt
+    open-interpreter
   ];
 }

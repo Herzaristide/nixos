@@ -1,6 +1,0 @@
-module qs.Layers
-LockScreen 1.0 LockScreen.qml
-MouseParticles 1.0 MouseParticles.qml
-Notch 1.0 Notch.qml
-PseudoReserved 1.0 PseudoReserved.qml
-Wallpaper 1.0 Wallpaper.qml
