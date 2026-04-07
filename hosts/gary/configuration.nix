@@ -15,7 +15,7 @@
   # Hostname
   networking.hostName = "gary";
 
-  # Headless mode (no GUI)
+  # Pas le module « head » (Hyprland/DMS) : GUI minimale X11 ci-dessous
   head = false;
 
   # Bootloader (systemd-boot for UEFI; GRUB disabled)
@@ -123,4 +123,14 @@
   # Firewall disabled for development server (allows access to all ports from other machines)
   # WARNING: Only suitable for trusted local networks. Enable firewall and specify ports for production.
   networking.firewall.enable = false;
+
+  # Auto-login on tty1 for display monitoring
+  services.getty.autologinUser = "aristide";
+
+  # Auto-start btop on tty1 login
+  programs.fish.loginShellInit = ''
+    if test (tty) = "/dev/tty1"
+      cmatrix
+    end
+  '';
 }

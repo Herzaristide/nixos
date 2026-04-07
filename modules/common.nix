@@ -32,7 +32,12 @@
     };
 
     # Virtual console (TTY) — French AZERTY for all hosts
-    console.keyMap = "fr";
+    console = {
+      enable = true;
+      font = "ter-v32n";
+      packages = [ pkgs.terminus_font ];
+      keyMap = "fr";
+    };
 
     # Timezone and locale
     time.timeZone = "Europe/Paris";
@@ -127,6 +132,7 @@
       # Development (SonarQube extension Cursor)
       jdk17 # Java 17 LTS
       nodejs_22 # Node.js 22 LTS
+      terminus_font
     ];
 
     users.users.aristide = {
