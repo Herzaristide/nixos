@@ -118,8 +118,11 @@
     claude-code
     cursor-cli
     gemini-cli
+    mistral-vibe # Mistral Vibe CLI (`vibe`)
     git-credential-manager
     nixfmt
     open-interpreter
+    cmatrix # Matrix-style falling characters
+    glances # Advanced system monitoring
   ];
 }
