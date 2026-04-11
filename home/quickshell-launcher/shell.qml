@@ -1,6 +1,5 @@
 import Quickshell
-import Quickshell.Wayland
 
 ShellRoot {
-    LauncherBar {}
+    // QuickShell running without any visible interface
 }
