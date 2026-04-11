@@ -12,7 +12,7 @@
     ./modules/vscode/cursor.nix
     ./modules/vscode/vscode.nix
     ./modules/wezterm.nix
-    ./modules/quickshell.nix
+    ./modules/quickshell/quickshell.nix
     ./modules/rofi.nix
   ];
 
