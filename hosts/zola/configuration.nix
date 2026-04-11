@@ -11,6 +11,7 @@
     inputs.home-manager.nixosModules.default
     ../../modules/common.nix
     ../../modules/head.nix
+    ../../modules/battery-optimization.nix
   ];
 
   # Hostname
@@ -20,7 +21,6 @@
     0.0.0.0 youtubei.googleapis.com youtube.googleapis.com
     0.0.0.0 ytimg.com www.ytimg.com i.ytimg.com s.ytimg.com
   '';
-
 
   # Head configuration
   head = true;
@@ -56,7 +56,10 @@
     "nvidia-drm.modeset=1" # Enable mode setting for Wayland
     # "nvidia_drm.fbdev=1" # Enable framebuffer device (crucial for Wayland)
     "nvidia.NVreg_PreserveVideoMemoryAllocations=1" # Improves resume after sleep
-    "nvidia.NVreg_RegistryDwords=PowerMizerEnable=0x1;PerfLevelSrc=0x2222;PowerMizerLevel=0x3;PowerMizerDefault=0x3;PowerMizerDefaultAC=0x3" # Performance/power optimizations
+    # Power optimizations: favor battery life over performance
+    # PowerMizerLevel=0x3 → Adaptive (auto-adjust based on load)
+    # PowerMizerDefault=0x3 → Adaptive on battery
+    "nvidia.NVreg_RegistryDwords=PowerMizerEnable=0x1;PerfLevelSrc=0x3333;PowerMizerLevel=0x3;PowerMizerDefault=0x3;PowerMizerDefaultAC=0x1"
   ];
   boot.blacklistedKernelModules = [ "nouveau" ];
 
@@ -88,21 +91,22 @@
       nvidiaSettings = true; # Nvidia settings utility
       powerManagement = {
         enable = true; # Power management
-        finegrained = false; # More precise power consumption control
+        finegrained = true; # Fine-grained power control (required for offload mode)
       };
       modesetting.enable = true; # Required for Wayland
       # package = nvidiaDriverChannel; # Uncomment and define if using custom driver channel
       forceFullCompositionPipeline = true; # Prevents screen tearing
 
-      # Configuration for hybrid AMD+Nvidia laptop
+      # Configuration for hybrid Intel+Nvidia laptop
       prime = {
-        # Optimized configuration for switchable graphics laptops
+        # OFFLOAD MODE: Intel iGPU by default, NVIDIA on-demand (massive battery savings)
+        # Use `nvidia-offload <command>` to run apps on NVIDIA (e.g., nvidia-offload steam)
         offload = {
-          enable = false; # Mode optimized for power saving
-          enableOffloadCmd = false; # Allows running applications with dedicated GPU
+          enable = true; # Mode optimized for power saving
+          enableOffloadCmd = true; # Creates nvidia-offload wrapper command
         };
-        # sync.enable disabled as offload is generally better for laptops
-        sync.enable = true;
+        # Sync mode disabled: it keeps NVIDIA always powered (kills battery)
+        sync.enable = false;
         # PCI IDs verified for your hardware
         intelBusId = "PCI:0:2:0"; # Integrated Intel GPU
         nvidiaBusId = "PCI:1:0:0"; # Dedicated Nvidia GPU

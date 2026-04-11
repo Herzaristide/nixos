@@ -17,8 +17,8 @@
   services.udisks2.enable = true;
   services.gvfs.enable = true;
 
-  # Power profiles daemon (for kurukurubar power management widget)
-  services.power-profiles-daemon.enable = true;
+  # Power profiles daemon removed: conflicts with auto-cpufreq (see battery-optimization.nix)
+  # services.power-profiles-daemon.enable = true;
 
   # XDG Portal (for file picker, screen sharing in Hyprland)
   # xdg-desktop-portal-gtk exposes color-scheme (dark mode) to Chrome/Gemini, etc.
