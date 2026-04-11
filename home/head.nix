@@ -58,7 +58,6 @@
 
   home.packages = with pkgs; [
     inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.default
-    # inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default  # Now using kurukurubar
     inputs.voicemode.packages.${pkgs.stdenv.hostPlatform.system}.default
     adw-gtk3
     discord
@@ -69,9 +68,36 @@
     gnome-control-center # Add Google account: run "gnome-control-center" → Online
     figma-linux
     ghostty
+    swww # Wallpaper daemon for Wayland
     (writeShellScriptBin "hypr-claude-launch" "claude-pwa & wezterm")
     (writeShellScriptBin "claude-pwa" "chromium --app=https://claude.ai --user-data-dir=$HOME/.config/chromium-$(hostname)")
     (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium-$(hostname)")
+    (writeShellScriptBin "set-wallpaper" ''
+      #!/bin/sh
+      # Set wallpaper using swww
+      WALLPAPER="$HOME/.config/background"
+      if [ -f "$WALLPAPER" ]; then
+        ${swww}/bin/swww img "$WALLPAPER" --transition-type wipe --transition-fps 60
+      fi
+    '')
+    (writeShellScriptBin "swww-init" ''
+      #!/bin/sh
+      # Wait for swww daemon to be ready and set wallpaper
+      WALLPAPER="$HOME/.config/background"
+
+      # Wait up to 10 seconds for swww daemon to be ready
+      for i in $(seq 1 20); do
+        if ${swww}/bin/swww query &>/dev/null; then
+          break
+        fi
+        sleep 0.5
+      done
+
+      # Set wallpaper if file exists
+      if [ -f "$WALLPAPER" ]; then
+        ${swww}/bin/swww img "$WALLPAPER" --transition-type wipe --transition-fps 60
+      fi
+    '')
   ];
 
   # Default applications (force overwrites existing mimeapps.list files)

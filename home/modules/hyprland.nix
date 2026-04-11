@@ -119,14 +119,12 @@ in
         # Closed lid + HDMI: static monitor rules re-enable eDP after restart/rebuild before this ran.
         "${hyprClosedLidLayout}"
 
-        # Quickshell bar (local declarative kurukurubar - bottom-positioned)
+        # Quickshell (headless - no visible interface)
         "quickshell"
 
-        # Waybar (uncomment if using Waybar instead of kurukurubar)
-        # "waybar"
-
-        # Hyprpaper (uncomment if using hyprpaper instead of swww)
-        "hyprpaper"
+        # swww wallpaper daemon and initialization
+        "swww-daemon"
+        "swww-init"
       ];
 
       # Workspaces: avoid persistent monitor binding (Hyprland has bugs with workspace-to-monitor).
@@ -222,4 +220,5 @@ in
       ];
     };
   };
+
 }

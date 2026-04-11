@@ -7,19 +7,18 @@
 }:
 
 {
-  # QuickShell launcher bar - simple bottom bar with application search
+  # QuickShell configured without interface
   home.packages = with pkgs; [
     inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
-  # Copy launcher QML files to ~/.config/quickshell
+  # Minimal QuickShell config (no visible interface)
   xdg.configFile."quickshell/shell.qml".source = ../quickshell-launcher/shell.qml;
-  xdg.configFile."quickshell/LauncherBar.qml".source = ../quickshell-launcher/LauncherBar.qml;
 
   # Systemd user service to auto-start quickshell
   systemd.user.services.quickshell = {
     Unit = {
-      Description = "QuickShell launcher bar";
+      Description = "QuickShell (headless)";
       After = [ "graphical-session.target" ];
       PartOf = [ "graphical-session.target" ];
     };
