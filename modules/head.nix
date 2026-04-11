@@ -10,6 +10,9 @@
     ./audio.nix
   ];
 
+  # dconf: required for GTK app settings and GNOME applications
+  programs.dconf.enable = true;
+
   # udisks2 + gvfs: detect and mount external drives (required for Nautilus "Other Locations")
   services.udisks2.enable = true;
   services.gvfs.enable = true;

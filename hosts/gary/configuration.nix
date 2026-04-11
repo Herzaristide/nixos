@@ -15,7 +15,7 @@
   # Hostname
   networking.hostName = "gary";
 
-  # Headless server (no GUI)
+  # Pas le module « head » (Hyprland/DMS) : GUI minimale X11 ci-dessous
   head = false;
 
   # Bootloader (systemd-boot for UEFI; GRUB disabled)
@@ -53,15 +53,34 @@
   # Firmware for hardware (network, etc.)
   hardware.enableRedistributableFirmware = true;
 
-  # Prevent all GPU modules from loading (headless - no display stack, GPU disabled for testing)
+  # Use radeon driver in minimal mode (HD 7870 - Southern Islands)
+  services.xserver.videoDrivers = [ "radeon" ];
+
+  # Blacklist only non-AMD drivers and amdgpu (use radeon only)
   boot.blacklistedKernelModules = [
     "nvidia"
     "nvidia_drm"
     "nvidia_modeset"
     "nvidia_uvm"
     "nouveau"
-    "radeon" # AMD/ATI legacy GPUs
-    "amdgpu" # AMD modern GPUs
+    "amdgpu" # Use radeon instead for better compatibility with HD 7870
+  ];
+
+  # Radeon minimal mode - disable ALL advanced features for maximum stability
+  boot.kernelParams = [
+    "radeon.dpm=0" # Disable dynamic power management (no clock/voltage changes)
+    "radeon.audio=0" # Disable HDMI/DP audio (reduces complexity)
+    "radeon.aspm=0" # Disable PCIe power management (more stable)
+    "radeon.msi=0" # Disable MSI interrupts (legacy mode, more compatible)
+    "radeon.uvd=0" # Disable UVD video decoder (CPU does video decoding)
+    "radeon.vce=0" # Disable VCE video encoder
+    "radeon.hw_i2c=0" # Disable hardware I2C (monitor detection uses software)
+    "radeon.runpm=0" # Disable runtime power management
+    "radeon.benchmark=0" # Disable boot benchmarks
+    "radeon.pcie_gen2=0" # Force PCIe Gen 1 speed (maximum compatibility)
+    "radeon.no_wb=1" # Disable write-back cache
+    "radeon.agpmode=-1" # Disable AGP mode (PCIe only)
+    "radeon.lockup_timeout=0" # Disable GPU lockup detection
   ];
 
   # HDD mounts (optional - nofail allows boot without these disks)
@@ -104,4 +123,14 @@
   # Firewall disabled for development server (allows access to all ports from other machines)
   # WARNING: Only suitable for trusted local networks. Enable firewall and specify ports for production.
   networking.firewall.enable = false;
+
+  # Auto-login on tty1 for display monitoring
+  services.getty.autologinUser = "aristide";
+
+  # Auto-start btop on tty1 login
+  programs.fish.loginShellInit = ''
+    if test (tty) = "/dev/tty1"
+      cmatrix
+    end
+  '';
 }
