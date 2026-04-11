@@ -3,8 +3,9 @@
 {
   imports = [
     ./fish.nix
-    ./yazi.nix
     ./fastfetch.nix
     ./starship.nix
+    ./micro.nix
+    ./superfile.nix
   ];
 }
