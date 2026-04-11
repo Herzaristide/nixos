@@ -133,6 +133,8 @@
       jdk17 # Java 17 LTS
       nodejs_22 # Node.js 22 LTS
       terminus_font
+      powertop # Power consumption analyzer
+      acpi # Battery status CLI tool
     ];
 
     users.users.aristide = {
