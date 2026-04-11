@@ -20,6 +20,9 @@
   # Power profiles daemon removed: conflicts with auto-cpufreq (see battery-optimization.nix)
   # services.power-profiles-daemon.enable = true;
 
+  # UPower: battery monitoring service (used by quickshell and other desktop components)
+  services.upower.enable = true;
+
   # XDG Portal (for file picker, screen sharing in Hyprland)
   # xdg-desktop-portal-gtk exposes color-scheme (dark mode) to Chrome/Gemini, etc.
   # xdph alone doesn't implement the appearance protocol

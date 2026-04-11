@@ -12,26 +12,10 @@
     inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
-  # Minimal QuickShell config (no visible interface)
+  # Minimal QuickShell config (bottom bar)
   xdg.configFile."quickshell/shell.qml".source = ../quickshell-launcher/shell.qml;
+  xdg.configFile."quickshell/BottomBar.qml".source = ../quickshell-launcher/BottomBar.qml;
 
-  # Systemd user service to auto-start quickshell
-  systemd.user.services.quickshell = {
-    Unit = {
-      Description = "QuickShell (headless)";
-      After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
-    };
-    Service = {
-      Type = "simple";
-      ExecStart = "${
-        inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default
-      }/bin/quickshell";
-      Restart = "on-failure";
-      RestartSec = 3;
-    };
-    Install = {
-      WantedBy = [ "graphical-session.target" ];
-    };
-  };
+  # Note: Quickshell is started via Hyprland's exec-once (see home/modules/hyprland.nix)
+  # No systemd service needed - that would run it twice!
 }
