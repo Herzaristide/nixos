@@ -166,4 +166,7 @@
     startupNotify = true;
   };
 
+  # Wallpaper configuration - link wallpaper to expected location for swww
+  xdg.configFile."background".source = ../src/nix-wallpaper-binary-black.png;
+
 }
