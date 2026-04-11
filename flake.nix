@@ -19,10 +19,6 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    synthwave84-yazi = {
-      url = "github:Miuzarte/synthwave84.yazi";
-      flake = false;
-    };
     nixos-wsl = {
       url = "github:nix-community/NixOS-WSL";
       inputs.nixpkgs.follows = "nixpkgs";

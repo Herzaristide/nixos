@@ -122,9 +122,15 @@
     gemini-cli
     mistral-vibe # Mistral Vibe CLI (`vibe`)
     git-credential-manager
-    nixfmt
     open-interpreter
     cmatrix # Matrix-style falling characters
     glances # Advanced system monitoring
+
+    # Code formatters (pour autofmt plugin de micro)
+    nixfmt # Nix
+    nodePackages.prettier # JS/TS/JSON/YAML/Markdown/HTML/CSS
+    black # Python
+    shfmt # Shell scripts
+    rustfmt # Rust
   ];
 }

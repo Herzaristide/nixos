@@ -87,8 +87,6 @@
       "x-scheme-handler/figma" = [ "figma.desktop" ];
       "x-scheme-handler/cursor" = [ "cursor.desktop" ];
       "x-terminal-emulator" = [ "ghostty.desktop" ];
-      "inode/directory" = [ "yazi.desktop" ];
-      "x-scheme-handler/file" = [ "yazi.desktop" ];
     };
   };
 
