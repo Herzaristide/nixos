@@ -73,10 +73,10 @@
       enable = true;
       enableDefaultConfig = false;
       # After the first unlock, keep keys in ssh-agent (no passphrase on every git/ssh)
-      addKeysToAgent = "yes";
       matchBlocks = {
         # GitHub (clé siddhartha pour auth + signing)
         "github.com" = {
+          addKeysToAgent = "yes";
           hostname = "github.com";
           user = "git";
           identityFile = "~/.ssh/siddhartha";
@@ -91,6 +91,7 @@
         #};
         # Serveur gary (clé salammbo)
         "gary" = {
+          addKeysToAgent = "yes";
           hostname = "192.168.1.138";
           user = "aristide";
           identityFile = "~/.ssh/salammbo";
@@ -98,6 +99,7 @@
         };
         # Serveur kafka (NixOS headless, voir hosts/kafka/configuration.nix)
         "kafka" = {
+          addKeysToAgent = "yes";
           hostname = "192.168.1.64";
           user = "aristide";
           identityFile = "~/.ssh/salammbo";
@@ -118,8 +120,17 @@
     claude-code
     cursor-cli
     gemini-cli
+    mistral-vibe # Mistral Vibe CLI (`vibe`)
     git-credential-manager
-    nixfmt
     open-interpreter
+    cmatrix # Matrix-style falling characters
+    glances # Advanced system monitoring
+
+    # Code formatters (pour autofmt plugin de micro)
+    nixfmt # Nix
+    nodePackages.prettier # JS/TS/JSON/YAML/Markdown/HTML/CSS
+    black # Python
+    shfmt # Shell scripts
+    rustfmt # Rust
   ];
 }
