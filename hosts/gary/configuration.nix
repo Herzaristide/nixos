@@ -10,13 +10,14 @@
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.default
     ../../modules/common.nix
+    ../../modules/head.nix
   ];
 
   # Hostname
   networking.hostName = "gary";
 
-  # Pas le module « head » (Hyprland/DMS) : GUI minimale X11 ci-dessous
-  head = false;
+  # Enable GUI (Hyprland/DMS)
+  head = true;
 
   # Bootloader (systemd-boot for UEFI; GRUB disabled)
   boot.loader.grub.enable = false;
@@ -53,34 +54,23 @@
   # Firmware for hardware (network, etc.)
   hardware.enableRedistributableFirmware = true;
 
-  # Use radeon driver in minimal mode (HD 7870 - Southern Islands)
-  services.xserver.videoDrivers = [ "radeon" ];
+  # GPU is broken - using nomodeset (no GPU driver, VESA/framebuffer only)
+  # services.xserver.videoDrivers not needed with nomodeset
 
-  # Blacklist only non-AMD drivers and amdgpu (use radeon only)
+  # Blacklist all GPU drivers (using nomodeset for broken GPU)
   boot.blacklistedKernelModules = [
     "nvidia"
     "nvidia_drm"
     "nvidia_modeset"
     "nvidia_uvm"
     "nouveau"
-    "amdgpu" # Use radeon instead for better compatibility with HD 7870
+    "amdgpu"
+    "radeon" # Also blacklist radeon since GPU is broken
   ];
 
-  # Radeon minimal mode - disable ALL advanced features for maximum stability
+  # Broken GPU - use nomodeset to disable all GPU drivers and use VESA/framebuffer
   boot.kernelParams = [
-    "radeon.dpm=0" # Disable dynamic power management (no clock/voltage changes)
-    "radeon.audio=0" # Disable HDMI/DP audio (reduces complexity)
-    "radeon.aspm=0" # Disable PCIe power management (more stable)
-    "radeon.msi=0" # Disable MSI interrupts (legacy mode, more compatible)
-    "radeon.uvd=0" # Disable UVD video decoder (CPU does video decoding)
-    "radeon.vce=0" # Disable VCE video encoder
-    "radeon.hw_i2c=0" # Disable hardware I2C (monitor detection uses software)
-    "radeon.runpm=0" # Disable runtime power management
-    "radeon.benchmark=0" # Disable boot benchmarks
-    "radeon.pcie_gen2=0" # Force PCIe Gen 1 speed (maximum compatibility)
-    "radeon.no_wb=1" # Disable write-back cache
-    "radeon.agpmode=-1" # Disable AGP mode (PCIe only)
-    "radeon.lockup_timeout=0" # Disable GPU lockup detection
+    "nomodeset" # Disable kernel mode setting - uses basic VESA framebuffer
   ];
 
   # HDD mounts (optional - nofail allows boot without these disks)
@@ -120,17 +110,32 @@
     role = "server";
   };
 
-  # Firewall disabled for development server (allows access to all ports from other machines)
-  # WARNING: Only suitable for trusted local networks. Enable firewall and specify ports for production.
-  networking.firewall.enable = false;
+  # Firewall configuration
+  networking.firewall = {
+    enable = true;
 
-  # Auto-login on tty1 for display monitoring
-  services.getty.autologinUser = "aristide";
+    # Allow SSH
+    allowedTCPPorts = [
+      22 # SSH
+      6443 # K3s Kubernetes API server
+      10250 # K3s Kubelet metrics
+    ];
 
-  # Auto-start btop on tty1 login
-  programs.fish.loginShellInit = ''
-    if test (tty) = "/dev/tty1"
-      cmatrix
-    end
-  '';
+    # K3s additional ports (etcd, Flannel)
+    allowedTCPPortRanges = [
+      {
+        from = 2379;
+        to = 2380;
+      } # etcd server-client and peer communication
+    ];
+
+    allowedUDPPorts = [
+      8472 # Flannel VXLAN overlay network
+      51820 # Flannel WireGuard (if used)
+      51821 # Flannel WireGuard IPv6 (if used)
+    ];
+
+    # Allow trusted local network (adjust if needed)
+    trustedInterfaces = [ "lo" ]; # Loopback always trusted
+  };
 }
