@@ -1,5 +1,12 @@
 import Quickshell
 
 ShellRoot {
-    BottomBar {}
+    Variants {
+        model: Quickshell.screens
+
+        BottomBar {
+            property var modelData
+            screen: modelData
+        }
+    }
 }

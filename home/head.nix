@@ -24,11 +24,22 @@
     size = 32;
   };
 
-  # Disable dconf (not needed - GTK config below handles dark mode)
-  dconf.enable = false;
+  # dconf: required for GTK portal dialogs (file picker, commit popup) to pick up font settings.
+  # GTK settings.ini alone is not enough — portal-spawned dialogs read from GSettings (dconf).
+  dconf = {
+    enable = true;
+    settings = {
+      "org/gnome/desktop/interface" = {
+        font-name = "DejaVu Sans 11";
+        document-font-name = "DejaVu Sans 11";
+        monospace-font-name = "DejaVu Sans Mono 11";
+        color-scheme = "prefer-dark";
+        gtk-theme = "adw-gtk3-dark";
+      };
+    };
+  };
 
   # Dark mode system-wide (GTK, GNOME apps, XDG portal, Chromium)
-  # Note: dconf settings removed - GTK config below handles dark mode
   gtk = {
     enable = true;
     font = {
