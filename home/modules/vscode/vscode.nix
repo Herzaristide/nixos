@@ -1,11 +1,49 @@
 { pkgs, lib, ... }:
 
 let
-  # VSCode desktop extensions
-  extensions = with pkgs.vscode-extensions; [
-    ms-vscode-remote.remote-ssh
-    ms-vscode-remote.remote-ssh-edit
-  ];
+  # VSCode desktop extensions (mirrors server extensions + desktop-specific ones)
+  extensions =
+    with pkgs.vscode-extensions;
+    [
+      # Remote
+      ms-vscode-remote.remote-ssh
+      ms-vscode-remote.remote-ssh-edit
+      # Language support
+      ms-python.python
+      jnoortheen.nix-ide
+      arrterian.nix-env-selector
+      golang.go
+      rust-lang.rust-analyzer
+      hashicorp.terraform
+      bradlc.vscode-tailwindcss
+      # Formatters & linters
+      esbenp.prettier-vscode
+      charliermarsh.ruff
+      dbaeumer.vscode-eslint
+      # Quality
+      sonarsource.sonarlint-vscode
+      # Containers
+      ms-azuretools.vscode-containers
+      ms-azuretools.vscode-docker
+      # Utilities
+      mkhl.direnv
+      bierner.markdown-mermaid
+      # AI
+      anthropic.claude-code
+      # Git
+      eamodio.gitlens
+      # GitHub Copilot
+      github.copilot
+      github.copilot-chat
+    ]
+    ++ [
+      (pkgs.vscode-utils.extensionFromVscodeMarketplace {
+        name = "vscode-mermaid-chart";
+        publisher = "MermaidChart";
+        version = "2.6.0";
+        sha256 = "sha256-tgZokvZLlzj2/CQt8q1e1EK/rLfLgL/dNt9cbfwmxOk=";
+      })
+    ];
 
   # VSCode desktop settings
   settings = {
