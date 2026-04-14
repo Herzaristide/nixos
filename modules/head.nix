@@ -10,6 +10,12 @@
     ./audio.nix
   ];
 
+  # Disable the experimental Fontations (Rust/Skrifa) font rendering backend.
+  # NixOS 26.05 enables FC_FONTATIONS=1 by default, but this causes white/blank
+  # glyph squares in GTK popup windows (file dialogs, git popups, etc.).
+  # Force the stable FreeType backend instead.
+  environment.variables.FC_FONTATIONS = "0";
+
   # dconf: required for GTK app settings and GNOME applications
   programs.dconf.enable = true;
 
@@ -32,7 +38,7 @@
       pkgs.xdg-desktop-portal-hyprland
       pkgs.xdg-desktop-portal-gtk
     ];
-    config.common.default = "*";
+    config.common.default = "hyprland;gtk";
   };
 
   # X11 (for XWayland) and Hyprland

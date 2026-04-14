@@ -39,10 +39,12 @@ in
   wayland.windowManager.hyprland = {
     enable = true;
     extraConfig = ''
+      # Disable experimental Fontations font backend (NixOS 26.05 default) — causes
+      # white/blank glyph squares in GTK/Qt popup dialogs and portal windows.
+      env = FC_FONTATIONS,0
+
       # Dark mode + theming for all apps
       env = GTK_THEME,adw-gtk3-dark
-      env = QT_QPA_PLATFORMTHEME,qt6ct
-      env = QT_QPA_PLATFORMTHEME_QT6,qt6ct
 
       # DMS integration
       # layerrule = noanim 1, ^(dms)$
@@ -101,8 +103,8 @@ in
       # Monitors: DP-3 (top, flipped 180°) above HDMI-A-1 (bottom, centered)
       # On zola: DP-3 rule ignored, eDP-1 + HDMI-A-1 fallback
       monitor = [
-        "DP-3,2560x1440@60,0x0,1.33,transform,2"
-        "HDMI-A-1,1920x1080@60,240x1083,1.33"
+        "DP-3,2560x1440@75,0x0,1.67,transform,2"
+        "HDMI-A-1,1920x1080@60,49x865,1.33"
         "eDP-1,preferred,auto-left,1.33"
         ",preferred,auto,1.33"
       ];
