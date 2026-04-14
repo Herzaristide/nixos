@@ -103,6 +103,19 @@
   # SSD maintenance — periodic TRIM
   services.fstrim.enable = true;
 
+  # Sleep / power management — suspend on idle, wake on keyboard/mouse
+  services.logind = {
+    lidSwitch = "ignore";
+    lidSwitchExternalPower = "ignore";
+    settings.Login = {
+      IdleAction = "suspend";
+      IdleActionSec = "20min";
+      HandleSuspendKey = "suspend";
+      HandleHibernateKey = "hibernate";
+      HandlePowerKey = "poweroff";
+    };
+  };
+
   # Nix experimental features
   nix.settings.experimental-features = [
     "nix-command"
