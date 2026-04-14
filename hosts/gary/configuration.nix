@@ -54,23 +54,28 @@
   # Firmware for hardware (network, etc.)
   hardware.enableRedistributableFirmware = true;
 
-  # GPU is broken - using nomodeset (no GPU driver, VESA/framebuffer only)
-  # services.xserver.videoDrivers not needed with nomodeset
+  # GPU: AMD Radeon RX 6600 (RDNA 2 / Navi 23) — amdgpu driver
+  services.xserver.videoDrivers = [ "amdgpu" ];
 
-  # Blacklist all GPU drivers (using nomodeset for broken GPU)
+  # Load amdgpu early for seamless KMS (no flicker at boot)
+  boot.initrd.kernelModules = [ "amdgpu" ];
+
+  # Hardware-accelerated graphics (Vulkan, OpenGL, VA-API)
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true; # 32-bit support for Steam/Wine
+  };
+
+  # ROCm SMI — AMD GPU monitoring & management
+  environment.systemPackages = [ pkgs.rocmPackages.rocm-smi ];
+
+  # Blacklist NVIDIA drivers (not needed)
   boot.blacklistedKernelModules = [
     "nvidia"
     "nvidia_drm"
     "nvidia_modeset"
     "nvidia_uvm"
     "nouveau"
-    "amdgpu"
-    "radeon" # Also blacklist radeon since GPU is broken
-  ];
-
-  # Broken GPU - use nomodeset to disable all GPU drivers and use VESA/framebuffer
-  boot.kernelParams = [
-    "nomodeset" # Disable kernel mode setting - uses basic VESA framebuffer
   ];
 
   # HDD mounts (optional - nofail allows boot without these disks)

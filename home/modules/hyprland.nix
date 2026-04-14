@@ -85,7 +85,7 @@ in
         no_hardware_cursors = 1;
       };
 
-      # GPU: moins d'effets pour GT 630 + nouveau (blur/ombres coûtent cher)
+      # Minimal decoration (lightweight, works well on any GPU)
       decoration = {
         rounding = 2;
         active_opacity = 0.85;
@@ -98,10 +98,11 @@ in
         "specialWorkspaceOut, 1, 8, default, slidevert bottom"
       ];
 
-      # Monitors: HDMI-A-1 preferred when plugged, eDP-1 fallback when HDMI unplugged
-      # Order matters: first = primary. HDMI at 0x0; eDP auto when both connected.
+      # Monitors: DP-3 (top, flipped 180°) above HDMI-A-1 (bottom, centered)
+      # On zola: DP-3 rule ignored, eDP-1 + HDMI-A-1 fallback
       monitor = [
-        "HDMI-A-1,1920x1080@60,0x0,1.33"
+        "DP-3,2560x1440@60,0x0,1.33,transform,2"
+        "HDMI-A-1,1920x1080@60,240x1083,1.33"
         "eDP-1,preferred,auto-left,1.33"
         ",preferred,auto,1.33"
       ];
@@ -127,10 +128,13 @@ in
         "swww-init"
       ];
 
-      # Workspaces: avoid persistent monitor binding (Hyprland has bugs with workspace-to-monitor).
-      # Use default:true so new windows go to ws 1; switch with Super+1..5 (AZERTY &é"'().
+      # Workspaces: HDMI-A-1 is the main monitor (ws 1–4), DP-3 gets ws 5.
       workspace = [
-        "1, default:true"
+        "1, monitor:HDMI-A-1, default:true"
+        "2, monitor:HDMI-A-1"
+        "3, monitor:HDMI-A-1"
+        "4, monitor:HDMI-A-1"
+        "5, monitor:DP-3, default:true"
         "special:claude, on-created-empty:hypr-claude-launch, gapsout:80 200 80 200, gapsin:30"
       ];
 

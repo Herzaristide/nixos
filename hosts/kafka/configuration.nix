@@ -45,15 +45,20 @@
   # Firmware for hardware (network, etc.)
   hardware.enableRedistributableFirmware = true;
 
-  # Prevent all GPU modules from loading (headless - no GPU)
+  # NVIDIA GT 630 (Kepler/GK208) — GPU is broken, using nomodeset (VESA/framebuffer only)
+  # Blacklist all GPU drivers since GPU is non-functional
   boot.blacklistedKernelModules = [
     "nvidia"
     "nvidia_drm"
     "nvidia_modeset"
     "nvidia_uvm"
     "nouveau"
-    "radeon" # AMD/ATI legacy GPUs
-    "amdgpu" # AMD modern GPUs
+    "amdgpu"
+    "radeon"
+  ];
+
+  boot.kernelParams = [
+    "nomodeset" # Disable kernel mode setting — uses basic VESA framebuffer
   ];
 
   # HDD mounts - Samsung HD161GJ (149GB) at /mnt/hdd1
