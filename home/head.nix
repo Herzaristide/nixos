@@ -62,21 +62,35 @@
     };
   };
 
+  # Qt: follow GTK theme + font (fixes broken fonts in Qt file dialogs and popups)
+  qt = {
+    enable = true;
+    platformTheme.name = "gtk";
+    style = {
+      name = "adwaita-dark";
+      package = pkgs.adwaita-qt6;
+    };
+  };
+
   home.sessionVariables = {
     BROWSER = "chromium";
     GTK_THEME = "adw-gtk3-dark";
   };
+
+  # Rebuild fontconfig cache on every activation (nixos-rebuild / home-manager switch).
+  # NixOS font store paths change on rebuild; stale caches cause white squares in GTK popups.
+  home.activation.refreshFontCache = lib.hm.dag.entryAfter [ "installPackages" ] ''
+    run rm -rf "$HOME/.cache/fontconfig"
+    run ${pkgs.fontconfig}/bin/fc-cache -f
+  '';
 
   home.packages = with pkgs; [
     inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.default
     inputs.voicemode.packages.${pkgs.stdenv.hostPlatform.system}.default
     adw-gtk3
     discord
-    qt6Packages.qt6ct
     dgop
-    nautilus
-    gnome-online-accounts # Google Drive in Nautilus via Settings > Online Accounts
-    gnome-control-center # Add Google account: run "gnome-control-center" → Online
+    spacedrive
     figma-linux
     ghostty
     swww # Wallpaper daemon for Wayland
@@ -124,6 +138,7 @@
       "x-scheme-handler/figma" = [ "figma.desktop" ];
       "x-scheme-handler/cursor" = [ "cursor.desktop" ];
       "x-terminal-emulator" = [ "ghostty.desktop" ];
+      "inode/directory" = [ "Spacedrive.desktop" ];
     };
   };
 
@@ -160,19 +175,6 @@
     categories = [
       "Audio"
       "AudioVideo"
-    ];
-    startupNotify = true;
-  };
-
-  # Online Accounts - add Google Drive for Nautilus (opens GNOME Settings → Online Accounts)
-  xdg.desktopEntries.online-accounts = {
-    name = "Online Accounts";
-    comment = "Add Google Drive and other cloud accounts for Nautilus";
-    exec = "gnome-control-center online-accounts";
-    icon = "org.gnome.Settings-online-accounts-symbolic";
-    categories = [
-      "Settings"
-      "System"
     ];
     startupNotify = true;
   };
