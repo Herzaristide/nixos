@@ -43,7 +43,7 @@ Home-manager is integrated via NixOS modules, so `nixos-rebuild` updates both sy
 - `theme.nix` - Wallpaper theming options for DMS matugen integration
 
 **Home-manager config** (`/home/`):
-- `home.nix` - Base user config (git, direnv, VSCode/Cursor, fish shell)
+- `home.nix` - Base user config (git, direnv, VSCode, fish shell)
 - `head.nix` - GUI user layer (DMS, Hyprland config, PWA apps via Chrome)
 - `dms-settings.nix` - Complete DMS preferences (exported declaratively from live config)
 - `modules/hyprland.nix` - Hyprland window manager configuration (monitor setup, keybinds, workspaces)
@@ -185,7 +185,7 @@ All inputs follow nixpkgs for consistency.
 
 4. **Wallpaper theming**: DMS matugen generates system-wide color schemes from `/etc/nixos/src/wallpaper.jpg`. Changing this file requires rebuild.
 
-5. **Cursor/VSCode**: The package is `code-cursor` (Cursor IDE, not standard VSCode). Extensions directory is mutable for easy extension installation.
+5. **VSCode**: Uses standard VSCode package with mutable extensions directory for easy extension installation. Remote server (SSH) extensions are pre-configured via vscode-server.nix.
 
 6. **Docker vs Podman**: Both enabled. Docker has `dockerCompat = false` for podman to avoid conflicts.
 

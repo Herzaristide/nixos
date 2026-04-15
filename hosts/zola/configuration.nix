@@ -16,11 +16,6 @@
 
   # Hostname
   networking.hostName = "zola";
-  networking.extraHosts = ''
-    0.0.0.0 youtube.com www.youtube.com m.youtube.com tv.youtube.com gaming.youtube.com youtu.be youtube-nocookie.com
-    0.0.0.0 youtubei.googleapis.com youtube.googleapis.com
-    0.0.0.0 ytimg.com www.ytimg.com i.ytimg.com s.ytimg.com
-  '';
 
   # Head configuration
   head = true;

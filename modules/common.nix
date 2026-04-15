@@ -54,6 +54,15 @@
       LC_TIME = "fr_FR.UTF-8";
     };
 
+    # Site blocking (YouTube, Twitch)
+    networking.extraHosts = ''
+      0.0.0.0 youtube.com www.youtube.com m.youtube.com tv.youtube.com gaming.youtube.com youtu.be youtube-nocookie.com
+      0.0.0.0 youtubei.googleapis.com youtube.googleapis.com
+      0.0.0.0 ytimg.com www.ytimg.com i.ytimg.com s.ytimg.com
+      0.0.0.0 twitch.tv www.twitch.tv m.twitch.tv dashboard.twitch.tv passport.twitch.tv gql.twitch.tv
+      0.0.0.0 static.twitchcdn.net vod-secure.twitch.tv vod-metro.twitch.tv usher.ttvnw.net
+    '';
+
     # Fish as default shell
     programs.fish.enable = true;
 
@@ -129,7 +138,7 @@
       podman-compose
       ollama # CLI pour ollama pull/run
 
-      # Development (SonarQube extension Cursor)
+      # Development (SonarQube extension)
       jdk17 # Java 17 LTS
       nodejs_22 # Node.js 22 LTS
       terminus_font

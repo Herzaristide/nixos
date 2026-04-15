@@ -9,11 +9,10 @@
 {
   imports = [
     ./modules/hyprland.nix
-    ./modules/vscode/cursor.nix
     ./modules/vscode/vscode.nix
     ./modules/wezterm.nix
     ./modules/quickshell/quickshell.nix
-    ./modules/rofi.nix
+    ./modules/walker.nix
   ];
 
   # Mouse cursor theme (Hyprland, GTK apps)
@@ -57,8 +56,11 @@
     gtk3.extraConfig = {
       "gtk-application-prefer-dark-theme" = true;
     };
-    gtk4.extraConfig = {
-      "gtk-application-prefer-dark-theme" = true;
+    gtk4 = {
+      theme = null;
+      extraConfig = {
+        "gtk-application-prefer-dark-theme" = true;
+      };
     };
   };
 
@@ -85,7 +87,6 @@
   '';
 
   home.packages = with pkgs; [
-    inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.default
     inputs.voicemode.packages.${pkgs.stdenv.hostPlatform.system}.default
     adw-gtk3
     discord
@@ -93,26 +94,27 @@
     spacedrive
     figma-linux
     ghostty
-    swww # Wallpaper daemon for Wayland
-    (writeShellScriptBin "hypr-claude-launch" "claude-pwa & wezterm")
+    awww # Wallpaper daemon for Wayland
+    (writeShellScriptBin "hypr-gemini-launch" "gemini-pwa & wezterm")
+    (writeShellScriptBin "gemini-pwa" "chromium --app=https://gemini.google.com --user-data-dir=$HOME/.config/chromium-$(hostname)")
     (writeShellScriptBin "claude-pwa" "chromium --app=https://claude.ai --user-data-dir=$HOME/.config/chromium-$(hostname)")
     (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium-$(hostname)")
     (writeShellScriptBin "set-wallpaper" ''
       #!/bin/sh
-      # Set wallpaper using swww
+      # Set wallpaper using awww
       WALLPAPER="$HOME/.config/background"
       if [ -f "$WALLPAPER" ]; then
-        ${swww}/bin/swww img "$WALLPAPER" --transition-type wipe --transition-fps 60
+        ${awww}/bin/awww img "$WALLPAPER" --transition-type wipe --transition-fps 60
       fi
     '')
-    (writeShellScriptBin "swww-init" ''
+    (writeShellScriptBin "awww-init" ''
       #!/bin/sh
-      # Wait for swww daemon to be ready and set wallpaper
+      # Wait for awww daemon to be ready and set wallpaper
       WALLPAPER="$HOME/.config/background"
 
-      # Wait up to 10 seconds for swww daemon to be ready
+      # Wait up to 10 seconds for awww daemon to be ready
       for i in $(seq 1 20); do
-        if ${swww}/bin/swww query &>/dev/null; then
+        if ${awww}/bin/awww query &>/dev/null; then
           break
         fi
         sleep 0.5
@@ -120,7 +122,7 @@
 
       # Set wallpaper if file exists
       if [ -f "$WALLPAPER" ]; then
-        ${swww}/bin/swww img "$WALLPAPER" --transition-type wipe --transition-fps 60
+        ${awww}/bin/awww img "$WALLPAPER" --transition-type wipe --transition-fps 60
       fi
     '')
   ];
@@ -136,7 +138,6 @@
       "x-scheme-handler/https" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/about" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/figma" = [ "figma.desktop" ];
-      "x-scheme-handler/cursor" = [ "cursor.desktop" ];
       "x-terminal-emulator" = [ "ghostty.desktop" ];
       "inode/directory" = [ "Spacedrive.desktop" ];
     };
@@ -147,13 +148,6 @@
     name = "Figma";
     exec = "figma %U";
     mimeType = [ "x-scheme-handler/figma" ];
-  };
-
-  # Cursor redirect (cursor:// URLs open in Cursor IDE)
-  xdg.desktopEntries.cursor = {
-    name = "Cursor";
-    exec = "cursor %U";
-    mimeType = [ "x-scheme-handler/cursor" ];
   };
 
   # Claude PWA (Claude.ai in app window, per-host Chrome profile)
@@ -179,7 +173,7 @@
     startupNotify = true;
   };
 
-  # Wallpaper configuration - link wallpaper to expected location for swww
+  # Wallpaper configuration - link wallpaper to expected location for awww
   xdg.configFile."background".source = ../src/nix-wallpaper-binary-black.png;
 
 }

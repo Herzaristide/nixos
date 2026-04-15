@@ -27,7 +27,7 @@ PanelWindow {
         right: 0
     }
 
-    height: 36
+    height: 16
     color: "transparent"
 
     // Only show on HDMI-A-1 (main monitor, workspaces 1–4)
