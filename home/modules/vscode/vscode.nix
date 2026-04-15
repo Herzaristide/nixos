@@ -27,13 +27,8 @@ let
       ms-azuretools.vscode-docker
       # Utilities
       mkhl.direnv
-      bierner.markdown-mermaid
-      # AI
-      anthropic.claude-code
       # Git
-      eamodio.gitlens
       # GitHub Copilot
-      github.copilot
       github.copilot-chat
     ]
     ++ [
@@ -107,6 +102,7 @@ let
         };
       };
     };
+    "extensions.ignoreRecommendations" = true;
     "editor.tabSize" = 4;
     "editor.insertSpaces" = false;
     "editor.tabSizeType" = "fixed";
@@ -154,7 +150,7 @@ in
   programs.vscode = {
     enable = true;
     package = pkgs.vscode;
-    mutableExtensionsDir = true;
+    mutableExtensionsDir = false;
     profiles.default.extensions = extensions;
   };
 

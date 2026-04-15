@@ -46,31 +46,18 @@ in
       # Dark mode + theming for all apps
       env = GTK_THEME,adw-gtk3-dark
 
-      # DMS integration
-      # layerrule = noanim 1, ^(dms)$
       misc {
         disable_hyprland_logo = true
         disable_splash_rendering = true
       }
-      # DMS keybindings (Super+Space launcher, Super+V clipboard, etc.)
-      bind = $mod, space, exec, dms ipc call spotlight toggle
-      bind = $mod, V, exec, dms ipc call clipboard toggle
-      bind = $mod, M, exec, dms ipc call processlist focusOrToggle
-      bind = $mod, comma, exec, dms ipc call settings focusOrToggle
-      bind = $mod, N, exec, dms ipc call notifications toggle
-      bind = $mod, Y, exec, dms ipc call dankdash wallpaper
-      bind = $mod, TAB, exec, dms ipc call hypr toggleOverview
-      bind = $mod ALT, L, exec, dms ipc call lock lock
-      bindel = , XF86AudioRaiseVolume, exec, dms ipc call audio increment 3
-      bindel = , XF86AudioLowerVolume, exec, dms ipc call audio decrement 3
-      bindl = , XF86AudioMute, exec, dms ipc call audio mute
-      bindel = , XF86MonBrightnessUp, exec, dms ipc call brightness increment 5
-      bindel = , XF86MonBrightnessDown, exec, dms ipc call brightness decrement 5
-      # Replaced by DMS: togglefloating on Shift+V, exit on Shift+M
+      # Volume / brightness (wpctl / brightnessctl)
+      bindel = , XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%+
+      bindel = , XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-
+      bindl = , XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+      bindel = , XF86MonBrightnessUp, exec, brightnessctl set 5%+
+      bindel = , XF86MonBrightnessDown, exec, brightnessctl set 5%-
       bind = $mod SHIFT, V, togglefloating
       bind = $mod SHIFT, M, exit
-      # DMS window rule
-      # windowrulev2 = float, class:^(org.quickshell)$
     '';
     settings = {
       "$mod" = "SUPER";
@@ -91,7 +78,7 @@ in
       decoration = {
         rounding = 2;
         active_opacity = 0.85;
-        inactive_opacity = 0.60;
+        inactive_opacity = 0.70;
       };
 
       # Special workspace apparaît depuis le bas
@@ -103,10 +90,10 @@ in
       # Monitors: DP-3 (top, flipped 180°) above HDMI-A-1 (bottom, centered)
       # On zola: DP-3 rule ignored, eDP-1 + HDMI-A-1 fallback
       monitor = [
-        "DP-3,2560x1440@75,0x0,1.67,transform,2"
-        "HDMI-A-1,1920x1080@60,49x865,1.33"
-        "eDP-1,preferred,auto-left,1.33"
-        ",preferred,auto,1.33"
+        "DP-3,2560x1440@75,0x0,1.60,transform,2"
+        "HDMI-A-1,1920x1080@60,49x900,1.25"
+        "eDP-1,preferred,auto-left,1.25"
+        ",preferred,auto,1.25"
       ];
 
       # Runs on every config reload (e.g. home-manager switch); complements exec-once for cold start.
@@ -125,9 +112,12 @@ in
         # Quickshell (headless - no visible interface)
         "quickshell"
 
-        # swww wallpaper daemon and initialization
-        "swww-daemon"
-        "swww-init"
+        # Walker launcher daemon (instant startup)
+        "walker --gapplication-service"
+
+        # awww wallpaper daemon and initialization
+        "awww-daemon"
+        "awww-init"
       ];
 
       # Workspaces: HDMI-A-1 is the main monitor (ws 1–4), DP-3 gets ws 5.
@@ -137,27 +127,22 @@ in
         "3, monitor:HDMI-A-1"
         "4, monitor:HDMI-A-1"
         "5, monitor:DP-3, default:true"
-        "special:claude, on-created-empty:hypr-claude-launch, gapsout:80 200 80 200, gapsin:30"
+        "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:80 200 80 200, gapsin:30"
       ];
 
       # Minimal binds - terminal, apps
       bind = [
         "$mod, Return, exec, wezterm"
-        "$mod SHIFT, Return, exec, ghostty" # Ghostty terminal
-        "$mod, A, exec, claude-desktop"
-        "$mod, C, exec, cursor"
-        "$mod, E, exec, code"
+        "$mod, C, exec, code"
         "$mod, B, exec, chromium"
-        "$mod, D, exec, discord"
-        "$mod, F, exec, figma-linux"
-        "$mod, R, exec, pkill rofi || rofi -show drun" # App launcher (Super+R)
+        "$mod, R, exec, walker"
         "$mod, Q, killactive"
         "$mod, T, togglefloating"
         "$mod, P, pseudo"
         "$mod, J, togglesplit"
 
-        # Rofi launcher
-        "$mod CTRL, space, exec, pkill rofi || rofi -show drun" # Rofi launcher (Ctrl+Super+Space)
+        # Walker launcher
+        "$mod CTRL, space, exec, walker" # Walker launcher (Ctrl+Super+Space)
         "$mod SHIFT, R, exec, pkill quickshell; quickshell &" # Reload Quickshell bar
         # "$mod SHIFT, R, exec, pkill waybar; waybar &" # Reload Waybar (alternative)
         "$mod, left, movefocus, l"
@@ -181,8 +166,8 @@ in
         "$mod SHIFT, apostrophe, movetoworkspace, 4"
         "$mod SHIFT, parenleft, movetoworkspace, 5"
 
-        # Workspace spécial Claude (Super+G) – s'affiche en overlay
-        "$mod, G, togglespecialworkspace, claude"
+        # Workspace spécial Gemini (Super+G) – s'affiche en overlay
+        "$mod, G, togglespecialworkspace, gemini"
       ];
 
       bindm = [

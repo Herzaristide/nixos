@@ -105,9 +105,9 @@
 
   # Sleep / power management — suspend on idle, wake on keyboard/mouse
   services.logind = {
-    lidSwitch = "ignore";
-    lidSwitchExternalPower = "ignore";
     settings.Login = {
+      HandleLidSwitch = "ignore";
+      HandleLidSwitchExternalPower = "ignore";
       IdleAction = "suspend";
       IdleActionSec = "20min";
       HandleSuspendKey = "suspend";

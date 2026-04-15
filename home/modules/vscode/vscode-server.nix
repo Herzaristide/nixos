@@ -1,8 +1,8 @@
 { pkgs, lib, ... }:
 
 let
-  # Extensions pre-installed on all SSH remote servers (cursor-server / vscode-server).
-  # These are symlinked into ~/.cursor-server/extensions/ and ~/.vscode-server/extensions/
+  # Extensions pre-installed on all SSH remote servers (vscode-server).
+  # These are symlinked into ~/.vscode-server/extensions/
   # so the remote server finds them immediately without downloading from the marketplace.
   serverExtensions =
     with pkgs.vscode-extensions;
@@ -21,7 +21,7 @@ let
       rust-lang.rust-analyzer
       ms-azuretools.vscode-containers
       ms-azuretools.vscode-docker
-      anthropic.claude-code
+      # anthropic.claude-code
       bierner.markdown-mermaid
     ]
     ++ [
@@ -35,7 +35,7 @@ let
     ];
 
   # Machine-level settings applied to all remote server sessions.
-  # Written to ~/.cursor-server/data/Machine/settings.json (and vscode-server equivalent).
+  # Written to ~/.vscode-server/data/Machine/settings.json.
   serverSettings = {
     "[python]" = {
       "editor.defaultFormatter" = "charliermarsh.ruff";
@@ -117,16 +117,13 @@ let
 in
 
 {
-  # Machine-level settings for both remote server variants
-  home.file.".cursor-server/data/Machine/settings.json".text = settingsJson;
+  # Machine-level settings for remote server
   home.file.".vscode-server/data/Machine/settings.json".text = settingsJson;
 
-  # Symlink extensions from the nix store into the server extension directories
+  # Symlink extensions from the nix store into the server extension directory
   home.activation.vscodeRemoteExtensions = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    for serverDir in "$HOME/.cursor-server" "$HOME/.vscode-server"; do
-      extDir="$serverDir/extensions"
-      mkdir -p "$extDir"
-      ${linkExtensions}
-    done
+    extDir="$HOME/.vscode-server/extensions"
+    mkdir -p "$extDir"
+    ${linkExtensions}
   '';
 }
