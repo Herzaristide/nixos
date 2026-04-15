@@ -63,7 +63,7 @@
   # Hardware-accelerated graphics (Vulkan, OpenGL, VA-API)
   hardware.graphics = {
     enable = true;
-    enable32Bit = true; # 32-bit support for Steam/Wine
+    enable32Bit = true; # 32-bit support for Wine/games
   };
 
   # ROCm SMI — AMD GPU monitoring & management

@@ -139,7 +139,7 @@
       ollama # CLI pour ollama pull/run
 
       # Development (SonarQube extension)
-      jdk17 # Java 17 LTS
+      jdk21 # Java 21 LTS
       nodejs_22 # Node.js 22 LTS
       terminus_font
       powertop # Power consumption analyzer

@@ -60,15 +60,6 @@
     };
   };
 
-  # Steam — gaming (Proton for Windows games like TemTem)
-  programs.steam = {
-    enable = true;
-    remotePlay.openFirewall = true;
-    dedicatedServer.openFirewall = true;
-  };
-
-  # GameMode — CPU/GPU optimizations when running games
-  programs.gamemode.enable = true;
 
   programs.hyprland.enable = true;
   services.xserver.xkb = {
