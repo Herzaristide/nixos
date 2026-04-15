@@ -118,6 +118,7 @@
   # Packages available on all systems (non-hardware)
   home.packages = with pkgs; [
     claude-code
+    sox # Audio recording (required for Claude Code voice mode)
     gemini-cli
     mistral-vibe # Mistral Vibe CLI (`vibe`)
     git-credential-manager
