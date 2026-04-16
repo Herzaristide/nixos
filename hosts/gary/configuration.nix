@@ -60,14 +60,31 @@
   # Load amdgpu early for seamless KMS (no flicker at boot)
   boot.initrd.kernelModules = [ "amdgpu" ];
 
-  # Hardware-accelerated graphics (Vulkan, OpenGL, VA-API)
+  # Hardware-accelerated graphics (Vulkan, OpenGL, VA-API, OpenCL via ROCm)
   hardware.graphics = {
     enable = true;
     enable32Bit = true; # 32-bit support for Wine/games
+    extraPackages = with pkgs; [
+      rocmPackages.clr.icd # OpenCL ICD entry for ROCm
+    ];
   };
 
-  # ROCm SMI — AMD GPU monitoring & management
-  environment.systemPackages = [ pkgs.rocmPackages.rocm-smi ];
+  # ROCm — GPU compute stack for machine learning (PyTorch, TensorFlow, etc.)
+  environment.systemPackages = with pkgs; [
+    rocmPackages.rocm-smi # GPU monitoring & management
+    rocmPackages.rocminfo # GPU info / capability query
+    rocmPackages.clr # HIP runtime + OpenCL (Compute Language Runtime)
+    rocmPackages.rocm-runtime # HSA runtime (low-level ROCm layer)
+    rocmPackages.hipcc # HIP compiler (GPU kernel compilation)
+  ];
+
+  # /opt/rocm symlink — PyTorch/TensorFlow look for ROCm here by default
+  systemd.tmpfiles.rules = [
+    "L+    /opt/rocm   -    -    -     -    ${pkgs.rocmPackages.clr}"
+  ];
+
+  # ROCM_PATH — points ML frameworks to the ROCm installation
+  environment.variables.ROCM_PATH = "${pkgs.rocmPackages.clr}";
 
   # Blacklist NVIDIA drivers (not needed)
   boot.blacklistedKernelModules = [
@@ -135,6 +152,7 @@
     # Allow SSH
     allowedTCPPorts = [
       22 # SSH
+      80 # HTTP
       6443 # K3s Kubernetes API server
       10250 # K3s Kubelet metrics
     ];
