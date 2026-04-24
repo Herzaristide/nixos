@@ -529,7 +529,10 @@ Item {
                 toolProcess.pendingToolName = name;
                 toolProcess.pendingAssistantIdx = assistantIdx;
                 var region = args.region || "screen";
-                toolProcess.command = ["grimblast", "copy", region];
+                var ts = Qt.formatDateTime(new Date(), "yyyyMMdd_HHmmss");
+                var savePath = "/tmp/screenshot-" + ts + ".png";
+                toolProcess.command = ["sh", "-c",
+                    "grimblast copysave " + region + " '" + savePath + "' >/dev/null 2>&1 && echo '" + savePath + "'"];
                 toolProcess.running = true;
                 break;
 
@@ -620,6 +623,13 @@ Item {
         // Truncate very long results
         if (result.length > 2000)
             result = result.substring(0, 2000) + "\n... (tronqué)";
+
+        // For screenshots, insert an image bubble in the chat
+        if (toolName === "screenshot") {
+            var screenshotPath = result.trim();
+            if (screenshotPath !== "")
+                messages.append({ role: "assistant", content: screenshotPath, msgType: "screenshot" });
+        }
 
         // Add tool result to context
         root.conversationContext.push({ role: "tool", content: result });
@@ -754,10 +764,40 @@ Item {
                 required property string msgType
 
                 width: msgList.width
-                height: msgRow.height + 4
+                height: msgType === "screenshot" ? screenshotCol.height + 4 : msgRow.height + 4
+
+                // Screenshot bubble
+                Column {
+                    id: screenshotCol
+                    visible: msgType === "screenshot"
+                    width: parent.width
+                    spacing: 4
+
+                    Text {
+                        text: "\uD83D\uDCF7 " + content
+                        color: "#666666"
+                        font.family: "JetBrains Mono"
+                        font.pixelSize: 10
+                        wrapMode: Text.WrapAnywhere
+                        width: parent.width
+                    }
+
+                    Image {
+                        id: screenshotImg
+                        source: msgType === "screenshot" ? "file://" + content : ""
+                        width: parent.width
+                        height: status === Image.Ready
+                                ? Math.min(width * sourceSize.height / sourceSize.width, 300)
+                                : 50
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                        cache: false
+                    }
+                }
 
                 Row {
                     id: msgRow
+                    visible: msgType !== "screenshot"
                     width: parent.width
 
                     Text {
