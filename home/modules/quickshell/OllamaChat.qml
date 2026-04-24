@@ -7,8 +7,10 @@ import Quickshell.Hyprland
 Item {
     id: root
 
-    property string modelName: "llama3.2:3b"
+    property string modelName: "qwen3:latest"
     property bool isStreaming: false
+    property bool voiceEnabled: false
+    property string voiceStatus: "OFF"
 
     property string systemPrompt: "Tu es un assistant IA intégré au bureau Linux (Hyprland/NixOS) de l'utilisateur. Tu peux exécuter des actions sur son système via les outils disponibles. Quand l'utilisateur te demande d'effectuer une action, utilise l'outil approprié. Réponds toujours en français."
 
@@ -175,10 +177,16 @@ Item {
     ]
 
     ListModel { id: messages }
-    ListModel { id: availableModels }
 
     // Internal context for Ollama (includes tool role messages not shown in UI)
     property var conversationContext: []
+
+    Process {
+        id: copyProcess
+        command: ["wl-copy"]
+        stdinEnabled: true
+        onExited: running = false
+    }
 
     Process {
         id: toolProcess
@@ -203,35 +211,55 @@ Item {
         }
     }
 
-    function fetchModels() {
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", "http://localhost:11434/api/tags");
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                try {
-                    var data = JSON.parse(xhr.responseText);
-                    availableModels.clear();
-                    for (var i = 0; i < data.models.length; i++)
-                        availableModels.append({ name: data.models[i].name });
-                    var found = false;
-                    for (var j = 0; j < availableModels.count; j++) {
-                        if (availableModels.get(j).name === root.modelName) {
-                            modelCombo.currentIndex = j;
-                            found = true;
-                            break;
-                        }
+    // ── Voice assistant process ────────────────────────────────
+    Process {
+        id: voiceProcess
+        command: ["bash", "-c", "exec $HOME/.config/quickshell/voice-assistant.sh"]
+        running: root.voiceEnabled
+        stdinEnabled: true
+
+        stdout: SplitParser {
+            onRead: (data) => {
+                if (data.startsWith("STATUS:")) {
+                    root.voiceStatus = data.substring(7);
+                } else if (data.startsWith("TRANSCRIPT:")) {
+                    var text = data.substring(11).trim();
+                    if (text !== "") {
+                        root.voiceSubmit(text);
                     }
-                    if (!found && availableModels.count > 0) {
-                        modelCombo.currentIndex = 0;
-                        root.modelName = availableModels.get(0).name;
-                    }
-                } catch (e) {}
+                } else if (data.startsWith("ERROR:")) {
+                    console.warn("Voice assistant error:", data.substring(6));
+                }
             }
-        };
-        xhr.send();
+        }
+        stderr: SplitParser {
+            onRead: (data) => { console.warn("voice-assistant:", data) }
+        }
+
+        onExited: (code, status) => {
+            if (root.voiceEnabled) {
+                root.voiceStatus = "ERROR";
+                root.voiceEnabled = false;
+            }
+        }
     }
 
-    Component.onCompleted: fetchModels()
+    function speakText(text) {
+        if (!root.voiceEnabled) return;
+        // Send TTS request to voice assistant via stdin
+        voiceProcess.write("SPEAK:" + text + "\n");
+    }
+
+    function voiceSubmit(text) {
+        if (root.isStreaming) return;
+        inputField.text = "";
+        messages.append({ role: "user", content: "\uD83C\uDF99 " + text, msgType: "text" });
+        root.conversationContext.push({ role: "user", content: text });
+        root.pendingVoiceResponse = true;
+        continueConversation();
+    }
+
+    property bool pendingVoiceResponse: false
 
     function sendMessage() {
         var text = inputField.text.trim();
@@ -322,6 +350,11 @@ Item {
 
                             // Normal text response
                             root.conversationContext.push({ role: "assistant", content: fullResponse });
+                            // TTS if this was a voice-initiated message
+                            if (root.pendingVoiceResponse && fullResponse !== "") {
+                                root.speakText(fullResponse);
+                                root.pendingVoiceResponse = false;
+                            }
                             return;
                         }
                     } catch (e) {}
@@ -485,126 +518,75 @@ Item {
         anchors.margins: 8
         spacing: 6
 
-        // -- Header: model selector + clear --
+        // -- Header --
         RowLayout {
             Layout.fillWidth: true
-            spacing: 6
+            spacing: 8
 
             Text {
-                text: "Modèle :"
-                color: "#FFFFFF"
-                opacity: 0.5
+                text: "// qwen3:latest"
+                color: "#00FF88"
+                opacity: 0.4
                 font.family: "JetBrains Mono"
-                font.pixelSize: 11
-            }
-
-            ComboBox {
-                id: modelCombo
-                Layout.preferredWidth: 150
-                Layout.preferredHeight: 24
-                model: availableModels
-                textRole: "name"
-                enabled: !root.isStreaming
-                onActivated: root.modelName = availableModels.get(currentIndex).name
-
-                contentItem: Text {
-                    leftPadding: 6
-                    text: modelCombo.displayText
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 11
-                    color: "#FFFFFF"
-                    verticalAlignment: Text.AlignVCenter
-                    elide: Text.ElideRight
-                }
-
-                background: Rectangle {
-                    color: modelCombo.pressed ? "#2a2a5e" : "#1a1a2e"
-                    radius: 4
-                    border.color: "#3a3a6e"
-                    border.width: 1
-                }
-
-                popup: Popup {
-                    y: modelCombo.height + 2
-                    width: modelCombo.width
-                    implicitHeight: contentItem.implicitHeight
-                    padding: 1
-
-                    contentItem: ListView {
-                        clip: true
-                        implicitHeight: contentHeight
-                        model: modelCombo.popup.visible ? modelCombo.delegateModel : null
-
-                        ScrollIndicator.vertical: ScrollIndicator {}
-                    }
-
-                    background: Rectangle {
-                        color: "#1a1a2e"
-                        radius: 4
-                        border.color: "#3a3a6e"
-                        border.width: 1
-                    }
-                }
-
-                delegate: ItemDelegate {
-                    required property string name
-                    required property int index
-                    width: modelCombo.width
-                    highlighted: modelCombo.highlightedIndex === index
-
-                    contentItem: Text {
-                        text: name
-                        font.family: "JetBrains Mono"
-                        font.pixelSize: 11
-                        color: "#FFFFFF"
-                        verticalAlignment: Text.AlignVCenter
-                    }
-
-                    background: Rectangle {
-                        color: highlighted ? "#2a2a5e" : "transparent"
-                    }
-                }
-            }
-
-            // Refresh button
-            Rectangle {
-                width: 20
-                height: 24
-                radius: 4
-                color: refreshMa.containsMouse ? "#2a2a4e" : "transparent"
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "\u27F3"
-                    color: "#FFFFFF"
-                    opacity: 0.6
-                    font.pixelSize: 13
-                }
-
-                MouseArea {
-                    id: refreshMa
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.fetchModels()
-                }
+                font.pixelSize: 10
             }
 
             Item { Layout.fillWidth: true }
 
-            Rectangle {
-                width: 24
-                height: 24
-                radius: 4
-                color: clearMa.containsMouse ? "#2a2a4e" : "transparent"
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "\u2715"
-                    color: "#FFFFFF"
-                    opacity: 0.6
-                    font.pixelSize: 11
+            // Voice status indicator
+            Text {
+                visible: root.voiceEnabled
+                text: {
+                    switch (root.voiceStatus) {
+                        case "LISTENING": return "\uD83D\uDD0A";
+                        case "TRIGGERED": return "\uD83C\uDFA4";
+                        case "PROCESSING": return "\u2699";
+                        case "SPEAKING": return "\uD83D\uDD0A";
+                        case "DOWNLOADING_MODEL": return "\u2B07";
+                        case "DOWNLOADING_VOICE": return "\u2B07";
+                        default: return "\u23F3";
+                    }
                 }
+                color: "#00FF88"
+                font.pixelSize: 11
+                opacity: voiceStatusAnim.running ? undefined : 0.6
+
+                SequentialAnimation on opacity {
+                    id: voiceStatusAnim
+                    running: root.voiceStatus === "LISTENING"
+                    loops: Animation.Infinite
+                    NumberAnimation { to: 1.0; duration: 800 }
+                    NumberAnimation { to: 0.3; duration: 800 }
+                }
+            }
+
+            // Mic toggle
+            Text {
+                text: root.voiceEnabled ? "[mic:on]" : "[mic]"
+                color: root.voiceEnabled ? "#00FF88" : "#444444"
+                font.family: "JetBrains Mono"
+                font.pixelSize: 10
+                opacity: micMa.containsMouse ? 1.0 : 0.7
+
+                MouseArea {
+                    id: micMa
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        root.voiceEnabled = !root.voiceEnabled;
+                        if (!root.voiceEnabled)
+                            root.voiceStatus = "OFF";
+                    }
+                }
+            }
+
+            // Clear
+            Text {
+                text: "[clear]"
+                color: clearMa.containsMouse ? "#FF6666" : "#444444"
+                font.family: "JetBrains Mono"
+                font.pixelSize: 10
 
                 MouseArea {
                     id: clearMa
@@ -634,97 +616,94 @@ Item {
                 required property string msgType
 
                 width: msgList.width
-                height: bubble.height + 8
+                height: msgRow.height + 4
 
-                Rectangle {
-                    id: bubble
-                    anchors.right: role === "user" ? parent.right : undefined
-                    anchors.left: role !== "user" ? parent.left : undefined
-                    anchors.top: parent.top
-                    anchors.margins: 4
-                    width: msgText.width + 24
-                    height: msgText.height + 16
-                    radius: 8
-                    color: {
-                        if (msgType === "action") return "#1e3e2e";
-                        if (role === "user") return "#3a3a7e";
-                        return "#1e1e3e";
-                    }
-                    border.color: msgType === "action" ? "#2e5e3e" : "transparent"
-                    border.width: msgType === "action" ? 1 : 0
+                Row {
+                    id: msgRow
+                    width: parent.width
 
                     Text {
-                        id: msgText
-                        x: 12
-                        y: 8
-                        width: Math.min(implicitWidth, msgList.width * 0.85 - 24)
-                        text: (role === "assistant" && content === "" && root.isStreaming)
-                              ? "\u2026" : content
-                        color: msgType === "action" ? "#88DDAA" : "#FFFFFF"
-                        opacity: {
-                            if (msgType === "action") return 0.95;
-                            if (role === "user") return 1.0;
-                            return 0.88;
-                        }
+                        id: prefixText
+                        text: role === "user" ? "> " : (msgType === "action" ? "$ " : "  ")
+                        color: role === "user" ? "#00FF88" : (msgType === "action" ? "#FFCC44" : "#444444")
                         font.family: "JetBrains Mono"
-                        font.pixelSize: msgType === "action" ? 11 : 12
-                        wrapMode: Text.Wrap
+                        font.pixelSize: 12
+                    }
+
+                    TextEdit {
+                        id: msgBodyText
+                        width: msgRow.width - prefixText.implicitWidth - (copyBtn.visible ? copyBtn.implicitWidth + 6 : 0)
+                        readOnly: true
+                        selectByMouse: true
+                        text: (role === "assistant" && content === "" && root.isStreaming)
+                              ? "\u258B" : content
+                        color: {
+                            if (role === "user") return "#00FF88";
+                            if (msgType === "action") return "#FFCC44";
+                            return "#CCCCCC";
+                        }
+                        selectionColor: "#00FF88"
+                        selectedTextColor: "#000000"
+                        font.family: "JetBrains Mono"
+                        font.pixelSize: 12
+                        wrapMode: TextEdit.Wrap
+                    }
+
+                    Text {
+                        id: copyBtn
+                        visible: role === "assistant" && content !== "" && !root.isStreaming
+                        text: copyTimer.running ? "[copied]" : "[copy]"
+                        color: copyMa.containsMouse ? "#00FF88" : "#333333"
+                        font.family: "JetBrains Mono"
+                        font.pixelSize: 10
+                        leftPadding: 6
+
+                        MouseArea {
+                            id: copyMa
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                copyProcess.running = false;
+                                copyProcess.running = true;
+                                copyProcess.write(content);
+                                copyProcess.closeStdin();
+                                copyTimer.restart();
+                            }
+                        }
+
+                        Timer {
+                            id: copyTimer
+                            interval: 2000
+                        }
                     }
                 }
             }
         }
 
         // -- Input bar --
-        Rectangle {
+        RowLayout {
             Layout.fillWidth: true
-            height: 42
-            radius: 8
-            color: "#1a1a2e"
+            spacing: 0
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 10
-                anchors.rightMargin: 8
-                anchors.topMargin: 4
-                anchors.bottomMargin: 4
-                spacing: 6
+            Text {
+                text: "> "
+                color: root.isStreaming ? "#444444" : "#00FF88"
+                font.family: "JetBrains Mono"
+                font.pixelSize: 12
+            }
 
-                TextField {
-                    id: inputField
-                    Layout.fillWidth: true
-                    placeholderText: "Envoyer un message\u2026"
-                    placeholderTextColor: "#60FFFFFF"
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 12
-                    color: "#FFFFFF"
-                    background: Item {}
-                    enabled: !root.isStreaming
-                    Keys.onReturnPressed: root.sendMessage()
-                }
-
-                Rectangle {
-                    width: 28
-                    height: 28
-                    radius: 6
-                    color: sendMa.containsMouse && !root.isStreaming ? "#4a4a8e" : "#2a2a4e"
-                    opacity: root.isStreaming ? 0.4 : 1.0
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: root.isStreaming ? "\u2026" : "\u2191"
-                        color: "#FFFFFF"
-                        font.family: "JetBrains Mono"
-                        font.pixelSize: 14
-                    }
-
-                    MouseArea {
-                        id: sendMa
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: root.sendMessage()
-                    }
-                }
+            TextField {
+                id: inputField
+                Layout.fillWidth: true
+                placeholderText: root.isStreaming ? "\u2026" : "message"
+                placeholderTextColor: "#30FFFFFF"
+                font.family: "JetBrains Mono"
+                font.pixelSize: 12
+                color: "#00FF88"
+                background: Item {}
+                enabled: !root.isStreaming
+                Keys.onReturnPressed: root.sendMessage()
             }
         }
     }

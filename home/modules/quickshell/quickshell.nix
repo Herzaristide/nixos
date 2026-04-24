@@ -20,6 +20,10 @@
   xdg.configFile."quickshell/NotesWidget.qml".source = ./NotesWidget.qml;
   xdg.configFile."quickshell/HardwareStats.qml".source = ./HardwareStats.qml;
   xdg.configFile."quickshell/MiniGraph.qml".source = ./MiniGraph.qml;
+  xdg.configFile."quickshell/voice-assistant.sh" = {
+    source = ./voice-assistant.sh;
+    executable = true;
+  };
   xdg.configFile."quickshell/nixos.svg".source =
     "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake-white.svg";
 

@@ -205,6 +205,9 @@ in
 
         # Generic dialog windows
         "match:title ^(.*)(Open|Save|Select|Choose|Upload|Download)(.*), float on"
+        # Nautilus file manager
+        "match:class ^(org.gnome.Nautilus)$, float on"
+
         "match:class ^(file_progress)$, float on"
         "match:class ^(confirm)$, float on"
         "match:class ^(dialog)$, float on"
