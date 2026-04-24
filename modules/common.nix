@@ -177,6 +177,11 @@
       defaultNetwork.settings.dns_enabled = true;
     };
 
+    # /records directory for voice memos (OllamaChat audio recording tool)
+    systemd.tmpfiles.rules = [
+      "d /records 0755 aristide users -"
+    ];
+
     # System state version
     system.stateVersion = "25.11";
 

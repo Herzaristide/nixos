@@ -12,7 +12,7 @@ Item {
     property bool voiceEnabled: false
     property string voiceStatus: "OFF"
 
-    property string systemPrompt: "Tu es un assistant IA intégré au bureau Linux (Hyprland/NixOS) de l'utilisateur. Tu peux exécuter des actions sur son système via les outils disponibles. Tu as aussi accès à des outils NixOS pour reconstruire le système, mettre à jour le flake, gérer les générations et le garbage collection. La configuration NixOS se trouve dans /etc/nixos. Quand l'utilisateur te demande d'effectuer une action, utilise l'outil approprié. Réponds toujours en français."
+    property string systemPrompt: "Tu es un assistant IA intégré au bureau Linux (Hyprland/NixOS) de l'utilisateur. Tu peux exécuter des actions sur son système via les outils disponibles. Tu as aussi accès à des outils NixOS pour reconstruire le système, mettre à jour le flake, gérer les générations et le garbage collection. La configuration NixOS se trouve dans /etc/nixos. Tu peux démarrer et arrêter des enregistrements audio du microphone vers /records/ (start_recording / stop_recording). Quand l'utilisateur te demande d'effectuer une action, utilise l'outil approprié. Réponds toujours en français."
 
     property var toolDefinitions: [
         {
@@ -231,6 +231,27 @@ Item {
                 description: "Rollback to the previous NixOS generation (undo last rebuild)",
                 parameters: { type: "object", properties: {} }
             }
+        },
+        {
+            type: "function",
+            "function": {
+                name: "start_recording",
+                description: "Start recording microphone input to a WAV file in /records/. Optionally specify a filename (without path or extension).",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        filename: { type: "string", description: "Optional filename without extension. Defaults to a timestamp-based name like rec_2026-04-25T14-30-00." }
+                    }
+                }
+            }
+        },
+        {
+            type: "function",
+            "function": {
+                name: "stop_recording",
+                description: "Stop the current microphone recording and save the WAV file to /records/",
+                parameters: { type: "object", properties: {} }
+            }
         }
     ]
 
@@ -266,6 +287,25 @@ Item {
             stdoutBuffer = "";
             stderrBuffer = "";
             root.handleToolResult(pendingToolName, pendingAssistantIdx, result);
+        }
+    }
+
+    // ── Audio recorder process ────────────────────────────────
+    Process {
+        id: recordProcess
+        property string currentFile: ""
+        property string pendingToolName: ""
+        property int pendingAssistantIdx: -1
+
+        stdout: SplitParser { onRead: (data) => {} }
+        stderr: SplitParser { onRead: (data) => {} }
+
+        onExited: (code, status) => {
+            if (pendingAssistantIdx >= 0) {
+                root.handleToolResult(pendingToolName, pendingAssistantIdx,
+                    "Enregistrement sauvegardé : " + currentFile);
+                pendingAssistantIdx = -1;
+            }
         }
     }
 
@@ -466,6 +506,8 @@ Item {
             case "nix_gc": return args.delete_old ? "nix-collect-garbage -d (toutes générations)" : "nix-collect-garbage";
             case "nix_list_generations": return "nixos-rebuild list-generations";
             case "nixos_rollback": return "nixos-rebuild switch --rollback";
+            case "start_recording": return "\uD83C\uDF99 Enregistrement \u2192 /records/" + (args.filename || "rec_...") + ".wav";
+            case "stop_recording": return "\u23F9 Arr\u00EAt enregistrement";
             default: return name;
         }
     }
@@ -610,6 +652,34 @@ Item {
                 toolProcess.pendingAssistantIdx = assistantIdx;
                 toolProcess.command = ["sh", "-c", "sudo nixos-rebuild switch --rollback 2>&1"];
                 toolProcess.running = true;
+                break;
+
+            case "start_recording": {
+                if (recordProcess.running) {
+                    handleToolResult(name, assistantIdx, "Un enregistrement est déjà en cours : " + recordProcess.currentFile);
+                    break;
+                }
+                var now = new Date();
+                var pad = function(n) { return String(n).padStart(2, "0"); };
+                var ts = now.getFullYear() + "-" + pad(now.getMonth()+1) + "-" + pad(now.getDate()) +
+                         "T" + pad(now.getHours()) + "-" + pad(now.getMinutes()) + "-" + pad(now.getSeconds());
+                var fname = (args.filename && args.filename.trim() !== "") ? args.filename.trim() : ("rec_" + ts);
+                var outPath = "/records/" + fname + ".wav";
+                recordProcess.currentFile = outPath;
+                recordProcess.command = ["sh", "-c", "mkdir -p /records && arecord -f cd -t wav " + outPath];
+                recordProcess.running = true;
+                handleToolResult(name, assistantIdx, "Enregistrement démarré : " + outPath);
+                break;
+            }
+
+            case "stop_recording":
+                if (!recordProcess.running) {
+                    handleToolResult(name, assistantIdx, "Aucun enregistrement en cours.");
+                    break;
+                }
+                recordProcess.pendingToolName = name;
+                recordProcess.pendingAssistantIdx = assistantIdx;
+                recordProcess.running = false;
                 break;
 
             default:

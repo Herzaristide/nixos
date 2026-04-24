@@ -30,7 +30,7 @@ PanelWindow {
     color: "transparent"
 
     margins {
-        left: 48
+        left: 8
     }
 
     // ── Resize handle on right edge ──────────────────────────────
