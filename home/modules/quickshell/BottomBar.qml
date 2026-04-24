@@ -22,12 +22,12 @@ PanelWindow {
     }
 
     margins {
-        bottom: 10
+        bottom: 8
         left: 0
         right: 0
     }
 
-    height: 16
+    height: 20
     color: "transparent"
 
     // Only show on HDMI-A-1 (main monitor, workspaces 1–5)
@@ -70,13 +70,32 @@ PanelWindow {
 
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: 20
-            anchors.rightMargin: 20
+            anchors.leftMargin: 16
+            anchors.rightMargin: 16
+            spacing: 0
 
-            // Workspaces (left side)
+            // Left: NixOS logo
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                Image {
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    source: "nixos.svg"
+                    width: 20
+                    height: 20
+                    sourceSize.width: 64
+                    sourceSize.height: 64
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                    opacity: 0.8
+                }
+            }
+
+            // Center: workspaces
             RowLayout {
-                Layout.alignment: Qt.AlignLeft
-                spacing: 24
+                spacing: 8
 
                 Repeater {
                     model: 5
@@ -85,9 +104,9 @@ PanelWindow {
                         required property int index
 
                         text: window.toRoman(index + 1)
-                        font.family: "Terminus"
+                        font.family: "JetBrains Mono"
                         font.pixelSize: 16
-                        font.weight: Hyprland.focusedWorkspace?.id === (index + 1) ? Font.Bold : Font.Normal
+                        font.weight: Font.Normal
                         color: "#FFFFFF"
 
                         // Opacity based on workspace state
@@ -120,15 +139,11 @@ PanelWindow {
                 }
             }
 
-            // Spacer
+            // Right: battery (hidden when no battery present)
             Item {
+                id: batterySection
                 Layout.fillWidth: true
-            }
-
-            // Battery (right side)
-            RowLayout {
-                Layout.alignment: Qt.AlignRight
-                spacing: 8
+                visible: dev !== null && dev.isPresent
 
                 readonly property var  dev: window.batteryDevice
                 readonly property real pct: dev ? dev.percentage : 0
@@ -143,53 +158,59 @@ PanelWindow {
                 }
                 readonly property real rowOpacity: pct > 0 && pct < 20 ? 1.0 : 0.8
 
-                // AC indicator (visible whenever we're on mains power)
-                Text {
-                    visible: parent.onAc
-                    text: "AC"
-                    font.family: "Terminus"
-                    font.pixelSize: 16
-                    color: "#FFFFFF"
-                    opacity: parent.rowOpacity
-                }
+                Row {
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 8
 
-                // Battery glyph
-                Text {
-                    visible: parent.dev !== null
-                    text: {
-                        if (!parent.dev) return "";
-                        if (parent.isCharging) return "⚡";
-                        const p = parent.pct;
-                        if (p > 80) return "󰁹";
-                        if (p > 60) return "󰂀";
-                        if (p > 40) return "󰁿";
-                        if (p > 20) return "󰁼";
-                        return "󰁺";
+                    // AC indicator (visible whenever we're on mains power)
+                    Text {
+                        visible: batterySection.onAc
+                        text: "AC"
+                        font.family: "JetBrains Mono"
+                        font.pixelSize: 16
+                        color: "#FFFFFF"
+                        opacity: batterySection.rowOpacity
                     }
-                    font.pixelSize: 16
-                    color: "#FFFFFF"
-                    opacity: parent.rowOpacity
-                }
 
-                // Percentage
-                Text {
-                    visible: parent.dev !== null
-                    text: parent.dev ? (Math.round(parent.pct) + "%") : "N/A"
-                    font.family: "Terminus"
-                    font.pixelSize: 16
-                    color: "#FFFFFF"
-                    opacity: parent.rowOpacity
-                }
+                    // Battery glyph
+                    Text {
+                        visible: batterySection.dev !== null
+                        text: {
+                            if (!batterySection.dev) return "";
+                            if (batterySection.isCharging) return "⚡";
+                            const p = batterySection.pct;
+                            if (p > 80) return "󰁹";
+                            if (p > 60) return "󰂀";
+                            if (p > 40) return "󰁿";
+                            if (p > 20) return "󰁼";
+                            return "󰁺";
+                        }
+                        font.pixelSize: 16
+                        color: "#FFFFFF"
+                        opacity: batterySection.rowOpacity
+                    }
 
-                // Time remaining (hidden when FullyCharged or unknown)
-                Text {
-                    readonly property string label: window.formatTime(parent.timeSecs)
-                    visible: parent.dev !== null && !parent.isFullyCharged && label.length > 0
-                    text: label
-                    font.family: "Terminus"
-                    font.pixelSize: 16
-                    color: "#FFFFFF"
-                    opacity: parent.rowOpacity
+                    // Percentage
+                    Text {
+                        visible: batterySection.dev !== null
+                        text: batterySection.dev ? (Math.round(batterySection.pct) + "%") : "N/A"
+                        font.family: "JetBrains Mono"
+                        font.pixelSize: 16
+                        color: "#FFFFFF"
+                        opacity: batterySection.rowOpacity
+                    }
+
+                    // Time remaining (hidden when FullyCharged or unknown)
+                    Text {
+                        readonly property string label: window.formatTime(batterySection.timeSecs)
+                        visible: batterySection.dev !== null && !batterySection.isFullyCharged && label.length > 0
+                        text: label
+                        font.family: "JetBrains Mono"
+                        font.pixelSize: 16
+                        color: "#FFFFFF"
+                        opacity: batterySection.rowOpacity
+                    }
                 }
             }
         }

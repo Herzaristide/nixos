@@ -60,7 +60,6 @@
     };
   };
 
-
   programs.hyprland.enable = true;
   services.xserver.xkb = {
     layout = "fr";
@@ -129,6 +128,7 @@
       };
     };
     packages = with pkgs; [
+      jetbrains-mono # JetBrains Mono (used in terminal and bottom bar)
       nerd-fonts.monoid
       nerd-fonts.caskaydia-mono # For kurukurubar
       material-symbols # For kurukurubar Material Icons
