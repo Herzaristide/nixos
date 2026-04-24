@@ -1,29 +1,11 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import Quickshell
-import Quickshell.Wayland
 import Quickshell.Io
 
-PanelWindow {
+Item {
     id: hwPanel
-
-    property bool hardwareOpen: false
-    signal closeRequested()
-
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "quickshell-hardware"
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
-
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
-
-    exclusiveZone: -1
-    color: "transparent"
-    visible: hardwareOpen && screen && screen.name === "HDMI-A-1"
 
     // ── Hardware data ────────────────────────────────────────────────────
     property string cpuName: "Chargement..."
@@ -35,7 +17,7 @@ PanelWindow {
     property var diskData: []
     property string openTarget: ""
 
-    // ── History buffers for sparkline graphs (40 samples ≈ 80 s at 2 s interval) ──
+    // ── History buffers for sparkline graphs (40 samples) ──
     readonly property int historySize: 40
     property var cpuHistory: []
     property var ramHistory: []
@@ -44,7 +26,7 @@ PanelWindow {
     property string cpuTemp: ""
     property string gpuTemp: ""
 
-    // CPU delta state (computing usage between two /proc/stat reads)
+    // CPU delta state
     property real prevCpuTotal: 0
     property real prevCpuActive: 0
     property bool cpuNameLoaded: false
@@ -82,7 +64,6 @@ PanelWindow {
         }
     }
 
-    // Reset delta state when popup closes
     onVisibleChanged: {
         if (!visible) {
             prevCpuTotal = 0;
@@ -106,7 +87,7 @@ PanelWindow {
         }
     }
 
-    // ── CPU usage (delta between ticks) ─────────────────────────────────
+    // ── CPU usage ───────────────────────────────────────────────────────
     Process {
         id: cpuStatProc
         command: ["sh", "-c", "head -1 /proc/stat"]
@@ -161,10 +142,6 @@ PanelWindow {
     }
 
     // ── GPU ──────────────────────────────────────────────────────────────
-    // 1) nvidia-smi for NVIDIA proprietary
-    // 2) AMD sysfs (amdgpu driver) — gpu_busy_percent + mem_info_vram_*
-    // 3) lspci name-only fallback (no utilisation data available)
-    // All three emit the same "Name,util%,memUsedMiB,memTotalMiB" CSV when possible.
     Process {
         id: gpuProc
         command: [
@@ -192,9 +169,6 @@ PanelWindow {
                     hwPanel.gpuUsage = "";
                     return;
                 }
-                // CSV: "Name, util%, memUsedMiB, memTotalMiB"
-                // Parse last 3 fields as numbers; join the rest as the name,
-                // since AMD names include commas ("Advanced Micro Devices, Inc.").
                 const parts = text.split(',');
                 if (parts.length >= 4) {
                     hwPanel.gpuName  = parts.slice(0, parts.length - 3).join(',').trim();
@@ -212,18 +186,17 @@ PanelWindow {
         }
     }
 
-    // ── Open folder in default file manager ──────────────────────────────────
+    // ── Open folder ──────────────────────────────────────────────────────
     Process {
         id: openFolderProc
         command: ["nautilus", hwPanel.openTarget]
     }
 
-    // ── Temperatures (CPU + GPU via hwmon sysfs) ───────────────────────────
+    // ── Temperatures ─────────────────────────────────────────────────────
     Process {
         id: tempProc
         command: [
             "sh", "-c",
-            // CPU: k10temp (AMD Ryzen) or coretemp (Intel) — prefer temp2 (Tdie) over temp1 (Tctl)
             "cpu_t=''; " +
             "for d in /sys/class/hwmon/hwmon*; do " +
             "  n=$(cat \"$d/name\" 2>/dev/null); " +
@@ -232,7 +205,6 @@ PanelWindow {
             "    [ -n \"$raw\" ] && cpu_t=$(( raw / 1000 )); break; " +
             "  fi; " +
             "done; " +
-            // GPU: amdgpu hwmon — temp1=edge, temp2=junction(hotspot)
             "gpu_t=''; " +
             "for d in /sys/class/hwmon/hwmon*; do " +
             "  n=$(cat \"$d/name\" 2>/dev/null); " +
@@ -241,7 +213,6 @@ PanelWindow {
             "    [ -n \"$raw\" ] && gpu_t=$(( raw / 1000 )); break; " +
             "  fi; " +
             "done; " +
-            // nvidia fallback
             "[ -z \"$gpu_t\" ] && gpu_t=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null | head -1); " +
             "echo \"${cpu_t},${gpu_t}\""
         ]
@@ -292,50 +263,31 @@ PanelWindow {
         }
     }
 
-    // ── Scrim — click outside card to close ──────────────────────────────
-    MouseArea {
+    // ── Scrollable content ──────────────────────────────────────────────
+    Flickable {
         anchors.fill: parent
-        onClicked: hwPanel.closeRequested()
-    }
+        contentHeight: cardColumn.implicitHeight
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
 
-    // ── Centered popup card ──────────────────────────────────────────────
-    Rectangle {
-        id: card
-        width: 360
-        height: cardColumn.implicitHeight + 32
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 36
-        anchors.left: parent.left
-        anchors.leftMargin: 8
-        color: "#0f0f1a"
-        radius: 12
-        border.color: "#2a2a4e"
-        border.width: 1
-
-        // Eat clicks so the scrim doesn't close when clicking inside the card
-        MouseArea { anchors.fill: parent }
+        ScrollBar.vertical: ScrollBar {
+            policy: ScrollBar.AsNeeded
+        }
 
         ColumnLayout {
             id: cardColumn
-            anchors {
-                top: parent.top
-                left: parent.left
-                right: parent.right
-                topMargin: 16
-                leftMargin: 16
-                rightMargin: 16
-            }
+            width: parent.width
             spacing: 14
 
-            // ── Header ───────────────────────────────────────────────────
+            // ── Header ───────────────────────────────────────────────
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 8
 
                 Image {
                     source: "nixos.svg"
-                    width: 20
-                    height: 20
+                    Layout.preferredWidth: 20
+                    Layout.preferredHeight: 20
                     sourceSize.width: 48
                     sourceSize.height: 48
                     fillMode: Image.PreserveAspectFit
@@ -350,24 +302,11 @@ PanelWindow {
                     color: "#e0e0ff"
                     Layout.fillWidth: true
                 }
-
-                Text {
-                    text: "✕"
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 14
-                    color: "#555577"
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: hwPanel.closeRequested()
-                    }
-                }
             }
 
-            // Divider
             Rectangle { Layout.fillWidth: true; height: 1; color: "#2a2a4e" }
 
-            // ── CPU ──────────────────────────────────────────────────────
+            // ── CPU ──────────────────────────────────────────────────
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 6
@@ -443,7 +382,7 @@ PanelWindow {
 
             Rectangle { Layout.fillWidth: true; height: 1; color: "#1e1e30" }
 
-            // ── RAM ──────────────────────────────────────────────────────
+            // ── RAM ──────────────────────────────────────────────────
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 6
@@ -500,7 +439,7 @@ PanelWindow {
 
             Rectangle { Layout.fillWidth: true; height: 1; color: "#1e1e30" }
 
-            // ── GPU ──────────────────────────────────────────────────────
+            // ── GPU ──────────────────────────────────────────────────
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 6
@@ -585,7 +524,7 @@ PanelWindow {
 
             Rectangle { Layout.fillWidth: true; height: 1; color: "#1e1e30" }
 
-            // ── Disques ──────────────────────────────────────────────────
+            // ── Disques ──────────────────────────────────────────────
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 10
@@ -599,7 +538,6 @@ PanelWindow {
                     color: "#7777aa"
                 }
 
-                // Loading placeholder
                 Text {
                     visible: hwPanel.diskData.length === 0
                     text: "Chargement..."
@@ -655,7 +593,7 @@ PanelWindow {
 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: "⏍"
+                                    text: "\u23CD"
                                     font.pixelSize: 12
                                     color: openBtn.containsMouse ? "#aaaaff" : "#555577"
                                 }
@@ -700,8 +638,7 @@ PanelWindow {
                 }
             }
 
-            // Bottom padding
-            Item { height: 2 }
+            Item { height: 8 }
         }
     }
 }
