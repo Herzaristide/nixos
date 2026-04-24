@@ -23,7 +23,6 @@ PanelWindow {
 
     implicitWidth: 48
     color: "transparent"
-    visible: screen && screen.name === "HDMI-A-1"
 
     function toRoman(num) {
         const romanNumerals = ["I", "II", "III", "IV", "V"];
@@ -96,6 +95,39 @@ PanelWindow {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: window.selectWidget(2)
+                }
+            }
+        }
+
+        Item { Layout.preferredHeight: 8 }
+
+        // ── Pitch Analyzer button ────────────────────────────────────
+        Item {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: 36
+            Layout.preferredHeight: 36
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 8
+                color: window.panelOpen && window.activeWidget === 3
+                       ? "#4a4a8e" : (pitchMa.containsMouse ? "#2a2a4e" : "transparent")
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "\u2669"
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 16
+                    color: "#FFFFFF"
+                    opacity: window.panelOpen && window.activeWidget === 3 ? 1.0 : 0.55
+                }
+
+                MouseArea {
+                    id: pitchMa
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: window.selectWidget(3)
                 }
             }
         }

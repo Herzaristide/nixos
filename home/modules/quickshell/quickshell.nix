@@ -24,6 +24,11 @@
     source = ./voice-assistant.sh;
     executable = true;
   };
+  xdg.configFile."quickshell/PitchAnalyzer.qml".source = ./PitchAnalyzer.qml;
+  xdg.configFile."quickshell/pitch-analyzer.sh" = {
+    source = ./pitch-analyzer.sh;
+    executable = true;
+  };
   xdg.configFile."quickshell/nixos.svg".source =
     "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake-white.svg";
 

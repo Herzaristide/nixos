@@ -12,7 +12,7 @@ Item {
     property bool voiceEnabled: false
     property string voiceStatus: "OFF"
 
-    property string systemPrompt: "Tu es un assistant IA intégré au bureau Linux (Hyprland/NixOS) de l'utilisateur. Tu peux exécuter des actions sur son système via les outils disponibles. Quand l'utilisateur te demande d'effectuer une action, utilise l'outil approprié. Réponds toujours en français."
+    property string systemPrompt: "Tu es un assistant IA intégré au bureau Linux (Hyprland/NixOS) de l'utilisateur. Tu peux exécuter des actions sur son système via les outils disponibles. Tu as aussi accès à des outils NixOS pour reconstruire le système, mettre à jour le flake, gérer les générations et le garbage collection. La configuration NixOS se trouve dans /etc/nixos. Quand l'utilisateur te demande d'effectuer une action, utilise l'outil approprié. Réponds toujours en français."
 
     property var toolDefinitions: [
         {
@@ -173,6 +173,64 @@ Item {
                     required: ["command"]
                 }
             }
+        },
+        {
+            type: "function",
+            "function": {
+                name: "nixos_rebuild",
+                description: "Rebuild the NixOS system configuration from /etc/nixos. Action can be: switch (apply immediately, default), boot (apply on next reboot), test (apply temporarily without making permanent). Requires sudo.",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        action: { type: "string", description: "switch (default), boot, or test" }
+                    }
+                }
+            }
+        },
+        {
+            type: "function",
+            "function": {
+                name: "nix_flake_update",
+                description: "Update all flake inputs (nixpkgs, home-manager, DMS, etc.) in the NixOS configuration",
+                parameters: { type: "object", properties: {} }
+            }
+        },
+        {
+            type: "function",
+            "function": {
+                name: "nix_flake_check",
+                description: "Check the NixOS flake configuration for errors without building anything",
+                parameters: { type: "object", properties: {} }
+            }
+        },
+        {
+            type: "function",
+            "function": {
+                name: "nix_gc",
+                description: "Run Nix garbage collection to free disk space. If delete_old is true, deletes all old system generations first (more aggressive cleanup).",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        delete_old: { type: "boolean", description: "Delete all old generations before GC (sudo nix-collect-garbage -d)" }
+                    }
+                }
+            }
+        },
+        {
+            type: "function",
+            "function": {
+                name: "nix_list_generations",
+                description: "List all NixOS system generations with their dates, to see available rollback points",
+                parameters: { type: "object", properties: {} }
+            }
+        },
+        {
+            type: "function",
+            "function": {
+                name: "nixos_rollback",
+                description: "Rollback to the previous NixOS generation (undo last rebuild)",
+                parameters: { type: "object", properties: {} }
+            }
         }
     ]
 
@@ -227,8 +285,15 @@ Item {
                     if (text !== "") {
                         root.voiceSubmit(text);
                     }
+                } else if (data.startsWith("DEBUG:")) {
+                    // Whisper heard this while waiting for the wake word.
+                    // Logged so you can tune WAKE_WORD_REGEX to your voice.
+                    console.log("[wake-stream]", data.substring(6));
                 } else if (data.startsWith("ERROR:")) {
-                    console.warn("Voice assistant error:", data.substring(6));
+                    var errMsg = data.substring(6);
+                    console.warn("Voice assistant error:", errMsg);
+                    // Show error in chat so the user knows what went wrong
+                    messages.append({ role: "assistant", content: "⚠️ Voix : " + errMsg, msgType: "text" });
                 }
             }
         }
@@ -252,11 +317,11 @@ Item {
 
     function voiceSubmit(text) {
         if (root.isStreaming) return;
-        inputField.text = "";
-        messages.append({ role: "user", content: "\uD83C\uDF99 " + text, msgType: "text" });
-        root.conversationContext.push({ role: "user", content: text });
+        // Write transcript into the input field so the user sees it,
+        // then re-use the normal sendMessage() path.
+        inputField.text = text;
         root.pendingVoiceResponse = true;
-        continueConversation();
+        sendMessage();
     }
 
     property bool pendingVoiceResponse: false
@@ -266,7 +331,9 @@ Item {
         if (text === "" || root.isStreaming) return;
 
         inputField.text = "";
-        messages.append({ role: "user", content: text, msgType: "text" });
+        // Prefix voice-initiated messages with a mic icon
+        var displayText = root.pendingVoiceResponse ? "\uD83C\uDF99 " + text : text;
+        messages.append({ role: "user", content: displayText, msgType: "text" });
 
         // Add to internal context
         root.conversationContext.push({ role: "user", content: text });
@@ -393,6 +460,12 @@ Item {
             case "get_system_info": return "Infos système...";
             case "list_windows": return "Liste des fenêtres...";
             case "run_command": return "$ " + (args.command || "?");
+            case "nixos_rebuild": return "nixos-rebuild " + (args.action || "switch") + " --flake .#$(hostname)";
+            case "nix_flake_update": return "nix flake update...";
+            case "nix_flake_check": return "nix flake check...";
+            case "nix_gc": return args.delete_old ? "nix-collect-garbage -d (toutes générations)" : "nix-collect-garbage";
+            case "nix_list_generations": return "nixos-rebuild list-generations";
+            case "nixos_rollback": return "nixos-rebuild switch --rollback";
             default: return name;
         }
     }
@@ -489,6 +562,53 @@ Item {
                 toolProcess.running = true;
                 break;
 
+            case "nixos_rebuild":
+                toolProcess.pendingToolName = name;
+                toolProcess.pendingAssistantIdx = assistantIdx;
+                var rebuildAction = args.action || "switch";
+                toolProcess.command = ["sh", "-c",
+                    "cd /etc/nixos && sudo nixos-rebuild " + rebuildAction + " --flake .#$(hostname) 2>&1"];
+                toolProcess.running = true;
+                break;
+
+            case "nix_flake_update":
+                toolProcess.pendingToolName = name;
+                toolProcess.pendingAssistantIdx = assistantIdx;
+                toolProcess.command = ["sh", "-c", "cd /etc/nixos && nix flake update 2>&1"];
+                toolProcess.running = true;
+                break;
+
+            case "nix_flake_check":
+                toolProcess.pendingToolName = name;
+                toolProcess.pendingAssistantIdx = assistantIdx;
+                toolProcess.command = ["sh", "-c", "cd /etc/nixos && nix flake check 2>&1"];
+                toolProcess.running = true;
+                break;
+
+            case "nix_gc":
+                toolProcess.pendingToolName = name;
+                toolProcess.pendingAssistantIdx = assistantIdx;
+                if (args.delete_old)
+                    toolProcess.command = ["sh", "-c", "sudo nix-collect-garbage -d 2>&1"];
+                else
+                    toolProcess.command = ["sh", "-c", "nix-collect-garbage 2>&1"];
+                toolProcess.running = true;
+                break;
+
+            case "nix_list_generations":
+                toolProcess.pendingToolName = name;
+                toolProcess.pendingAssistantIdx = assistantIdx;
+                toolProcess.command = ["nixos-rebuild", "list-generations"];
+                toolProcess.running = true;
+                break;
+
+            case "nixos_rollback":
+                toolProcess.pendingToolName = name;
+                toolProcess.pendingAssistantIdx = assistantIdx;
+                toolProcess.command = ["sh", "-c", "sudo nixos-rebuild switch --rollback 2>&1"];
+                toolProcess.running = true;
+                break;
+
             default:
                 result = "Outil inconnu : " + name;
                 handleToolResult(name, assistantIdx, result);
@@ -549,7 +669,7 @@ Item {
                 }
                 color: "#00FF88"
                 font.pixelSize: 11
-                opacity: voiceStatusAnim.running ? undefined : 0.6
+                opacity: 0.6
 
                 SequentialAnimation on opacity {
                     id: voiceStatusAnim
@@ -557,6 +677,7 @@ Item {
                     loops: Animation.Infinite
                     NumberAnimation { to: 1.0; duration: 800 }
                     NumberAnimation { to: 0.3; duration: 800 }
+                    onStopped: parent.opacity = 0.6
                 }
             }
 
@@ -607,8 +728,25 @@ Item {
             spacing: 6
             model: messages
 
-            onCountChanged: Qt.callLater(positionViewAtEnd)
-            onContentHeightChanged: Qt.callLater(positionViewAtEnd)
+            property bool userScrolledUp: false
+
+            function scrollToEndIfNeeded() {
+                if (!userScrolledUp)
+                    positionViewAtEnd();
+            }
+
+            onCountChanged: {
+                userScrolledUp = false;
+                Qt.callLater(positionViewAtEnd);
+            }
+            onContentHeightChanged: Qt.callLater(scrollToEndIfNeeded)
+            onDragStarted: userScrolledUp = true
+            onFlickStarted: userScrolledUp = true
+            onMovementStarted: userScrolledUp = true
+            onAtYEndChanged: {
+                if (atYEnd)
+                    userScrolledUp = false;
+            }
 
             delegate: Item {
                 required property string role
