@@ -18,6 +18,8 @@
   xdg.configFile."quickshell/SidePanel.qml".source = ./SidePanel.qml;
   xdg.configFile."quickshell/OllamaChat.qml".source = ./OllamaChat.qml;
   xdg.configFile."quickshell/NotesWidget.qml".source = ./NotesWidget.qml;
+  xdg.configFile."quickshell/HardwareStats.qml".source = ./HardwareStats.qml;
+  xdg.configFile."quickshell/MiniGraph.qml".source = ./MiniGraph.qml;
   xdg.configFile."quickshell/nixos.svg".source =
     "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake-white.svg";
 

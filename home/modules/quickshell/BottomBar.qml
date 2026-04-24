@@ -9,7 +9,9 @@ PanelWindow {
     id: window
 
     property bool panelOpen: false
+    property bool hardwareOpen: false
     signal togglePanel()
+    signal toggleHardware()
 
     // Configure the underlying wlr-layer-shell via attached properties.
     // PanelWindow IS the layer-shell window; NEVER nest a WlrLayershell{} child
@@ -71,19 +73,30 @@ PanelWindow {
         anchors.fill: parent
         color: "transparent"
 
-        // Left: NixOS logo
-        Image {
+        // Left: NixOS logo (clickable — opens hardware stats popup)
+        Item {
             anchors.left: parent.left
             anchors.leftMargin: 16
             anchors.verticalCenter: parent.verticalCenter
-            source: "nixos.svg"
             width: 20
             height: 20
-            sourceSize.width: 64
-            sourceSize.height: 64
-            fillMode: Image.PreserveAspectFit
-            smooth: true
-            opacity: 0.8
+
+            Image {
+                anchors.fill: parent
+                source: "nixos.svg"
+                sourceSize.width: 64
+                sourceSize.height: 64
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+                opacity: window.hardwareOpen ? 1.0 : 0.8
+                Behavior on opacity { NumberAnimation { duration: 150 } }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: window.toggleHardware()
+            }
         }
 
         // Center: workspaces (absolutely centered)
