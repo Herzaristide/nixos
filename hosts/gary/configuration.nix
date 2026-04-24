@@ -95,6 +95,9 @@
     "nouveau"
   ];
 
+  # Enable NTFS3 kernel driver for Maxtor HDD
+  boot.supportedFilesystems = [ "ntfs" ];
+
   # HDD mounts (optional - nofail allows boot without these disks)
   fileSystems."/mnt/hdd1" = {
     device = "/dev/disk/by-uuid/516f5bb5-72b9-47da-b6bb-7b193ac1cd86";
@@ -106,10 +109,16 @@
     fsType = "ext4";
     options = [ "nofail" ];
   };
+  # Maxtor 931.5G NTFS drive (/dev/sda1)
   fileSystems."/mnt/hdd3" = {
-    device = "/dev/disk/by-uuid/85a42e9c-ace0-4ecc-a04a-e2e722345d5c";
-    fsType = "ext4";
-    options = [ "nofail" ];
+    device = "/dev/disk/by-uuid/FE6EC66C6EC61D71";
+    fsType = "ntfs3";
+    options = [
+      "nofail"
+      "uid=1000"
+      "gid=1000"
+      "umask=0022"
+    ];
   };
   fileSystems."/mnt/hdd4" = {
     device = "/dev/disk/by-uuid/8f0502de-aeec-497c-a92a-76ce47fd26de";
@@ -139,36 +148,18 @@
     "flakes"
   ];
 
-  # K3s - lightweight Kubernetes cluster (single-node server)
-  services.k3s = {
-    enable = true;
-    role = "server";
-  };
-
   # Firewall configuration
   networking.firewall = {
     enable = true;
 
-    # Allow SSH
     allowedTCPPorts = [
       22 # SSH
       80 # HTTP
-      6443 # K3s Kubernetes API server
-      10250 # K3s Kubelet metrics
-    ];
-
-    # K3s additional ports (etcd, Flannel)
-    allowedTCPPortRanges = [
-      {
-        from = 2379;
-        to = 2380;
-      } # etcd server-client and peer communication
     ];
 
     allowedUDPPorts = [
-      8472 # Flannel VXLAN overlay network
-      51820 # Flannel WireGuard (if used)
-      51821 # Flannel WireGuard IPv6 (if used)
+      51820 # WireGuard
+      51821 # WireGuard IPv6
     ];
 
     # Allow trusted local network (adjust if needed)

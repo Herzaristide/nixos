@@ -140,7 +140,7 @@
       "x-scheme-handler/about" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/figma" = [ "figma.desktop" ];
       "x-terminal-emulator" = [ "ghostty.desktop" ];
-      "inode/directory" = [ "Spacedrive.desktop" ];
+      "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
     };
   };
 

@@ -131,10 +131,7 @@
       gnumake
       gcc
 
-      # Container & k8s tools
-      kubectl
-      helm
-      k9s
+      # Container tools
       podman-compose
       ollama # CLI pour ollama pull/run
 
