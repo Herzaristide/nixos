@@ -30,7 +30,7 @@ PanelWindow {
     height: 16
     color: "transparent"
 
-    // Only show on HDMI-A-1 (main monitor, workspaces 1–4)
+    // Only show on HDMI-A-1 (main monitor, workspaces 1–5)
     visible: screen && screen.name === "HDMI-A-1"
 
     // Roman numeral conversion function
@@ -79,7 +79,7 @@ PanelWindow {
                 spacing: 24
 
                 Repeater {
-                    model: 4
+                    model: 5
 
                     Text {
                         required property int index

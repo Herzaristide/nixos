@@ -28,19 +28,15 @@
   home.stateVersion = "25.11";
 
   # SSL certificate environment variables for all sessions
-  # Note: Corporate proxy (Capgemini) is intercepting SSL, requiring cert verification bypass for dev
   home.sessionVariables = {
     SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
     NIX_SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
-    # Bypass SSL verification for development (corporate proxy issue)
     NODE_TLS_REJECT_UNAUTHORIZED = "0";
     GIT_SSL_NO_VERIFY = "true";
   };
 
-  # Curl configuration to skip SSL verification (corporate proxy workaround)
   home.file.".curlrc".text = "insecure\n";
 
-  # Wget configuration to skip SSL verification (corporate proxy workaround)
   home.file.".wgetrc".text = "check_certificate = off\n";
 
   # Services

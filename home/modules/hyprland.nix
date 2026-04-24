@@ -120,13 +120,14 @@ in
         "awww-init"
       ];
 
-      # Workspaces: HDMI-A-1 is the main monitor (ws 1–4), DP-3 gets ws 5.
+      # Workspaces: HDMI-A-1 gets ws 1–5, DP-3 gets named workspace "0" (Super+²).
       workspace = [
         "1, monitor:HDMI-A-1, default:true"
         "2, monitor:HDMI-A-1"
         "3, monitor:HDMI-A-1"
         "4, monitor:HDMI-A-1"
-        "5, monitor:DP-3, default:true"
+        "5, monitor:HDMI-A-1"
+        "9, monitor:DP-3, default:true"
         "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:80 200 80 200, gapsin:30"
       ];
 
@@ -158,6 +159,8 @@ in
         "$mod, quotedbl, workspace, 3"
         "$mod, apostrophe, workspace, 4"
         "$mod, parenleft, workspace, 5"
+        # Workspace 0 sur DP-3 (touche ² sur AZERTY)
+        "$mod, twosuperior, workspace, 9"
 
         # Move window to workspace 1–5
         "$mod SHIFT, ampersand, movetoworkspace, 1"
@@ -165,6 +168,8 @@ in
         "$mod SHIFT, quotedbl, movetoworkspace, 3"
         "$mod SHIFT, apostrophe, movetoworkspace, 4"
         "$mod SHIFT, parenleft, movetoworkspace, 5"
+        # Déplacer fenêtre vers workspace 0 (DP-3)
+        "$mod SHIFT, twosuperior, movetoworkspace, 9"
 
         # Workspace spécial Gemini (Super+G) – s'affiche en overlay
         "$mod, G, togglespecialworkspace, gemini"
