@@ -24,10 +24,9 @@ PanelWindow {
     }
 
     visible: screen && screen.name === "HDMI-A-1"
-
-    width: panelOpen ? panelWidth : 0
-    Behavior on width { enabled: false }
-    exclusiveZone: width
+    implicitWidth: panelOpen ? panelWidth : 0
+    Behavior on implicitWidth { enabled: false }
+    exclusiveZone: implicitWidth
 
     color: "transparent"
 

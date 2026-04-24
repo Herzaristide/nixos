@@ -173,5 +173,10 @@
     brightnessctl
     grimblast
     libnotify
+    # Voice assistant (whisper STT + piper TTS)
+    whisper-cpp
+    piper-tts
+    sox
+    alsa-utils
   ];
 }
