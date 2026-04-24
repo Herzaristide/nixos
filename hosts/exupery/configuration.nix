@@ -39,15 +39,12 @@
   networking.useNetworkd = false;
 
   # Set SSL certificate environment variables for curl/wget/etc
-  # Note: Corporate proxy (Capgemini) is intercepting SSL - bypass verification for WSL development
   environment.variables = {
     SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
     NIX_SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
     NODE_TLS_REJECT_UNAUTHORIZED = "0";
     GIT_SSL_NO_VERIFY = "true";
   };
-
-  
 
   # SSH - allow connections without authentication (WSL only, local access)
   services.openssh = {

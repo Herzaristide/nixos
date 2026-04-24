@@ -90,6 +90,7 @@
     inputs.voicemode.packages.${pkgs.stdenv.hostPlatform.system}.default
     adw-gtk3
     discord
+    nautilus
     dgop
     spacedrive
     figma-linux
