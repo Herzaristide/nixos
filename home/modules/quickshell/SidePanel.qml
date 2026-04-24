@@ -8,13 +8,14 @@ PanelWindow {
     id: panel
 
     property bool panelOpen: false
-    property real panelWidth: 250
-    readonly property real minWidth: 150
-    readonly property real maxWidth: 500
+    property real panelWidth: 380
+    readonly property real minWidth: 250
+    readonly property real maxWidth: 600
+    property int activeWidget: 0
 
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.namespace: "quickshell-sidepanel"
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
     anchors {
         top: true
@@ -34,7 +35,7 @@ PanelWindow {
         bottom: 28
     }
 
-    // Resize handle on left edge
+    // ── Resize handle on left edge ────────────────────────────────
     MouseArea {
         id: resizeHandle
         width: 8
@@ -57,82 +58,90 @@ PanelWindow {
             if (!pressed) return;
             const currentGlobalX = mapToGlobal(mouse.x, 0).x;
             const delta = startGlobalX - currentGlobalX;
-            panel.panelWidth = Math.max(panel.minWidth, Math.min(panel.maxWidth, startWidth + delta));
+            panel.panelWidth = Math.max(panel.minWidth,
+                Math.min(panel.maxWidth, startWidth + delta));
         }
 
         Rectangle {
             anchors.fill: parent
-            color: resizeHandle.containsMouse || resizeHandle.pressed ? "#FFFFFF" : "transparent"
+            color: resizeHandle.containsMouse || resizeHandle.pressed
+                   ? "#FFFFFF" : "transparent"
             opacity: 0.2
         }
     }
 
-    Column {
+    // ── Main content: icon bar + widget area ──────────────────────
+    RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: 22
-        anchors.topMargin: 16
-        anchors.rightMargin: 16
-        anchors.bottomMargin: 16
-        spacing: 12
+        anchors.leftMargin: 8
+        anchors.topMargin: 8
+        anchors.rightMargin: 8
+        anchors.bottomMargin: 8
+        spacing: 0
         visible: panelOpen
 
-        Text {
-            text: "Apps"
-            font.family: "JetBrains Mono"
-            font.pixelSize: 13
-            font.weight: Font.Bold
-            color: "#FFFFFF"
-            opacity: 0.5
+        // Widget area (fills remaining width)
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+
+            StackLayout {
+                anchors.fill: parent
+                currentIndex: panel.activeWidget
+
+                OllamaChat {}
+                NotesWidget {}
+            }
         }
 
-        Repeater {
-            model: ListModel {
-                ListElement { name: "Terminal"; cmd: "wezterm"; icon: ">" }
-                ListElement { name: "Browser"; cmd: "chromium"; icon: "B" }
-            }
+        // Icon bar (vertical selector)
+        Rectangle {
+            Layout.preferredWidth: 48
+            Layout.fillHeight: true
+            color: "#1a1a2e"
+            radius: 8
 
-            Rectangle {
-                required property string name
-                required property string cmd
-                required property string icon
-                required property int index
+            Column {
+                anchors.top: parent.top
+                anchors.topMargin: 16
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 8
 
-                width: parent ? parent.width : 0
-                height: 36
-                radius: 6
-                color: appMouse.containsMouse ? "#2a2a4e" : "transparent"
-
-                Row {
-                    anchors.fill: parent
-                    anchors.leftMargin: 10
-                    spacing: 10
-
-                    Text {
-                        text: icon
-                        font.family: "JetBrains Mono"
-                        font.pixelSize: 16
-                        color: "#FFFFFF"
-                        opacity: 0.7
-                        anchors.verticalCenter: parent.verticalCenter
+                Repeater {
+                    model: ListModel {
+                        ListElement { iconLabel: "AI"; widgetIndex: 0 }
+                        ListElement { iconLabel: "✏"; widgetIndex: 1 }
                     }
 
-                    Text {
-                        text: name
-                        font.family: "JetBrains Mono"
-                        font.pixelSize: 13
-                        color: "#FFFFFF"
-                        opacity: 0.9
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                }
+                    delegate: Rectangle {
+                        required property string iconLabel
+                        required property int widgetIndex
 
-                MouseArea {
-                    id: appMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        Hyprland.dispatch("exec " + cmd);
+                        width: 36
+                        height: 36
+                        radius: 6
+                        color: panel.activeWidget === widgetIndex
+                               ? "#4a4a8e"
+                               : (iconMa.containsMouse ? "#2a2a4e" : "transparent")
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: iconLabel
+                            color: "#FFFFFF"
+                            font.family: "JetBrains Mono"
+                            font.pixelSize: 12
+                            font.bold: panel.activeWidget === widgetIndex
+                            opacity: panel.activeWidget === widgetIndex ? 1.0 : 0.55
+                        }
+
+                        MouseArea {
+                            id: iconMa
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: panel.activeWidget = widgetIndex
+                        }
                     }
                 }
             }
