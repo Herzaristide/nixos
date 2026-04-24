@@ -74,11 +74,18 @@ in
         no_hardware_cursors = 1;
       };
 
+      general = {
+        gaps_in = 8;
+        gaps_out = 12;
+        "col.active_border" = "rgba(88aaee66)";
+        "col.inactive_border" = "rgba(44444433)";
+      };
+
       # Minimal decoration (lightweight, works well on any GPU)
       decoration = {
         rounding = 2;
-        active_opacity = 0.85;
-        inactive_opacity = 0.70;
+        active_opacity = 0.75;
+        inactive_opacity = 0.60;
       };
 
       # Special workspace apparaît depuis le bas
@@ -128,7 +135,7 @@ in
         "4, monitor:HDMI-A-1"
         "5, monitor:HDMI-A-1"
         "9, monitor:DP-3, default:true"
-        "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:80 200 80 200, gapsin:30"
+        "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:40 100 40 100, gapsin:10"
       ];
 
       # Minimal binds - terminal, apps

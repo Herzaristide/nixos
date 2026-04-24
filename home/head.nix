@@ -88,6 +88,7 @@
 
   home.packages = with pkgs; [
     inputs.voicemode.packages.${pkgs.stdenv.hostPlatform.system}.default
+    aubio
     adw-gtk3
     discord
     nautilus

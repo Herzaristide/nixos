@@ -1,7 +1,17 @@
+import QtQuick
 import Quickshell
 
 ShellRoot {
     id: root
+
+    QtObject {
+        Component.onCompleted: {
+            Qt.application.name = "quickshell";
+            Qt.application.organization = "quickshell";
+            Qt.application.domain = "quickshell.local";
+        }
+    }
+
     property bool panelOpen: false
     property int activeWidget: 0
 
@@ -11,6 +21,7 @@ ShellRoot {
         BottomBar {
             property var modelData
             screen: modelData
+            visible: modelData && modelData.name === "HDMI-A-1"
             panelOpen: root.panelOpen
             activeWidget: root.activeWidget
             onSelectWidget: (idx) => {
@@ -30,6 +41,7 @@ ShellRoot {
         SidePanel {
             property var modelData
             screen: modelData
+            visible: modelData && modelData.name === "HDMI-A-1"
             panelOpen: root.panelOpen
             activeWidget: root.activeWidget
         }

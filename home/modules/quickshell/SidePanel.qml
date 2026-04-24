@@ -23,7 +23,6 @@ PanelWindow {
         bottom: true
     }
 
-    visible: screen && screen.name === "HDMI-A-1"
     implicitWidth: panelOpen ? panelWidth : 0
     Behavior on implicitWidth { enabled: false }
     exclusiveZone: implicitWidth
@@ -73,6 +72,7 @@ PanelWindow {
     Item {
         anchors.fill: parent
         anchors.margins: 8
+        anchors.leftMargin: 0
         anchors.rightMargin: 12
         visible: panelOpen
 
@@ -83,6 +83,7 @@ PanelWindow {
             HardwareStats {}
             OllamaChat {}
             NotesWidget {}
+            PitchAnalyzer {}
         }
     }
 }

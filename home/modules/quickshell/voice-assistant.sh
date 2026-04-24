@@ -16,11 +16,22 @@ set -uo pipefail
 WHISPER_MODEL="${WHISPER_MODEL:-$HOME/.local/share/whisper/ggml-base.bin}"
 PIPER_MODEL="${PIPER_MODEL:-$HOME/.local/share/piper/fr_FR-siwis-medium.onnx}"
 WORK_DIR="/tmp/voice-assistant-$$"
-WAKE_PIPE="$WORK_DIR/wake_pipe"
 SAMPLE_RATE=16000
+# Whisper language for wake-word stream. Use 'en' for an English wake word
+# pronounced in French (much more reliable than '-l fr').
+WHISPER_LANG="${WHISPER_LANG:-en}"
+# Wake word: defaults to the machine's hostname (e.g. "gary", "zola").
+# Whisper handles common English names very reliably in -l en mode.
+# Override via env var if needed: WAKE_WORD=ordi
+WAKE_WORD="${WAKE_WORD:-$(hostname)}"
+# Build a simple case-insensitive ERE: match the wake word as a whole word.
+# Word-boundary at start only so "gary.", "gary!", "gary's" all match too.
+# Override WAKE_WORD_REGEX entirely if you need finer control.
+_ww_esc=$(printf '%s' "$WAKE_WORD" | tr '[:upper:]' '[:lower:]' | sed 's/[.[\*^$]/\\&/g')
+WAKE_WORD_REGEX="${WAKE_WORD_REGEX:-\\b${_ww_esc}}"
+unset _ww_esc
 
 mkdir -p "$WORK_DIR"
-mkfifo "$WAKE_PIPE"
 
 WHISPER_PID=""
 STDIN_PID=""
@@ -71,41 +82,76 @@ handle_stdin() {
 }
 
 # ── Wake word detection via whisper-stream ───────────────────
+#
+# whisper-stream in non-VAD (--step) mode writes to stdout using \r (carriage
+# returns) to overwrite the same terminal line — never issuing \n between
+# transcription updates. A raw FIFO + "while read" loop therefore blocks
+# forever waiting for a newline that never comes.
+#
+# Fix: pass -f FILE so whisper-stream writes clean newline-terminated
+# transcriptions to a file (std::endl → flush + \n after each 2-second
+# chunk). A tail -f on that file then streams the lines reliably.
 wait_for_wake_word() {
-    # Start whisper-stream, output goes to FIFO
+    local wake_file="$WORK_DIR/wake_text"
+    local tail_fifo="$WORK_DIR/tail_fifo"
+    local tail_pid=""
+    > "$wake_file"
+    mkfifo "$tail_fifo"
+
+    # -f writes transcriptions with std::endl (flush+newline) every ~2 s.
+    # Redirect stdout to /dev/null to suppress the ANSI terminal display.
     whisper-stream \
         -m "$WHISPER_MODEL" \
-        -l fr \
+        -l "$WHISPER_LANG" \
         --step 2000 \
         --length 5000 \
         --keep 200 \
-        --vad-thold 0.5 \
+        --vad-thold 0.6 \
         -t 4 \
-        2>/dev/null > "$WAKE_PIPE" &
+        -f "$wake_file" \
+        >/dev/null 2>"$WORK_DIR/whisper-stream.err" &
     WHISPER_PID=$!
 
-    # Read from FIFO line by line
+    # Stream new lines through a FIFO so we hold tail's PID for cleanup.
+    # Opening the write side blocks until we open the read side below.
+    stdbuf -oL tail -f "$wake_file" > "$tail_fifo" &
+    tail_pid=$!
+
     local detected=false
-    exec 3< "$WAKE_PIPE"
+    exec 3< "$tail_fifo"   # unblocks tail's FIFO write open
     while IFS= read -r line <&3; do
-        local lower
-        lower=$(echo "$line" | tr '[:upper:]' '[:lower:]')
-        # Match "nix" and common whisper misheard variants
-        if echo "$lower" | grep -qiE 'nix|nicks|niques'; then
-            detected=true
-            break
-        fi
+        # Strip CR and surrounding whitespace; skip empty
+        line=$(printf '%s' "$line" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        [ -z "$line" ] && continue
+        # Skip whisper's silence markers but keep them out of debug spam
+        case "$line" in
+            '[BLANK_AUDIO]'|'[Musique]'|'(musique)'|'...'|'.'|'[silence]') ;;
+            *)
+                # Surface to QuickShell so user can see what whisper hears
+                echo "DEBUG:$line"
+                local lower
+                lower=$(printf '%s' "$line" | tr '[:upper:]' '[:lower:]')
+                if printf '%s' "$lower" | grep -qiE "$WAKE_WORD_REGEX"; then
+                    detected=true
+                    break
+                fi
+                ;;
+        esac
+        # Exit loop if whisper-stream died unexpectedly
+        kill -0 "$WHISPER_PID" 2>/dev/null || break
     done
     exec 3<&-
 
-    # Stop whisper-stream to free the microphone
+    kill "$tail_pid" 2>/dev/null
+    wait "$tail_pid" 2>/dev/null || true
     kill "$WHISPER_PID" 2>/dev/null
     wait "$WHISPER_PID" 2>/dev/null || true
     WHISPER_PID=""
-
-    # Recreate FIFO for next cycle
-    rm -f "$WAKE_PIPE"
-    mkfifo "$WAKE_PIPE"
+    # Give SDL/PulseAudio time to release the capture device before sox grabs it.
+    # whisper-stream uses SDL2; after SIGKILL it can take ~500ms for PipeWire
+    # to re-route the source to the next client (sox via PulseAudio compat layer).
+    sleep 0.8
+    rm -f "$wake_file" "$tail_fifo"
 
     [ "$detected" = true ]
 }
@@ -155,7 +201,10 @@ main() {
 
         if wait_for_wake_word; then
             echo "STATUS:TRIGGERED"
-            sleep 0.4
+            # Audible cue so the user knows when to start speaking
+            (paplay /run/current-system/sw/share/sounds/freedesktop/stereo/message.oga 2>/dev/null \
+                || printf '\a') &
+            sleep 0.3
             capture_command || true
         fi
     done
@@ -166,3 +215,4 @@ handle_stdin &
 STDIN_PID=$!
 
 main
+
