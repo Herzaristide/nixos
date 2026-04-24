@@ -3,7 +3,7 @@ import Quickshell
 ShellRoot {
     id: root
     property bool panelOpen: false
-    property bool hardwareOpen: false
+    property int activeWidget: 0
 
     Variants {
         model: Quickshell.screens
@@ -12,9 +12,15 @@ ShellRoot {
             property var modelData
             screen: modelData
             panelOpen: root.panelOpen
-            hardwareOpen: root.hardwareOpen
-            onTogglePanel: root.panelOpen = !root.panelOpen
-            onToggleHardware: root.hardwareOpen = !root.hardwareOpen
+            activeWidget: root.activeWidget
+            onSelectWidget: (idx) => {
+                if (root.panelOpen && root.activeWidget === idx) {
+                    root.panelOpen = false;
+                } else {
+                    root.activeWidget = idx;
+                    root.panelOpen = true;
+                }
+            }
         }
     }
 
@@ -25,17 +31,7 @@ ShellRoot {
             property var modelData
             screen: modelData
             panelOpen: root.panelOpen
-        }
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        HardwareStats {
-            property var modelData
-            screen: modelData
-            hardwareOpen: root.hardwareOpen
-            onCloseRequested: root.hardwareOpen = false
+            activeWidget: root.activeWidget
         }
     }
 }

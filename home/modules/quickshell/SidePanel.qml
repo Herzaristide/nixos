@@ -8,10 +8,10 @@ PanelWindow {
     id: panel
 
     property bool panelOpen: false
+    property int activeWidget: 0
     property real panelWidth: 380
     readonly property real minWidth: 250
     readonly property real maxWidth: 600
-    property int activeWidget: 0
 
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.namespace: "quickshell-sidepanel"
@@ -19,7 +19,7 @@ PanelWindow {
 
     anchors {
         top: true
-        right: true
+        left: true
         bottom: true
     }
 
@@ -32,14 +32,14 @@ PanelWindow {
     color: "transparent"
 
     margins {
-        bottom: 28
+        left: 48
     }
 
-    // ── Resize handle on left edge ────────────────────────────────
+    // ── Resize handle on right edge ──────────────────────────────
     MouseArea {
         id: resizeHandle
         width: 8
-        anchors.left: parent.left
+        anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         cursorShape: Qt.SizeHorCursor
@@ -57,7 +57,7 @@ PanelWindow {
         onPositionChanged: (mouse) => {
             if (!pressed) return;
             const currentGlobalX = mapToGlobal(mouse.x, 0).x;
-            const delta = startGlobalX - currentGlobalX;
+            const delta = currentGlobalX - startGlobalX;
             panel.panelWidth = Math.max(panel.minWidth,
                 Math.min(panel.maxWidth, startWidth + delta));
         }
@@ -70,81 +70,20 @@ PanelWindow {
         }
     }
 
-    // ── Main content: icon bar + widget area ──────────────────────
-    RowLayout {
+    // ── Main content ─────────────────────────────────────────────
+    Item {
         anchors.fill: parent
-        anchors.leftMargin: 8
-        anchors.topMargin: 8
-        anchors.rightMargin: 8
-        anchors.bottomMargin: 8
-        spacing: 0
+        anchors.margins: 8
+        anchors.rightMargin: 12
         visible: panelOpen
 
-        // Widget area (fills remaining width)
-        Item {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            clip: true
+        StackLayout {
+            anchors.fill: parent
+            currentIndex: panel.activeWidget
 
-            StackLayout {
-                anchors.fill: parent
-                currentIndex: panel.activeWidget
-
-                OllamaChat {}
-                NotesWidget {}
-            }
-        }
-
-        // Icon bar (vertical selector)
-        Rectangle {
-            Layout.preferredWidth: 48
-            Layout.fillHeight: true
-            color: "#1a1a2e"
-            radius: 8
-
-            Column {
-                anchors.top: parent.top
-                anchors.topMargin: 16
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: 8
-
-                Repeater {
-                    model: ListModel {
-                        ListElement { iconLabel: "AI"; widgetIndex: 0 }
-                        ListElement { iconLabel: "✏"; widgetIndex: 1 }
-                    }
-
-                    delegate: Rectangle {
-                        required property string iconLabel
-                        required property int widgetIndex
-
-                        width: 36
-                        height: 36
-                        radius: 6
-                        color: panel.activeWidget === widgetIndex
-                               ? "#4a4a8e"
-                               : (iconMa.containsMouse ? "#2a2a4e" : "transparent")
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: iconLabel
-                            color: "#FFFFFF"
-                            font.family: "JetBrains Mono"
-                            font.pixelSize: 12
-                            font.bold: panel.activeWidget === widgetIndex
-                            opacity: panel.activeWidget === widgetIndex ? 1.0 : 0.55
-                        }
-
-                        MouseArea {
-                            id: iconMa
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: panel.activeWidget = widgetIndex
-                        }
-                    }
-                }
-            }
+            HardwareStats {}
+            OllamaChat {}
+            NotesWidget {}
         }
     }
 }
