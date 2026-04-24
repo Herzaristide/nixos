@@ -8,6 +8,9 @@ import Quickshell.Services.UPower
 PanelWindow {
     id: window
 
+    property bool panelOpen: false
+    signal togglePanel()
+
     // Configure the underlying wlr-layer-shell via attached properties.
     // PanelWindow IS the layer-shell window; NEVER nest a WlrLayershell{} child
     // — that creates a second ghost window (appears as a white rectangle).
@@ -68,149 +71,156 @@ PanelWindow {
         anchors.fill: parent
         color: "transparent"
 
-        RowLayout {
-            anchors.fill: parent
+        // Left: NixOS logo
+        Image {
+            anchors.left: parent.left
             anchors.leftMargin: 16
-            anchors.rightMargin: 16
-            spacing: 0
+            anchors.verticalCenter: parent.verticalCenter
+            source: "nixos.svg"
+            width: 20
+            height: 20
+            sourceSize.width: 64
+            sourceSize.height: 64
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+            opacity: 0.8
+        }
 
-            // Left: NixOS logo
-            Item {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+        // Center: workspaces (absolutely centered)
+        Row {
+            anchors.centerIn: parent
+            spacing: 8
 
-                Image {
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    source: "nixos.svg"
-                    width: 20
-                    height: 20
-                    sourceSize.width: 64
-                    sourceSize.height: 64
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                    opacity: 0.8
-                }
-            }
+            Repeater {
+                model: 5
 
-            // Center: workspaces
-            RowLayout {
-                spacing: 8
+                Text {
+                    required property int index
 
-                Repeater {
-                    model: 5
+                    text: window.toRoman(index + 1)
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 16
+                    font.weight: Font.Normal
+                    color: "#FFFFFF"
 
-                    Text {
-                        required property int index
+                    opacity: {
+                        const workspaceId = index + 1;
+                        const isActive = Hyprland.focusedWorkspace?.id === workspaceId;
 
-                        text: window.toRoman(index + 1)
-                        font.family: "JetBrains Mono"
-                        font.pixelSize: 16
-                        font.weight: Font.Normal
-                        color: "#FFFFFF"
-
-                        // Opacity based on workspace state
-                        opacity: {
-                            const workspaceId = index + 1;
-                            const isActive = Hyprland.focusedWorkspace?.id === workspaceId;
-
-                            if (isActive) {
-                                return 1.0;
-                            }
-
-                            // Check if workspace has windows
-                            if (Hyprland.workspaces && Hyprland.workspaces.values) {
-                                const workspace = Hyprland.workspaces.values.find(ws => ws.id === workspaceId);
-                                const hasWindows = workspace && workspace.windows && workspace.windows.values && workspace.windows.values.length > 0;
-                                return hasWindows ? 0.6 : 0.3;
-                            }
-
-                            return 0.3;
+                        if (isActive) {
+                            return 1.0;
                         }
 
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                Hyprland.dispatch("workspace " + (parent.index + 1).toString());
-                            }
+                        if (Hyprland.workspaces && Hyprland.workspaces.values) {
+                            const workspace = Hyprland.workspaces.values.find(ws => ws.id === workspaceId);
+                            const hasWindows = workspace && workspace.windows && workspace.windows.values && workspace.windows.values.length > 0;
+                            return hasWindows ? 0.6 : 0.3;
+                        }
+
+                        return 0.3;
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            Hyprland.dispatch("workspace " + (parent.index + 1).toString());
                         }
                     }
                 }
             }
+        }
 
-            // Right: battery (hidden when no battery present)
-            Item {
+        // Right section
+        Row {
+            anchors.right: parent.right
+            anchors.rightMargin: 16
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 8
+
+            // Battery (hidden when no battery present)
+            Row {
                 id: batterySection
-                Layout.fillWidth: true
-                visible: dev !== null && dev.isPresent
+                visible: batteryDev !== null && batteryDev.isPresent
+                spacing: 8
+                anchors.verticalCenter: parent.verticalCenter
 
-                readonly property var  dev: window.batteryDevice
-                readonly property real pct: dev ? dev.percentage : 0
-                readonly property int  devState: dev ? dev.state : 0
+                readonly property var  batteryDev: window.batteryDevice
+                readonly property real pct: batteryDev ? batteryDev.percentage : 0
+                readonly property int  devState: batteryDev ? batteryDev.state : 0
                 readonly property bool isCharging: devState === UPower.DeviceState.Charging
                 readonly property bool isFullyCharged: devState === UPower.DeviceState.FullyCharged
                 readonly property bool onAc: !UPower.onBattery
                 readonly property int  timeSecs: {
-                    if (!dev) return 0;
-                    if (isCharging) return dev.timeToFull || 0;
-                    return dev.timeToEmpty || 0;
+                    if (!batteryDev) return 0;
+                    if (isCharging) return batteryDev.timeToFull || 0;
+                    return batteryDev.timeToEmpty || 0;
                 }
                 readonly property real rowOpacity: pct > 0 && pct < 20 ? 1.0 : 0.8
 
-                Row {
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 8
+                Text {
+                    visible: batterySection.onAc
+                    text: "AC"
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 16
+                    color: "#FFFFFF"
+                    opacity: batterySection.rowOpacity
+                }
 
-                    // AC indicator (visible whenever we're on mains power)
-                    Text {
-                        visible: batterySection.onAc
-                        text: "AC"
-                        font.family: "JetBrains Mono"
-                        font.pixelSize: 16
-                        color: "#FFFFFF"
-                        opacity: batterySection.rowOpacity
+                Text {
+                    visible: batterySection.batteryDev !== null
+                    text: {
+                        if (!batterySection.batteryDev) return "";
+                        if (batterySection.isCharging) return "\u26A1";
+                        const p = batterySection.pct;
+                        if (p > 80) return "\uDB80\uDC79";
+                        if (p > 60) return "\uDB80\uDC80";
+                        if (p > 40) return "\uDB80\uDC7F";
+                        if (p > 20) return "\uDB80\uDC7C";
+                        return "\uDB80\uDC7A";
                     }
+                    font.pixelSize: 16
+                    color: "#FFFFFF"
+                    opacity: batterySection.rowOpacity
+                }
 
-                    // Battery glyph
-                    Text {
-                        visible: batterySection.dev !== null
-                        text: {
-                            if (!batterySection.dev) return "";
-                            if (batterySection.isCharging) return "⚡";
-                            const p = batterySection.pct;
-                            if (p > 80) return "󰁹";
-                            if (p > 60) return "󰂀";
-                            if (p > 40) return "󰁿";
-                            if (p > 20) return "󰁼";
-                            return "󰁺";
-                        }
-                        font.pixelSize: 16
-                        color: "#FFFFFF"
-                        opacity: batterySection.rowOpacity
-                    }
+                Text {
+                    visible: batterySection.batteryDev !== null
+                    text: batterySection.batteryDev ? (Math.round(batterySection.pct) + "%") : "N/A"
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 16
+                    color: "#FFFFFF"
+                    opacity: batterySection.rowOpacity
+                }
 
-                    // Percentage
-                    Text {
-                        visible: batterySection.dev !== null
-                        text: batterySection.dev ? (Math.round(batterySection.pct) + "%") : "N/A"
-                        font.family: "JetBrains Mono"
-                        font.pixelSize: 16
-                        color: "#FFFFFF"
-                        opacity: batterySection.rowOpacity
-                    }
+                Text {
+                    readonly property string label: window.formatTime(batterySection.timeSecs)
+                    visible: batterySection.batteryDev !== null && !batterySection.isFullyCharged && label.length > 0
+                    text: label
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 16
+                    color: "#FFFFFF"
+                    opacity: batterySection.rowOpacity
+                }
+            }
 
-                    // Time remaining (hidden when FullyCharged or unknown)
-                    Text {
-                        readonly property string label: window.formatTime(batterySection.timeSecs)
-                        visible: batterySection.dev !== null && !batterySection.isFullyCharged && label.length > 0
-                        text: label
-                        font.family: "JetBrains Mono"
-                        font.pixelSize: 16
-                        color: "#FFFFFF"
-                        opacity: batterySection.rowOpacity
-                    }
+            // Panel toggle
+            Text {
+                text: "|||"
+                font.family: "JetBrains Mono"
+                font.pixelSize: 10
+                color: "#FFFFFF"
+                opacity: window.panelOpen ? 1.0 : 0.5
+                anchors.verticalCenter: parent.verticalCenter
+
+                Behavior on opacity {
+                    NumberAnimation { duration: 200 }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: window.togglePanel()
                 }
             }
         }
