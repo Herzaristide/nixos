@@ -5,10 +5,42 @@ import QtQuick.Controls
 Item {
     id: root
 
-    property string modelName: "llama3"
+    property string modelName: "llama3.2:3b"
     property bool isStreaming: false
 
     ListModel { id: messages }
+    ListModel { id: availableModels }
+
+    function fetchModels() {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:11434/api/tags");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    availableModels.clear();
+                    for (var i = 0; i < data.models.length; i++)
+                        availableModels.append({ name: data.models[i].name });
+                    // Select current model if present, else first
+                    var found = false;
+                    for (var j = 0; j < availableModels.count; j++) {
+                        if (availableModels.get(j).name === root.modelName) {
+                            modelCombo.currentIndex = j;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found && availableModels.count > 0) {
+                        modelCombo.currentIndex = 0;
+                        root.modelName = availableModels.get(0).name;
+                    }
+                } catch (e) {}
+            }
+        };
+        xhr.send();
+    }
+
+    Component.onCompleted: fetchModels()
 
     // Build context array from current messages (excludes last placeholder)
     function buildContext(upToIdx) {
@@ -51,14 +83,22 @@ Item {
                             messages.setProperty(assistantIdx, "content",
                                 cur + obj.message.content);
                             gotChunk = true;
+                        } else if (obj.error) {
+                            messages.setProperty(assistantIdx, "content",
+                                "[Erreur Ollama : " + obj.error + "]");
+                            gotChunk = true;
                         }
                     } catch (e) {}
                 }
             }
             if (xhr.readyState === 4) {
-                if (!gotChunk)
+                if (!gotChunk) {
+                    var networkErr = xhr.status === 0
+                        ? "impossible de joindre Ollama sur localhost:11434"
+                        : "réponse inattendue (HTTP " + xhr.status + ")";
                     messages.setProperty(assistantIdx, "content",
-                        "[Erreur : impossible de joindre Ollama sur localhost:11434]");
+                        "[Erreur : " + networkErr + "]");
+                }
                 root.isStreaming = false;
             }
         };
@@ -88,22 +128,95 @@ Item {
                 font.pixelSize: 11
             }
 
-            Rectangle {
-                Layout.preferredWidth: 120
-                height: 24
-                color: "#1a1a2e"
-                radius: 4
+            ComboBox {
+                id: modelCombo
+                Layout.preferredWidth: 150
+                Layout.preferredHeight: 24
+                model: availableModels
+                textRole: "name"
+                enabled: !root.isStreaming
+                onActivated: root.modelName = availableModels.get(currentIndex).name
 
-                TextField {
-                    id: modelField
-                    anchors.fill: parent
-                    anchors.margins: 2
-                    text: root.modelName
+                contentItem: Text {
+                    leftPadding: 6
+                    text: modelCombo.displayText
                     font.family: "JetBrains Mono"
                     font.pixelSize: 11
                     color: "#FFFFFF"
-                    background: Item {}
-                    onEditingFinished: root.modelName = text
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                }
+
+                background: Rectangle {
+                    color: modelCombo.pressed ? "#2a2a5e" : "#1a1a2e"
+                    radius: 4
+                    border.color: "#3a3a6e"
+                    border.width: 1
+                }
+
+                popup: Popup {
+                    y: modelCombo.height + 2
+                    width: modelCombo.width
+                    implicitHeight: contentItem.implicitHeight
+                    padding: 1
+
+                    contentItem: ListView {
+                        clip: true
+                        implicitHeight: contentHeight
+                        model: modelCombo.popup.visible ? modelCombo.delegateModel : null
+
+                        ScrollIndicator.vertical: ScrollIndicator {}
+                    }
+
+                    background: Rectangle {
+                        color: "#1a1a2e"
+                        radius: 4
+                        border.color: "#3a3a6e"
+                        border.width: 1
+                    }
+                }
+
+                delegate: ItemDelegate {
+                    required property string name
+                    required property int index
+                    width: modelCombo.width
+                    highlighted: modelCombo.highlightedIndex === index
+
+                    contentItem: Text {
+                        text: name
+                        font.family: "JetBrains Mono"
+                        font.pixelSize: 11
+                        color: "#FFFFFF"
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        color: highlighted ? "#2a2a5e" : "transparent"
+                    }
+                }
+            }
+
+            // Refresh button
+            Rectangle {
+                width: 20
+                height: 24
+                radius: 4
+                color: refreshMa.containsMouse ? "#2a2a4e" : "transparent"
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "⟳"
+                    color: "#FFFFFF"
+                    opacity: 0.6
+                    font.pixelSize: 13
+                }
+
+                MouseArea {
+                    id: refreshMa
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.fetchModels()
                 }
             }
 

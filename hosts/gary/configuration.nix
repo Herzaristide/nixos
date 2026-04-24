@@ -86,6 +86,10 @@
   # ROCM_PATH — points ML frameworks to the ROCm installation
   environment.variables.ROCM_PATH = "${pkgs.rocmPackages.clr}";
 
+  # Ollama GPU acceleration — use AMD ROCm (RX 6600 / gfx1032)
+  services.ollama.package = pkgs.ollama-rocm;
+  services.ollama.rocmOverrideGfx = "10.3.0"; # Navi 23 / gfx1032
+
   # Blacklist NVIDIA drivers (not needed)
   boot.blacklistedKernelModules = [
     "nvidia"
