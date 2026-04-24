@@ -168,5 +168,10 @@
       ];
     };
   };
-  environment.systemPackages = with pkgs; [ chromium ];
+  environment.systemPackages = with pkgs; [
+    chromium
+    brightnessctl
+    grimblast
+    libnotify
+  ];
 }
