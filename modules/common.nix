@@ -7,7 +7,8 @@
 }:
 
 let
-  palette = import ../palette.nix;
+  darkPalette = import ../palette.nix;
+  lightPalette = import ../palette-light.nix;
 in
 {
   # Option for head (GUI) configuration
@@ -15,6 +16,13 @@ in
     type = lib.types.bool;
     default = false;
     description = "Enable head (GUI) configuration";
+  };
+
+  # Option for dark/light color scheme
+  options.darkMode = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Use dark color scheme (false = light mode).";
   };
 
   config = {
@@ -193,8 +201,9 @@ in
       backupFileExtension = "bak";
       extraSpecialArgs = {
         inherit inputs;
-        inherit palette;
+        palette = if config.darkMode then darkPalette else lightPalette;
         head = config.head;
+        darkMode = config.darkMode;
       };
       users.aristide = import ../home/home.nix;
     };

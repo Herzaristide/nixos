@@ -152,4 +152,78 @@ for sock in /tmp/kitty-*; do
     "$ACCENT_DIR/kitty-accent.conf" 2>/dev/null || true
 done
 
+# ── Live-reload VSCode color customizations ───────────────────────────────
+# settings.json is normally a nix-store symlink (read-only). We replace it
+# with a writable regular file by using `mv` on the temp file, which unlinks
+# the symlink and plants the new file at that path. VSCode watches its
+# settings.json and hot-reloads changes within seconds.
+VSCODE_SETTINGS="$HOME/.config/Code/User/settings.json"
+if [ -e "$VSCODE_SETTINGS" ] || [ -L "$VSCODE_SETTINGS" ]; then
+  # Alpha variants encoded as 8-digit #RRGGBBAA hex (supported by VSCode)
+  A10="${HEX}1a"   # 10 % opacity — subtle highlight
+  A20="${HEX}33"   # 20 % opacity — selection background
+  A40="${HEX}66"   # 40 % opacity — scrollbar active
+
+  tmp_colors="$(mktemp)"
+  # Build the colorCustomizations patch as a JSON object
+  jq -n \
+    --arg a  "#${HEX}" \
+    --arg d  "${HEX_DARK}" \
+    --arg m  "${HEX_MUTED}" \
+    --arg a10 "#${A10}" \
+    --arg a20 "#${A20}" \
+    --arg a40 "#${A40}" \
+    '{
+      "workbench.colorCustomizations": {
+        "focusBorder":                          $a,
+        "activityBar.activeBorder":             $a,
+        "activityBar.activeBackground":         $a10,
+        "button.background":                    $d,
+        "button.hoverBackground":               $a,
+        "badge.background":                     $a,
+        "badge.foreground":                     "#ffffff",
+        "activityBarBadge.background":          $a,
+        "activityBarBadge.foreground":          "#ffffff",
+        "progressBar.background":               $a,
+        "editorCursor.foreground":              $a,
+        "tab.activeBorderTop":                  $a,
+        "panelTitle.activeBorder":              $a,
+        "statusBar.background":                 $d,
+        "statusBar.focusBorder":                $a,
+        "list.activeSelectionBackground":       $a20,
+        "list.focusHighlightForeground":        $a,
+        "scrollbarSlider.activeBackground":     $a40,
+        "inputOption.activeBorder":             $a,
+        "breadcrumb.activeSelectionForeground": $m,
+        "editor.findMatchBorder":               $a,
+        "sash.hoverBorder":                     $a,
+        "notificationLink.foreground":          $a,
+        "notificationsInfoIcon.foreground":     $a,
+        "notificationCenter.border":            $a,
+        "notificationCenterHeader.background":  $d,
+        "notificationCenterHeader.foreground":  "#ffffff",
+        "notifications.border":                 $a,
+        "notificationToast.border":             $a,
+        "extensionButton.prominentBackground":  $d,
+        "extensionButton.prominentHoverBackground": $a,
+        "terminal.ansiBlue":                    $a,
+        "terminal.ansiBrightBlue":              $m,
+        "terminal.tab.activeBorder":            $a,
+        "terminalCursor.foreground":            $a,
+        "terminal.findMatchBorder":             $a,
+        "terminal.findMatchHighlightBorder":    $m
+      }
+    }' > "$tmp_colors"
+
+  # Merge the patch into the existing settings (the nix store copy is readable
+  # even as a symlink). `mv` atomically replaces the symlink with a real file.
+  tmp_out="$(mktemp)"
+  if jq -s '.[0] * .[1]' "$VSCODE_SETTINGS" "$tmp_colors" > "$tmp_out" 2>/dev/null; then
+    mv -f "$tmp_out" "$VSCODE_SETTINGS"
+  else
+    rm -f "$tmp_out"
+  fi
+  rm -f "$tmp_colors"
+fi
+
 exit 0
