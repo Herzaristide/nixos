@@ -49,10 +49,9 @@ PanelWindow {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "AI"
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 11
-                    font.bold: window.panelOpen && window.activeWidget === 1
+                    text: "psychology"
+                    font.family: "Material Symbols Rounded"
+                    font.pixelSize: 20
                     color: "#FFFFFF"
                     opacity: window.panelOpen && window.activeWidget === 1 ? 1.0 : 0.55
                 }
@@ -83,8 +82,9 @@ PanelWindow {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "\u270F"
-                    font.pixelSize: 14
+                    text: "edit_note"
+                    font.family: "Material Symbols Rounded"
+                    font.pixelSize: 20
                     color: "#FFFFFF"
                     opacity: window.panelOpen && window.activeWidget === 2 ? 1.0 : 0.55
                 }
@@ -115,9 +115,9 @@ PanelWindow {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "\u2669"
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 16
+                    text: "graphic_eq"
+                    font.family: "Material Symbols Rounded"
+                    font.pixelSize: 20
                     color: "#FFFFFF"
                     opacity: window.panelOpen && window.activeWidget === 3 ? 1.0 : 0.55
                 }
