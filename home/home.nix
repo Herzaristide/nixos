@@ -3,6 +3,7 @@
   pkgs,
   inputs,
   head ? false,
+  darkMode ? true,
   ...
 }:
 

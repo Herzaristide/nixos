@@ -6,7 +6,8 @@
 }:
 
 let
-  palette = import ../palette.nix;
+  darkPalette = import ../palette.nix;
+  lightPalette = import ../palette-light.nix;
 in
 {
   imports = [
@@ -15,16 +16,17 @@ in
   ];
 
   # ── Stylix: system-wide color palette ────────────────────────────────────
-  # base16Scheme is the single source of truth for all colors.
-  # GTK, Qt, Hyprland borders, cursor, and terminal colors are all derived from it.
-  # The user can still override the accent at runtime via the Quickshell Settings UI.
+  # base16Scheme is sourced from palette.nix (dark) or palette-light.nix (light),
+  # selected by the host-level `darkMode` option (default: true).
+  # GTK, Qt, VSCode, cursor, and terminal colors are all derived from it.
   stylix = {
     enable = true;
-    base16Scheme = palette;
-    # Wallpaper (required by stylix even when not using generated colors)
+    # Wallpaper (used as background; palette is explicit via base16Scheme)
     image = ../src/nix-wallpaper-binary-black_8k.png;
-    # Polarity tells stylix this is a dark scheme
-    polarity = "dark";
+    # Explicit palette attrset — not auto-generated from the wallpaper, not parsed as YAML
+    base16Scheme = if config.darkMode then darkPalette else lightPalette;
+    # Polarity derives from darkMode: tells Stylix how to apply the palette
+    polarity = if config.darkMode then "dark" else "light";
     # Font configuration
     fonts = {
       monospace = {
@@ -44,10 +46,10 @@ in
         name = "Noto Color Emoji";
       };
     };
-    # Cursor
+    # Cursor — use the dark or light variant to match the active mode
     cursor = {
       package = pkgs.phinger-cursors;
-      name = "phinger-cursors-dark";
+      name = if config.darkMode then "phinger-cursors-dark" else "phinger-cursors";
       size = 32;
     };
     # Disable stylix targets managed manually (Quickshell runtime sync handles Hyprland borders)

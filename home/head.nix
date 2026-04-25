@@ -3,6 +3,7 @@
   pkgs,
   inputs,
   lib,
+  darkMode ? true,
   ...
 }:
 
@@ -37,12 +38,12 @@
       package = pkgs.adwaita-icon-theme;
     };
     gtk3.extraConfig = {
-      "gtk-application-prefer-dark-theme" = true;
+      "gtk-application-prefer-dark-theme" = darkMode;
     };
     gtk4 = {
       theme = null; # adopt new home-manager 26.05 default (no forced GTK3 theme on GTK4)
       extraConfig = {
-        "gtk-application-prefer-dark-theme" = true;
+        "gtk-application-prefer-dark-theme" = darkMode;
       };
     };
   };
