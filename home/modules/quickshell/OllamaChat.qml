@@ -252,6 +252,20 @@ Item {
                 description: "Stop the current microphone recording and save the WAV file to /records/",
                 parameters: { type: "object", properties: {} }
             }
+        },
+        {
+            type: "function",
+            "function": {
+                name: "set_accent_color",
+                description: "Change the desktop accent color used by Hyprland window borders, the shell bar, and terminal colors. Accepts a hex color (#rrggbb) or a preset name: nixos (#5277c3), nixos-light (#7ebae4), teal (#44aa88), coral (#cc5544), amber (#ccaa44), purple (#7755cc).",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        color: { type: "string", description: "Hex color (#rrggbb) or preset name: nixos, nixos-light, teal, coral, amber, purple" }
+                    },
+                    required: ["color"]
+                }
+            }
         }
     ]
 
@@ -508,6 +522,7 @@ Item {
             case "nixos_rollback": return "nixos-rebuild switch --rollback";
             case "start_recording": return "\uD83C\uDF99 Enregistrement \u2192 /records/" + (args.filename || "rec_...") + ".wav";
             case "stop_recording": return "\u23F9 Arr\u00EAt enregistrement";
+            case "set_accent_color": return "\uD83C\uDFA8 Couleur d'accent \u2192 " + (args.color || "?");
             default: return name;
         }
     }
@@ -681,6 +696,26 @@ Item {
                 recordProcess.pendingAssistantIdx = assistantIdx;
                 recordProcess.running = false;
                 break;
+
+            case "set_accent_color": {
+                var colorInput = (args.color || "").trim().toLowerCase();
+                var presetMap = {
+                    "nixos":       "#5277c3",
+                    "nixos-light": "#7ebae4",
+                    "teal":        "#44aa88",
+                    "coral":       "#cc5544",
+                    "amber":       "#ccaa44",
+                    "purple":      "#7755cc"
+                };
+                var hexColor = presetMap[colorInput] || colorInput;
+                if (!/^#[0-9a-f]{6}$/.test(hexColor)) {
+                    handleToolResult(name, assistantIdx, "Couleur invalide : '" + args.color + "'. Utilise #rrggbb ou un nom : nixos, nixos-light, teal, coral, amber, purple.");
+                    break;
+                }
+                Theme.setAccentColor(hexColor);
+                handleToolResult(name, assistantIdx, "Couleur d'accent changée en " + hexColor);
+                break;
+            }
 
             default:
                 result = "Outil inconnu : " + name;
