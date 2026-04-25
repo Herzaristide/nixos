@@ -28,12 +28,12 @@ QtObject {
 
     // ── Preset palette ────────────────────────────────────────────────────
     readonly property var presets: [
-        "#4a4a8e",  // indigo (default)
-        "#00FF88",  // terminal green
-        "#4a8e8e",  // teal
+        "#5277c3",  // NixOS blue (default)
+        "#7ebae4",  // NixOS light blue
+        "#44aa88",  // teal-green
         "#cc5544",  // coral
-        "#cc9944",  // amber
-        "#4a80cc"   // sky blue
+        "#ccaa44",  // amber
+        "#7755cc"   // purple
     ]
 
     // ── Accent propagation (live) ─────────────────────────────────────────
