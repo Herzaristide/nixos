@@ -856,7 +856,7 @@ Item {
                     Text {
                         id: prefixText
                         text: role === "user" ? "> " : (msgType === "action" ? "$ " : "  ")
-                        color: role === "user" ? Theme.accentColor : (msgType === "action" ? "#FFCC44" : "#444444")
+                        color: role === "user" ? Theme.accentColor : (msgType === "action" ? "#FFCC44" : Theme.textInactive)
                         font.family: "JetBrains Mono"
                         font.pixelSize: 12
                     }
@@ -871,10 +871,10 @@ Item {
                         color: {
                             if (role === "user") return Theme.accentColor;
                             if (msgType === "action") return "#FFCC44";
-                            return "#CCCCCC";
+                            return Theme.textBody;
                         }
                         selectionColor: Theme.accentColor
-                        selectedTextColor: "#000000"
+                        selectedTextColor: Theme.selectedTextColor
                         font.family: "JetBrains Mono"
                         font.pixelSize: 12
                         wrapMode: TextEdit.Wrap
@@ -884,7 +884,7 @@ Item {
                         id: copyBtn
                         visible: role === "assistant" && content !== "" && !root.isStreaming
                         text: copyTimer.running ? "[copied]" : "[copy]"
-                        color: copyMa.containsMouse ? Theme.accentColor : "#333333"
+                        color: copyMa.containsMouse ? Theme.accentColor : Theme.textSubtle
                         font.family: "JetBrains Mono"
                         font.pixelSize: 10
                         leftPadding: 6
@@ -921,7 +921,7 @@ Item {
 
             Text {
                 text: "> "
-                color: root.isStreaming ? "#444444" : Theme.accentColor
+                color: root.isStreaming ? Theme.textInactive : Theme.accentColor
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
                 Layout.alignment: Qt.AlignTop
@@ -940,7 +940,7 @@ Item {
                     id: inputField
                     wrapMode: TextArea.Wrap
                     placeholderText: root.isStreaming ? "\u2026" : "message"
-                    placeholderTextColor: "#30FFFFFF"
+                    placeholderTextColor: Theme.placeholderColor
                     font.family: "JetBrains Mono"
                     font.pixelSize: 12
                     color: Theme.accentColor
@@ -1066,7 +1066,7 @@ Item {
                         text: modelData
                         font.family: "JetBrains Mono"
                         font.pixelSize: 10
-                        color: modelCombo.highlightedIndex === index ? "#000000" : Theme.accentColor
+                        color: modelCombo.highlightedIndex === index ? Theme.selectedTextColor : Theme.accentColor
                         opacity: modelCombo.highlightedIndex === index ? 1.0 : 0.6
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -1082,7 +1082,7 @@ Item {
             // Mic toggle
             Text {
                 text: root.voiceEnabled ? "[mic:on]" : "[mic]"
-                color: root.voiceEnabled ? Theme.accentColor : "#444444"
+                color: root.voiceEnabled ? Theme.accentColor : Theme.textInactive
                 font.family: "JetBrains Mono"
                 font.pixelSize: 10
                 opacity: micMa.containsMouse ? 1.0 : 0.7
@@ -1103,7 +1103,7 @@ Item {
             // Clear
             Text {
                 text: "[clear]"
-                color: clearMa.containsMouse ? "#FF6666" : "#444444"
+                color: clearMa.containsMouse ? "#FF6666" : Theme.textInactive
                 font.family: "JetBrains Mono"
                 font.pixelSize: 10
 

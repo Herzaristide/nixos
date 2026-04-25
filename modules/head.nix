@@ -22,7 +22,7 @@ in
     enable = true;
     base16Scheme = palette;
     # Wallpaper (required by stylix even when not using generated colors)
-    image = ../src/nix-wallpaper-binary-black.png;
+    image = ../src/nix-wallpaper-binary-black_8k.png;
     # Polarity tells stylix this is a dark scheme
     polarity = "dark";
     # Font configuration

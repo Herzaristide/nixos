@@ -52,7 +52,7 @@ PanelWindow {
                     text: "psychology"
                     font.family: "Material Symbols Rounded"
                     font.pixelSize: 20
-                    color: "#FFFFFF"
+                    color: Theme.iconColor
                     opacity: window.panelOpen && window.activeWidget === 1 ? 1.0 : 0.55
                 }
 
@@ -85,7 +85,7 @@ PanelWindow {
                     text: "edit_note"
                     font.family: "Material Symbols Rounded"
                     font.pixelSize: 20
-                    color: "#FFFFFF"
+                    color: Theme.iconColor
                     opacity: window.panelOpen && window.activeWidget === 2 ? 1.0 : 0.55
                 }
 
@@ -118,7 +118,7 @@ PanelWindow {
                     text: "graphic_eq"
                     font.family: "Material Symbols Rounded"
                     font.pixelSize: 20
-                    color: "#FFFFFF"
+                    color: Theme.iconColor
                     opacity: window.panelOpen && window.activeWidget === 3 ? 1.0 : 0.55
                 }
 
@@ -151,7 +151,7 @@ PanelWindow {
                     font.family: "JetBrains Mono"
                     font.pixelSize: 14
                     font.weight: Font.Normal
-                    color: "#FFFFFF"
+                    color: Theme.iconColor
 
                     opacity: {
                         const workspaceId = parent.index + 1;
@@ -197,7 +197,7 @@ PanelWindow {
                     text: "settings"
                     font.family: "Material Symbols Rounded"
                     font.pixelSize: 20
-                    color: "#FFFFFF"
+                    color: Theme.iconColor
                     opacity: window.panelOpen && window.activeWidget === 4 ? 1.0 : 0.55
                 }
 

@@ -107,7 +107,7 @@ Item {
                 text: notesData.length + " note" + (notesData.length !== 1 ? "s" : "")
                 font.family: "JetBrains Mono"
                 font.pixelSize: 11
-                color: "#444444"
+                color: Theme.textInactive
             }
 
             Item { Layout.fillWidth: true }
@@ -118,7 +118,7 @@ Item {
                 font.pixelSize: 11
                 color: searchToggleHover.containsMouse
                     ? Theme.accentColor
-                    : (root.searchVisible ? Qt.darker(Theme.accentColor, 1.2) : "#444444")
+                    : (root.searchVisible ? Qt.darker(Theme.accentColor, 1.2) : Theme.textInactive)
 
                 MouseArea {
                     id: searchToggleHover
@@ -143,7 +143,7 @@ Item {
                 text: "[clear all]"
                 font.family: "JetBrains Mono"
                 font.pixelSize: 11
-                color: clearHover.containsMouse ? "#FF4444" : "#444444"
+                color: clearHover.containsMouse ? "#FF4444" : Theme.textInactive
 
                 MouseArea {
                     id: clearHover
@@ -178,7 +178,7 @@ Item {
                 leftPadding: 0
                 wrapMode: TextEdit.Wrap
                 placeholderText: "New note… (Enter to save, Shift+Enter for newline)"
-                placeholderTextColor: "#30FFFFFF"
+                placeholderTextColor: Theme.placeholderColor
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
                 color: Theme.accentColor
@@ -201,8 +201,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: "#FFFFFF"
-            opacity: 0.12
+            color: Theme.dividerColor
         }
 
         // Search bar (toggle) ─────────────────────────────────────────────────
@@ -222,7 +221,7 @@ Item {
                 id: searchField
                 Layout.fillWidth: true
                 placeholderText: "search…"
-                placeholderTextColor: "#30FFFFFF"
+                placeholderTextColor: Theme.placeholderColor
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
                 color: Theme.accentColor
@@ -244,8 +243,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: "#FFFFFF"
-            opacity: 0.08
+            color: Theme.dividerColor
             visible: root.searchVisible
         }
 
@@ -261,7 +259,7 @@ Item {
                 text: root.searchFilter !== "" ? "No matching notes." : "No notes yet…"
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
-                color: "#30FFFFFF"
+                color: Theme.placeholderColor
             }
 
             ListView {
@@ -281,7 +279,7 @@ Item {
                     // Hover highlight
                     Rectangle {
                         anchors.fill: parent
-                        color: delHover.containsMouse ? "#0AFFFFFF" : "transparent"
+                        color: delHover.containsMouse ? Theme.hoverOverlay : "transparent"
                         radius: 3
                     }
 
@@ -300,7 +298,7 @@ Item {
                             text: noteTimestamp
                             font.family: "JetBrains Mono"
                             font.pixelSize: 10
-                            color: "#444444"
+                            color: Theme.textInactive
                             width: parent.width
                             elide: Text.ElideRight
                         }
@@ -312,10 +310,10 @@ Item {
                             text: noteContent
                             font.family: "JetBrains Mono"
                             font.pixelSize: 12
-                            color: "#CCCCCC"
+                            color: Theme.textBody
                             width: parent.width
                             selectionColor: Theme.accentColor
-                            selectedTextColor: "#000000"
+                            selectedTextColor: Theme.selectedTextColor
                         }
                     }
 
@@ -330,7 +328,7 @@ Item {
                         text: "×"
                         font.family: "JetBrains Mono"
                         font.pixelSize: 14
-                        color: delHover.containsMouse ? "#FF4444" : "#333333"
+                        color: delHover.containsMouse ? "#FF4444" : Theme.textSubtle
 
                         MouseArea {
                             id: delHover

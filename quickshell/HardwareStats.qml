@@ -299,7 +299,7 @@ Item {
                     font.family: "JetBrains Mono"
                     font.pixelSize: 14
                     font.weight: Font.Bold
-                    color: "#e0e0ff"
+                    color: Theme.textPrimary
                     Layout.fillWidth: true
                 }
             }
@@ -338,7 +338,7 @@ Item {
                     text: hwPanel.cpuName
                     font.family: "JetBrains Mono"
                     font.pixelSize: 12
-                    color: "#e0e0ff"
+                    color: Theme.textPrimary
                     Layout.fillWidth: true
                     elide: Text.ElideRight
                 }
@@ -351,7 +351,7 @@ Item {
                         Layout.fillWidth: true
                         height: 6
                         radius: 3
-                        color: "#1a1a2e"
+                        color: Theme.bgDeep
                         Rectangle {
                             width: parent.width * Math.min(hwPanel.cpuUsage / 100.0, 1.0)
                             height: parent.height
@@ -367,7 +367,7 @@ Item {
                         text: hwPanel.cpuUsage + "%"
                         font.family: "JetBrains Mono"
                         font.pixelSize: 12
-                        color: "#e0e0ff"
+                        color: Theme.textPrimary
                         Layout.preferredWidth: 40
                         horizontalAlignment: Text.AlignRight
                     }
@@ -380,7 +380,7 @@ Item {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; height: 1; color: "#1e1e30" }
+            Rectangle { Layout.fillWidth: true; height: 1; color: Theme.bgElevated }
 
             // ── RAM ──────────────────────────────────────────────────
             ColumnLayout {
@@ -404,7 +404,7 @@ Item {
                         Layout.fillWidth: true
                         height: 6
                         radius: 3
-                        color: "#1a1a2e"
+                        color: Theme.bgDeep
                         property real ratio: hwPanel.ramTotalBytes > 0
                             ? hwPanel.ramUsedBytes / hwPanel.ramTotalBytes : 0
                         Rectangle {
@@ -424,7 +424,7 @@ Item {
                             : "..."
                         font.family: "JetBrains Mono"
                         font.pixelSize: 12
-                        color: "#e0e0ff"
+                        color: Theme.textPrimary
                         Layout.preferredWidth: 140
                         horizontalAlignment: Text.AlignRight
                     }
@@ -437,7 +437,7 @@ Item {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; height: 1; color: "#1e1e30" }
+            Rectangle { Layout.fillWidth: true; height: 1; color: Theme.bgElevated }
 
             // ── GPU ──────────────────────────────────────────────────
             ColumnLayout {
@@ -471,7 +471,7 @@ Item {
                     text: hwPanel.gpuName
                     font.family: "JetBrains Mono"
                     font.pixelSize: 12
-                    color: "#e0e0ff"
+                    color: Theme.textPrimary
                     Layout.fillWidth: true
                     elide: Text.ElideRight
                 }
@@ -481,7 +481,7 @@ Item {
                     text: hwPanel.gpuUsage
                     font.family: "JetBrains Mono"
                     font.pixelSize: 11
-                    color: "#aaaacc"
+                    color: Theme.textSecondary
                 }
 
                 RowLayout {
@@ -493,7 +493,7 @@ Item {
                         Layout.fillWidth: true
                         height: 6
                         radius: 3
-                        color: "#1a1a2e"
+                        color: Theme.bgDeep
                         Rectangle {
                             width: parent.width * Math.min(hwPanel.gpuUsagePercent / 100.0, 1.0)
                             height: parent.height
@@ -509,7 +509,7 @@ Item {
                         text: hwPanel.gpuUsagePercent + "%"
                         font.family: "JetBrains Mono"
                         font.pixelSize: 12
-                        color: "#e0e0ff"
+                        color: Theme.textPrimary
                         Layout.preferredWidth: 40
                         horizontalAlignment: Text.AlignRight
                     }
@@ -522,7 +522,7 @@ Item {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; height: 1; color: "#1e1e30" }
+            Rectangle { Layout.fillWidth: true; height: 1; color: Theme.bgElevated }
 
             // ── Disques ──────────────────────────────────────────────
             ColumnLayout {
@@ -543,7 +543,7 @@ Item {
                     text: "Chargement..."
                     font.family: "JetBrains Mono"
                     font.pixelSize: 12
-                    color: "#555577"
+                    color: Theme.textSecondary
                 }
 
                 Repeater {
@@ -561,7 +561,7 @@ Item {
                                 text: modelData.mount
                                 font.family: "JetBrains Mono"
                                 font.pixelSize: 12
-                                color: "#e0e0ff"
+                                color: Theme.textPrimary
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                             }
@@ -570,7 +570,7 @@ Item {
                                 text: modelData.used + " Go / " + modelData.size + " Go"
                                 font.family: "JetBrains Mono"
                                 font.pixelSize: 11
-                                color: "#aaaacc"
+                                color: Theme.textSecondary
                             }
 
                             Text {
@@ -578,7 +578,7 @@ Item {
                                 text: Math.round(ratio * 100) + "%"
                                 font.family: "JetBrains Mono"
                                 font.pixelSize: 11
-                                color: ratio > 0.85 ? "#cc4444" : ratio > 0.65 ? "#cc8844" : "#e0e0ff"
+                                color: ratio > 0.85 ? "#cc4444" : ratio > 0.65 ? "#cc8844" : Theme.textPrimary
                                 Layout.preferredWidth: 36
                                 horizontalAlignment: Text.AlignRight
                             }
@@ -588,14 +588,14 @@ Item {
                                 height: 22
                                 radius: 4
                                 color: openBtn.containsMouse ? Theme.accentDark : "transparent"
-                                border.color: openBtn.containsMouse ? Theme.accentColor : "#2a2a3e"
+                                border.color: openBtn.containsMouse ? Theme.accentColor : Theme.bgElevated
                                 border.width: 1
 
                                 Text {
                                     anchors.centerIn: parent
                                     text: "\u23CD"
                                     font.pixelSize: 12
-                                    color: openBtn.containsMouse ? "#aaaaff" : "#555577"
+                                    color: openBtn.containsMouse ? Theme.textPrimary : Theme.textSecondary
                                 }
 
                                 MouseArea {
@@ -615,7 +615,7 @@ Item {
                             Layout.fillWidth: true
                             height: 5
                             radius: 3
-                            color: "#1a1a2e"
+                            color: Theme.bgDeep
                             property real ratio: modelData.size > 0
                                 ? modelData.used / modelData.size : 0
                             Rectangle {
@@ -632,7 +632,7 @@ Item {
                             text: modelData.source
                             font.family: "JetBrains Mono"
                             font.pixelSize: 10
-                            color: "#444466"
+                            color: Theme.textDim
                         }
                     }
                 }
