@@ -112,6 +112,9 @@ let
     "sonarlint.pathToNodeExecutable" = "${pkgs.nodejs_22}/bin/node";
     # "window.openFoldersInNewWindow" = "on";
     "workbench.activityBar.location" = "top";
+    "terminal.integrated.fontSize" = lib.mkForce 12;
+    "editor.mouseWheelZoom" = true;
+    "editor.fontSize" = lib.mkForce 12;
   };
 
   # MCP servers (dedicated config, not user settings)
