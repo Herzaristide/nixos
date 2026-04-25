@@ -151,14 +151,10 @@ in
     enable = true;
     package = pkgs.vscode;
     mutableExtensionsDir = false;
-    profiles.default.extensions = extensions;
+    profiles.default = {
+      extensions = extensions;
+      userSettings = settings;
+      keybindings = keybindings;
+    };
   };
-
-  home.activation.vscodeUserConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    mkdir -p "$HOME/.config/Code/User"
-    install -m0644 ${pkgs.writeText "vscode-settings.json" (builtins.toJSON settings)} \
-      "$HOME/.config/Code/User/settings.json"
-    install -m0644 ${pkgs.writeText "vscode-keybindings.json" (builtins.toJSON keybindings)} \
-      "$HOME/.config/Code/User/keybindings.json"
-  '';
 }

@@ -11,10 +11,9 @@
     # ~/.config/micro/settings.json
     # Options : https://github.com/zyedidia/micro/blob/master/runtime/help/options.md
     settings = {
-      # Colorschemes disponibles nativement : default, monokai, zenburn,
-      # gruvbox, darcula, solarized, simple, atom-dark, material, railscast,
-      # twilight... (catppuccin n'est pas inclus par défaut)
-      colorscheme = "default";
+      # Colorscheme generated at runtime by accent-sync (see home/modules/accent/accent.nix).
+      # File: ~/.config/micro/colorschemes/accent.micro
+      colorscheme = "accent";
       autoindent = true;
       autosave = 0;
       cursorline = true;
