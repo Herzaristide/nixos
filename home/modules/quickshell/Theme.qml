@@ -36,18 +36,18 @@ QtObject {
         "#4a80cc"   // sky blue
     ]
 
-    // ── Hyprland border sync (live) ───────────────────────────────────────
-    property Process hyprSync: Process {
+    // ── Accent propagation (live) ─────────────────────────────────────────
+    // Delegates to ~/.nix-profile/bin/accent-sync, which updates Hyprland borders,
+    // starship, fastfetch, micro and wezterm in one shot.
+    property Process accentSync: Process {
         property string pendingColor: ""
-        // rgba(rrggbbaa) — Hyprland's format, full opacity
-        command: ["hyprctl", "keyword", "general:col.active_border",
-                  "rgba(" + pendingColor.replace("#", "") + "ff)"]
+        command: ["accent-sync", pendingColor]
     }
 
     // ── Setter ────────────────────────────────────────────────────────────
     function setAccentColor(str) {
         themeSettings.accentColorStr = str
-        hyprSync.pendingColor = str
-        hyprSync.running = true
+        accentSync.pendingColor = str
+        accentSync.running = true
     }
 }

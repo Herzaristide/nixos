@@ -10,14 +10,15 @@
   imports = [
     ./modules/hyprland.nix
     ./modules/vscode/vscode.nix
-    ./modules/wezterm.nix
+    ./modules/kitty.nix
     ./modules/quickshell/quickshell.nix
     ./modules/walker.nix
+    ./modules/accent/accent.nix
   ];
 
   # Stylix target overrides
-  # wezterm uses a static hand-written Lua config; don't let stylix replace it
-  stylix.targets.wezterm.enable = false;
+  # kitty: accent overrides are managed at runtime via accent-sync (kitty-accent.conf)
+  stylix.targets.kitty.enable = false;
   # hyprland border colors are managed at runtime by hypr-accent-sync.sh + Quickshell
   stylix.targets.hyprland.enable = false;
   # micro: keep our existing colorscheme config
@@ -69,7 +70,7 @@
     figma-linux
     ghostty
     awww # Wallpaper daemon for Wayland
-    (writeShellScriptBin "hypr-gemini-launch" "gemini-pwa & wezterm")
+    (writeShellScriptBin "hypr-gemini-launch" "gemini-pwa & kitty")
     (writeShellScriptBin "gemini-pwa" "chromium --app=https://gemini.google.com --user-data-dir=$HOME/.config/chromium-$(hostname)")
     (writeShellScriptBin "claude-pwa" "chromium --app=https://claude.ai --user-data-dir=$HOME/.config/chromium-$(hostname)")
     (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium-$(hostname)")
@@ -112,7 +113,7 @@
       "x-scheme-handler/https" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/about" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/figma" = [ "figma.desktop" ];
-      "x-terminal-emulator" = [ "ghostty.desktop" ];
+      "x-terminal-emulator" = [ "kitty.desktop" ];
       "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
     };
   };

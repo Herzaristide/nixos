@@ -42,10 +42,6 @@
       (builtins.readFile ./Theme.qml);
 
   xdg.configFile."quickshell/qmldir".source = ./qmldir;
-  xdg.configFile."quickshell/hypr-accent-sync.sh" = {
-    source = ./hypr-accent-sync.sh;
-    executable = true;
-  };
 
   # Note: Quickshell is started via Hyprland's exec-once (see home/modules/hyprland.nix)
   # No systemd service needed - that would run it twice!

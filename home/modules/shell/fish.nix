@@ -73,6 +73,22 @@
       # Disable fish greeting message
       set -U fish_greeting ""
 
+      # ── Live accent-color reload ────────────────────────────────────────
+      # Re-source `starship init fish` when ~/.config/accent/accent.hex changes,
+      # so a color change in Quickshell propagates to the next prompt without
+      # restarting the shell. Cost: one stat() per prompt.
+      function __accent_reload --on-event fish_prompt
+          set -l hex_file "$HOME/.config/accent/accent.hex"
+          test -f "$hex_file"; or return
+          set -l current_mtime (stat -c %Y "$hex_file" 2>/dev/null; or echo 0)
+          if test "$current_mtime" != "$__accent_last_mtime"
+              set -g __accent_last_mtime "$current_mtime"
+              if type -q starship
+                  starship init fish | source
+              end
+          end
+      end
+
       # Run fastfetch on interactive shell start
       if status is-interactive
         nf
