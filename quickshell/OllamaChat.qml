@@ -753,84 +753,32 @@ Item {
         anchors.margins: 8
         spacing: 6
 
-        // -- Header --
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 8
-
-            Text {
-                text: "// qwen3:latest"
-                color: Theme.accentColor
-                opacity: 0.4
-                font.family: "JetBrains Mono"
-                font.pixelSize: 10
-            }
-
-            Item { Layout.fillWidth: true }
-
-            // Voice status indicator
-            Text {
-                visible: root.voiceEnabled
-                text: {
-                    switch (root.voiceStatus) {
-                        case "LISTENING": return "\uD83D\uDD0A";
-                        case "TRIGGERED": return "\uD83C\uDFA4";
-                        case "PROCESSING": return "\u2699";
-                        case "SPEAKING": return "\uD83D\uDD0A";
-                        case "DOWNLOADING_MODEL": return "\u2B07";
-                        case "DOWNLOADING_VOICE": return "\u2B07";
-                        default: return "\u23F3";
-                    }
-                }
-                color: Theme.accentColor
-                font.pixelSize: 11
-                opacity: 0.6
-
-                SequentialAnimation on opacity {
-                    id: voiceStatusAnim
-                    running: root.voiceStatus === "LISTENING"
-                    loops: Animation.Infinite
-                    NumberAnimation { to: 1.0; duration: 800 }
-                    NumberAnimation { to: 0.3; duration: 800 }
-                    onStopped: parent.opacity = 0.6
+        // -- Header: voice status only --
+        Text {
+            visible: root.voiceEnabled
+            Layout.alignment: Qt.AlignRight
+            text: {
+                switch (root.voiceStatus) {
+                    case "LISTENING": return "\uD83D\uDD0A";
+                    case "TRIGGERED": return "\uD83C\uDFA4";
+                    case "PROCESSING": return "\u2699";
+                    case "SPEAKING": return "\uD83D\uDD0A";
+                    case "DOWNLOADING_MODEL": return "\u2B07";
+                    case "DOWNLOADING_VOICE": return "\u2B07";
+                    default: return "\u23F3";
                 }
             }
+            color: Theme.accentColor
+            font.pixelSize: 11
+            opacity: 0.6
 
-            // Mic toggle
-            Text {
-                text: root.voiceEnabled ? "[mic:on]" : "[mic]"
-                color: root.voiceEnabled ? Theme.accentColor : "#444444"
-                font.family: "JetBrains Mono"
-                font.pixelSize: 10
-                opacity: micMa.containsMouse ? 1.0 : 0.7
-
-                MouseArea {
-                    id: micMa
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        root.voiceEnabled = !root.voiceEnabled;
-                        if (!root.voiceEnabled)
-                            root.voiceStatus = "OFF";
-                    }
-                }
-            }
-
-            // Clear
-            Text {
-                text: "[clear]"
-                color: clearMa.containsMouse ? "#FF6666" : "#444444"
-                font.family: "JetBrains Mono"
-                font.pixelSize: 10
-
-                MouseArea {
-                    id: clearMa
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.clearChat()
-                }
+            SequentialAnimation on opacity {
+                id: voiceStatusAnim
+                running: root.voiceStatus === "LISTENING"
+                loops: Animation.Infinite
+                NumberAnimation { to: 1.0; duration: 800 }
+                NumberAnimation { to: 0.3; duration: 800 }
+                onStopped: parent.opacity = 0.6
             }
         }
 
@@ -967,26 +915,205 @@ Item {
         // -- Input bar --
         RowLayout {
             Layout.fillWidth: true
+            Layout.minimumHeight: 28
             spacing: 0
+            clip: true
 
             Text {
                 text: "> "
                 color: root.isStreaming ? "#444444" : Theme.accentColor
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
+                Layout.alignment: Qt.AlignTop
+                topPadding: 4
             }
 
-            TextField {
-                id: inputField
+            ScrollView {
                 Layout.fillWidth: true
-                placeholderText: root.isStreaming ? "\u2026" : "message"
-                placeholderTextColor: "#30FFFFFF"
-                font.family: "JetBrains Mono"
-                font.pixelSize: 12
+                Layout.minimumHeight: 28
+                Layout.maximumHeight: 120
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                clip: true
+
+                TextArea {
+                    id: inputField
+                    wrapMode: TextArea.Wrap
+                    placeholderText: root.isStreaming ? "\u2026" : "message"
+                    placeholderTextColor: "#30FFFFFF"
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 12
+                    color: Theme.accentColor
+                    background: Item {}
+                    enabled: !root.isStreaming
+                    topPadding: 4
+                    bottomPadding: 4
+                    leftPadding: 0
+                    rightPadding: 0
+                    Keys.onReturnPressed: (event) => {
+                        if (event.modifiers & Qt.ShiftModifier) {
+                            // Shift+Enter = line break
+                            insert(cursorPosition, "\n");
+                        } else {
+                            root.sendMessage();
+                        }
+                    }
+                }
+            }
+        }
+
+        // -- Bottom controls --
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+
+            // Model selector styled as "// model"
+            Text {
+                text: "// "
                 color: Theme.accentColor
+                opacity: 0.4
+                font.family: "JetBrains Mono"
+                font.pixelSize: 10
+                verticalAlignment: Text.AlignVCenter
+                height: modelCombo.height
+            }
+
+            ComboBox {
+                id: modelCombo
+                editable: true
+                model: [
+                    "qwen3:latest",
+                    "qwen3:8b",
+                    "llama3.2:latest",
+                    "llama3.1:latest",
+                    "mistral:latest",
+                    "gemma3:latest",
+                    "deepseek-r1:latest",
+                    "phi4:latest"
+                ]
+                currentIndex: 0
+                implicitWidth: 130
+                implicitHeight: 18
+
+                onAccepted: {
+                    var v = editText.trim();
+                    if (v !== "") root.modelName = v;
+                }
+                onActivated: (idx) => {
+                    root.modelName = model[idx];
+                }
+
+                Component.onCompleted: {
+                    var idx = find(root.modelName);
+                    currentIndex = idx >= 0 ? idx : 0;
+                    editText = root.modelName;
+                }
+
+                contentItem: TextInput {
+                    text: modelCombo.editText
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 10
+                    color: Theme.accentColor
+                    opacity: 0.4
+                    verticalAlignment: TextInput.AlignVCenter
+                    leftPadding: 0
+                    rightPadding: modelCombo.indicator.width + 2
+                    selectByMouse: true
+                    onTextEdited: modelCombo.editText = text
+                }
+
+                indicator: Text {
+                    x: modelCombo.width - width
+                    y: (modelCombo.height - height) / 2
+                    text: "\u25BE"
+                    color: Theme.accentColor
+                    opacity: modelCombo.hovered ? 0.7 : 0.3
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 10
+                }
+
                 background: Item {}
-                enabled: !root.isStreaming
-                Keys.onReturnPressed: root.sendMessage()
+
+                popup: Popup {
+                    y: modelCombo.height - height
+                    width: modelCombo.width + 40
+                    padding: 1
+
+                    background: Rectangle {
+                        color: "#0d0d0d"
+                        border.color: Theme.accentColor
+                        border.width: 1
+                        opacity: 0.97
+                    }
+
+                    contentItem: ListView {
+                        clip: true
+                        implicitHeight: contentHeight
+                        model: modelCombo.popup.visible ? modelCombo.delegateModel : null
+                        ScrollIndicator.vertical: ScrollIndicator {}
+                    }
+                }
+
+                delegate: ItemDelegate {
+                    required property string modelData
+                    required property int index
+                    width: modelCombo.popup.width - 2
+                    height: 20
+                    padding: 0
+                    leftPadding: 6
+
+                    contentItem: Text {
+                        text: modelData
+                        font.family: "JetBrains Mono"
+                        font.pixelSize: 10
+                        color: modelCombo.highlightedIndex === index ? "#000000" : Theme.accentColor
+                        opacity: modelCombo.highlightedIndex === index ? 1.0 : 0.6
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        color: modelCombo.highlightedIndex === index ? Theme.accentColor : "transparent"
+                    }
+                }
+            }
+
+            Item { Layout.fillWidth: true }
+
+            // Mic toggle
+            Text {
+                text: root.voiceEnabled ? "[mic:on]" : "[mic]"
+                color: root.voiceEnabled ? Theme.accentColor : "#444444"
+                font.family: "JetBrains Mono"
+                font.pixelSize: 10
+                opacity: micMa.containsMouse ? 1.0 : 0.7
+
+                MouseArea {
+                    id: micMa
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        root.voiceEnabled = !root.voiceEnabled;
+                        if (!root.voiceEnabled)
+                            root.voiceStatus = "OFF";
+                    }
+                }
+            }
+
+            // Clear
+            Text {
+                text: "[clear]"
+                color: clearMa.containsMouse ? "#FF6666" : "#444444"
+                font.family: "JetBrains Mono"
+                font.pixelSize: 10
+
+                MouseArea {
+                    id: clearMa
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.clearChat()
+                }
             }
         }
     }

@@ -11,7 +11,7 @@
     ./modules/hyprland.nix
     ./modules/vscode/vscode.nix
     ./modules/kitty.nix
-    ./modules/quickshell/quickshell.nix
+    ../quickshell/quickshell.nix
     ./modules/walker.nix
     ./modules/accent/accent.nix
   ];
