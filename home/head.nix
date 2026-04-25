@@ -148,7 +148,9 @@
     startupNotify = true;
   };
 
-  # Wallpaper configuration - link wallpaper to expected location for awww
-  xdg.configFile."background".source = ../src/nix-wallpaper-binary-black.png;
+  # Wallpaper configuration — default startup wallpaper and mode-specific variants
+  xdg.configFile."background".source = ../src/nix-wallpaper-binary-black_8k.png;
+  xdg.configFile."wallpaper-dark".source = ../src/nix-wallpaper-binary-black_8k.png;
+  xdg.configFile."wallpaper-light".source = ../src/nix-wallpaper-binary-white_8k.png;
 
 }

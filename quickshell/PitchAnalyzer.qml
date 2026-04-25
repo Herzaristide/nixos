@@ -203,6 +203,11 @@ Item {
                 function onCurrentCentsChanged()  { staffCanvas.requestPaint() }
             }
 
+            Connections {
+                target: Theme
+                function onDarkModeChanged() { staffCanvas.requestPaint() }
+            }
+
             onPaint: {
                 var ctx = getContext("2d");
                 ctx.clearRect(0, 0, width, height);
@@ -213,7 +218,7 @@ Item {
                 var staffBottom = height * 0.78;
                 var lineSpacing = (staffBottom - staffTop) / 4;  // 4 gaps between 5 lines
 
-                ctx.strokeStyle = "rgba(255,255,255,0.25)";
+                ctx.strokeStyle = "rgba(" + Theme.canvasLineRGB + ",0.25)";
                 ctx.lineWidth   = 1;
                 for (var i = 0; i < 5; i++) {
                     var ly = staffTop + i * lineSpacing;
@@ -224,7 +229,7 @@ Item {
                 }
 
                 // ── Draw treble clef label ──────────────────────
-                ctx.fillStyle = "rgba(255,255,255,0.18)";
+                ctx.fillStyle = "rgba(" + Theme.canvasLineRGB + ",0.18)";
                 ctx.font = "bold 11px JetBrains Mono";
                 ctx.fillText("treble", 10, staffTop - 6);
 
@@ -242,7 +247,7 @@ Item {
                 var cts = Math.abs(pitchPanel.currentCents);
                 var noteColor = pitchPanel.accuracyColor(cts);
 
-                ctx.strokeStyle = "rgba(255,255,255,0.4)";
+                ctx.strokeStyle = "rgba(" + Theme.canvasLineRGB + ",0.4)";
                 ctx.lineWidth = 1;
 
                 // Below staff: ledger lines at slot -2, -1 (i.e. slots < 0 at integers)
@@ -278,7 +283,7 @@ Item {
                 // ── Draw accidental "#" if note contains sharp ──
                 var noteStr = pitchPanel.currentNote;
                 if (noteStr.indexOf("#") !== -1) {
-                    ctx.fillStyle = "rgba(255,255,255,0.65)";
+                    ctx.fillStyle = "rgba(" + Theme.canvasLineRGB + ",0.65)";
                     ctx.font = "bold 10px JetBrains Mono";
                     ctx.fillText("#", width * 0.4 - 22, noteY + 3.5);
                 }
@@ -308,7 +313,7 @@ Item {
 
                 // ── Draw stem (upward if below middle, down if above) ──
                 var stemUp = slot < 2;
-                ctx.strokeStyle = "rgba(255,255,255,0.55)";
+                ctx.strokeStyle = "rgba(" + Theme.canvasLineRGB + ",0.55)";
                 ctx.lineWidth   = 1.2;
                 ctx.beginPath();
                 if (stemUp) {
@@ -321,7 +326,7 @@ Item {
                 ctx.stroke();
 
                 // ── Note label text to the right ────────────────
-                ctx.fillStyle = "rgba(255,255,255,0.40)";
+                ctx.fillStyle = "rgba(" + Theme.canvasLineRGB + ",0.40)";
                 ctx.font      = "10px JetBrains Mono";
                 ctx.fillText(noteStr, nx + noteW + 5, noteY + 4);
             }
@@ -340,7 +345,7 @@ Item {
                 font.pixelSize: 32
                 font.bold: true
                 color: pitchPanel.isSilent
-                       ? "#444466"
+                       ? Theme.textDim
                        : pitchPanel.accuracyColor(Math.abs(pitchPanel.currentCents))
                 Behavior on color { ColorAnimation { duration: 150 } }
             }
@@ -355,7 +360,7 @@ Item {
                     text: pitchPanel.isSilent ? "—.— Hz" : pitchPanel.currentFreq.toFixed(1) + " Hz"
                     font.family: "JetBrains Mono"
                     font.pixelSize: 12
-                    color: "#aaaacc"
+                    color: Theme.textSecondary
                     Layout.alignment: Qt.AlignRight
                 }
 
@@ -363,7 +368,7 @@ Item {
                     text: "MIDI " + (pitchPanel.isSilent ? "—" : pitchPanel.currentMidi.toString())
                     font.family: "JetBrains Mono"
                     font.pixelSize: 10
-                    color: "#444466"
+                    color: Theme.textDim
                     Layout.alignment: Qt.AlignRight
                 }
             }
@@ -407,7 +412,7 @@ Item {
                     font.family: "JetBrains Mono"
                     font.pixelSize: 11
                     color: pitchPanel.isSilent
-                           ? "#444466"
+                           ? Theme.textDim
                            : pitchPanel.accuracyColor(Math.abs(pitchPanel.currentCents))
                     Behavior on color { ColorAnimation { duration: 150 } }
                 }
@@ -422,7 +427,7 @@ Item {
                 Rectangle {
                     anchors.fill: parent
                     radius: 4
-                    color: "#1a1a2e"
+                    color: Theme.bgDeep
                 }
 
                 // Center tick
@@ -472,21 +477,21 @@ Item {
                     text: "−50"
                     font.family: "JetBrains Mono"
                     font.pixelSize: 9
-                    color: "#444466"
+                    color: Theme.textDim
                 }
                 Item { Layout.fillWidth: true }
                 Text {
                     text: "0"
                     font.family: "JetBrains Mono"
                     font.pixelSize: 9
-                    color: "#444466"
+                    color: Theme.textDim
                 }
                 Item { Layout.fillWidth: true }
                 Text {
                     text: "+50"
                     font.family: "JetBrains Mono"
                     font.pixelSize: 9
-                    color: "#444466"
+                    color: Theme.textDim
                 }
             }
         }
@@ -518,7 +523,7 @@ Item {
                 border.color: Theme.accentDark; border.width: 1
                 Text {
                     anchors.centerIn: parent; text: "\u2212"
-                    font.family: "JetBrains Mono"; font.pixelSize: 14; color: "#aaaacc"
+                    font.family: "JetBrains Mono"; font.pixelSize: 14; color: Theme.textSecondary
                 }
                 MouseArea {
                     id: refMinusMa
@@ -532,7 +537,7 @@ Item {
                 id: refInput
                 text: pitchPanel.refA4.toFixed(1)
                 font.family: "JetBrains Mono"; font.pixelSize: 12
-                color: "#e0e0ff"
+                color: Theme.textPrimary
                 width: 50; horizontalAlignment: TextInput.AlignHCenter
                 selectByMouse: true
                 validator: DoubleValidator { bottom: 380; top: 480; decimals: 1 }
@@ -551,16 +556,15 @@ Item {
 
             Text {
                 text: "Hz"
-                font.family: "JetBrains Mono"; font.pixelSize: 11; color: "#444466"
+                font.family: "JetBrains Mono"; font.pixelSize: 11; color: Theme.textDim
             }
-
             Rectangle {
                 width: 22; height: 22; radius: 4
                 color: refPlusMa.containsMouse ? Theme.accentDark : "transparent"
                 border.color: Theme.accentDark; border.width: 1
                 Text {
                     anchors.centerIn: parent; text: "+"
-                    font.family: "JetBrains Mono"; font.pixelSize: 13; color: "#aaaacc"
+                    font.family: "JetBrains Mono"; font.pixelSize: 13; color: Theme.textSecondary
                 }
                 MouseArea {
                     id: refPlusMa
@@ -578,7 +582,7 @@ Item {
                 Text {
                     anchors.centerIn: parent; text: "440"
                     font.family: "JetBrains Mono"; font.pixelSize: 9
-                    color: pitchPanel.refA4 === 440 ? Theme.accentDark : "#aaaacc"
+                    color: pitchPanel.refA4 === 440 ? Theme.accentDark : Theme.textSecondary
                 }
                 MouseArea {
                     id: resetRefMa
@@ -619,7 +623,7 @@ Item {
                 Text {
                     anchors.centerIn: parent; text: "\u266A"
                     font.family: "JetBrains Mono"; font.pixelSize: 13
-                    color: pitchPanel.metroClickEnabled ? "#e0e0ff" : "#444466"
+                    color: pitchPanel.metroClickEnabled ? Theme.textPrimary : Theme.textDim
                 }
                 MouseArea {
                     id: soundToggleMa
@@ -640,7 +644,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: pitchPanel.metroRunning ? "\u25A0" : "\u25B6"
-                    color: pitchPanel.metroRunning ? "#e0e0ff" : "#aaaacc"
+                    color: pitchPanel.metroRunning ? Theme.textPrimary : Theme.textSecondary
                     font.family: "JetBrains Mono"; font.pixelSize: 11
                 }
                 MouseArea {
@@ -672,7 +676,7 @@ Item {
                     property bool isActive: pitchPanel.metroRunning && pitchPanel.beatIndex === index
                     color: isActive
                            ? (index === 0 ? "#00FF88" : Theme.accentColor)
-                           : "#1a1a2e"
+                           : Theme.bgDeep
                     Behavior on color { ColorAnimation { duration: 60 } }
                     SequentialAnimation on scale {
                         running: isActive
@@ -693,7 +697,7 @@ Item {
             Rectangle {
                 width: 28; height: 24; radius: 4
                 color: bpmMinus5Ma.containsMouse ? Theme.accentDark : "transparent"
-                border.color: "#1e1e30"; border.width: 1
+                border.color: Theme.bgElevated; border.width: 1
                 Text { anchors.centerIn: parent; text: "\u22125"
                     font.family: "JetBrains Mono"; font.pixelSize: 10; color: Theme.accentMuted }
                 MouseArea {
@@ -706,7 +710,7 @@ Item {
             Rectangle {
                 width: 24; height: 24; radius: 4
                 color: bpmMinus1Ma.containsMouse ? Theme.accentDark : "transparent"
-                border.color: "#1e1e30"; border.width: 1
+                border.color: Theme.bgElevated; border.width: 1
                 Text { anchors.centerIn: parent; text: "\u22121"
                     font.family: "JetBrains Mono"; font.pixelSize: 10; color: Theme.accentMuted }
                 MouseArea {
@@ -725,7 +729,7 @@ Item {
                     width: parent.width
                     text: pitchPanel.bpm.toString()
                     font.family: "JetBrains Mono"; font.pixelSize: 18; font.bold: true
-                    color: "#e0e0ff"
+                    color: Theme.textPrimary
                     horizontalAlignment: TextInput.AlignHCenter
                     selectByMouse: true
                     validator: IntValidator { bottom: 20; top: 300 }
@@ -748,7 +752,7 @@ Item {
 
             Text {
                 text: "bpm"
-                font.family: "JetBrains Mono"; font.pixelSize: 10; color: "#444466"
+                font.family: "JetBrains Mono"; font.pixelSize: 10; color: Theme.textDim
                 Layout.alignment: Qt.AlignBottom
                 bottomPadding: 4
             }
@@ -756,7 +760,7 @@ Item {
             Rectangle {
                 width: 24; height: 24; radius: 4
                 color: bpmPlus1Ma.containsMouse ? Theme.accentDark : "transparent"
-                border.color: "#1e1e30"; border.width: 1
+                border.color: Theme.bgElevated; border.width: 1
                 Text { anchors.centerIn: parent; text: "+1"
                     font.family: "JetBrains Mono"; font.pixelSize: 10; color: Theme.accentMuted }
                 MouseArea {
@@ -769,7 +773,7 @@ Item {
             Rectangle {
                 width: 28; height: 24; radius: 4
                 color: bpmPlus5Ma.containsMouse ? Theme.accentDark : "transparent"
-                border.color: "#1e1e30"; border.width: 1
+                border.color: Theme.bgElevated; border.width: 1
                 Text { anchors.centerIn: parent; text: "+5"
                     font.family: "JetBrains Mono"; font.pixelSize: 10; color: Theme.accentMuted }
                 MouseArea {
@@ -786,13 +790,13 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 28; radius: 4
-            color: tapMa.containsMouse ? Theme.accentDark : "#1a1a2e"
+            color: tapMa.containsMouse ? Theme.accentDark : Theme.bgDeep
             border.color: Theme.accentDark; border.width: 1
             Text {
                 anchors.centerIn: parent; text: "TAP TEMPO"
                 font.family: "JetBrains Mono"; font.pixelSize: 11
                 font.letterSpacing: 1.5
-                color: tapMa.containsMouse ? "#e0e0ff" : Theme.accentMuted
+                color: tapMa.containsMouse ? Theme.textPrimary : Theme.accentMuted
             }
             MouseArea {
                 id: tapMa
@@ -808,7 +812,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: "#1e1e30"
+            color: Theme.bgElevated
         }
 
         Item { Layout.preferredHeight: 8 }
@@ -830,7 +834,7 @@ Item {
                 text: pitchPanel.isSilent ? "en attente du signal…" : "signal détecté"
                 font.family: "JetBrains Mono"
                 font.pixelSize: 10
-                color: "#444466"
+                color: Theme.textDim
             }
 
             Item { Layout.fillWidth: true }

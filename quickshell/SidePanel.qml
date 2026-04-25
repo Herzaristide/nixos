@@ -63,7 +63,7 @@ PanelWindow {
         Rectangle {
             anchors.fill: parent
             color: resizeHandle.containsMouse || resizeHandle.pressed
-                   ? "#FFFFFF" : "transparent"
+                   ? Theme.iconColor : "transparent"
             opacity: 0.2
         }
     }

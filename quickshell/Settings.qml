@@ -101,7 +101,7 @@ Item {
                     font.family: "JetBrains Mono"
                     font.pixelSize: 14
                     font.weight: Font.Bold
-                    color: "#e0e0ff"
+                    color: Theme.textPrimary
                     Layout.fillWidth: true
                 }
             }
@@ -123,6 +123,63 @@ Item {
                 color: Theme.accentMuted
             }
 
+            // ── Dark / Light mode toggle ───────────────────────
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.bottomMargin: 12
+                spacing: 8
+
+                // Sun icon
+                Text {
+                    text: "light_mode"
+                    font.family: "Material Symbols Rounded"
+                    font.pixelSize: 16
+                    color: Theme.darkMode ? Theme.textDim : Theme.accentColor
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                }
+
+                // Toggle pill
+                Rectangle {
+                    id: themePill
+                    width: 44; height: 22; radius: 11
+                    color: Theme.darkMode ? Theme.accentDark : Theme.accentColor
+                    Behavior on color { ColorAnimation { duration: 200 } }
+
+                    // Knob
+                    Rectangle {
+                        width: 16; height: 16; radius: 8
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: Theme.darkMode ? 24 : 4
+                        color: "#FFFFFF"
+                        Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: Theme.toggleTheme()
+                    }
+                }
+
+                // Moon icon
+                Text {
+                    text: "dark_mode"
+                    font.family: "Material Symbols Rounded"
+                    font.pixelSize: 16
+                    color: Theme.darkMode ? Theme.accentColor : Theme.textDim
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                }
+
+                Item { Layout.fillWidth: true }
+
+                Text {
+                    text: Theme.darkMode ? "Sombre" : "Clair"
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 11
+                    color: Theme.textSecondary
+                }
+            }
+
             // Color preview chip + hex input
             RowLayout {
                 Layout.fillWidth: true
@@ -142,11 +199,11 @@ Item {
                     text: Theme.accentColor.toString().toUpperCase()
                     font.family: "JetBrains Mono"
                     font.pixelSize: 12
-                    color: "#e0e0ff"
+                    color: Theme.textPrimary
                     leftPadding: 8; rightPadding: 8
                     selectByMouse: true
                     background: Rectangle {
-                        color: "#1a1a2e"
+                        color: Theme.bgInput
                         radius: 4
                         border.color: Theme.accentDark
                         border.width: 1
@@ -424,7 +481,7 @@ Item {
             text: "expand_more"
             font.family: "Material Symbols Rounded"
             font.pixelSize: 18
-            color: "#aaaacc"
+            color: Theme.textSecondary
         }
 
         // ── Selected value text ───────────────────────────────
@@ -434,7 +491,7 @@ Item {
             text: parent.displayText
             font.family: "JetBrains Mono"
             font.pixelSize: 12
-            color: "#e0e0ff"
+            color: Theme.textPrimary
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
         }
@@ -442,10 +499,10 @@ Item {
         // ── Box background ────────────────────────────────────
         background: Rectangle {
             radius: 8
-            color: parent.pressed ? "#2a2a4e"
-                 : parent.hovered ? "#222240"
-                 : "#1a1a2e"
-            border.color: parent.popup.visible ? Theme.accentColor : "#2a2a4e"
+            color: parent.pressed ? Theme.bgElevated
+                 : parent.hovered ? Qt.lighter(Theme.bgElevated, 1.05)
+                 : Theme.bgInput
+            border.color: parent.popup.visible ? Theme.accentColor : Theme.bgElevated
             border.width: 1
             implicitHeight: 40
         }
@@ -458,8 +515,8 @@ Item {
 
             background: Rectangle {
                 radius: 8
-                color: "#1a1a2e"
-                border.color: "#2a2a4e"
+                color: Theme.bgInput
+                border.color: Theme.bgElevated
                 border.width: 1
             }
 
@@ -484,14 +541,14 @@ Item {
                 text: modelData
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
-                color: "#e0e0ff"
+                color: Theme.textPrimary
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
             }
 
             background: Rectangle {
                 color: parent.highlighted ? Theme.accentColor
-                     : parent.hovered     ? "#2a2a4e"
+                     : parent.hovered     ? Theme.bgElevated
                      : "transparent"
                 radius: 6
             }
