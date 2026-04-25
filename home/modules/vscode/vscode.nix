@@ -112,26 +112,31 @@ let
     "sonarlint.pathToNodeExecutable" = "${pkgs.nodejs_22}/bin/node";
     # "window.openFoldersInNewWindow" = "on";
     "workbench.activityBar.location" = "top";
-    "mcp" = {
-      "servers" = {
-        "context7" = {
-          "command" = "${pkgs.nodejs_22}/bin/npx";
-          "args" = [
-            "-y"
-            "@upstash/context7-mcp@latest"
-          ];
-        };
-        "playwright" = {
-          "command" = "${pkgs.nodejs_22}/bin/npx";
-          "args" = [ "@playwright/mcp@latest" ];
-        };
-        "docker" = {
-          "command" = "${pkgs.nodejs_22}/bin/npx";
-          "args" = [
-            "-y"
-            "@docker/mcp-server"
-          ];
-        };
+  };
+
+  # MCP servers (dedicated config, not user settings)
+  mcp = {
+    servers = {
+      context7 = {
+        command = "${pkgs.nodejs_22}/bin/npx";
+        args = [
+          "-y"
+          "@upstash/context7-mcp@latest"
+        ];
+        type = "stdio";
+      };
+      playwright = {
+        command = "${pkgs.nodejs_22}/bin/npx";
+        args = [ "@playwright/mcp@latest" ];
+        type = "stdio";
+      };
+      docker = {
+        command = "${pkgs.nodejs_22}/bin/npx";
+        args = [
+          "-y"
+          "@docker/mcp-server"
+        ];
+        type = "stdio";
       };
     };
   };
@@ -155,6 +160,7 @@ in
       extensions = extensions;
       userSettings = settings;
       keybindings = keybindings;
+      userMcp = mcp;
     };
   };
 }
