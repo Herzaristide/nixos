@@ -16,6 +16,7 @@ Item {
     // ── In-memory data ────────────────────────────────────────────────────────
     property var notesData: []     // source of truth: [{id, content, timestampMs, timestamp}]
     property string searchFilter: ""
+    property bool searchVisible: false
 
     ListModel { id: displayModel }
 
@@ -112,6 +113,32 @@ Item {
             Item { Layout.fillWidth: true }
 
             Text {
+                text: root.searchVisible ? "[×]" : "[/]"
+                font.family: "JetBrains Mono"
+                font.pixelSize: 11
+                color: searchToggleHover.containsMouse
+                    ? "#00FF88"
+                    : (root.searchVisible ? "#00CC66" : "#444444")
+
+                MouseArea {
+                    id: searchToggleHover
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        root.searchVisible = !root.searchVisible;
+                        if (!root.searchVisible) {
+                            searchField.text = "";
+                            root.searchFilter = "";
+                            root.refreshView("");
+                        } else {
+                            Qt.callLater(function() { searchField.forceActiveFocus(); });
+                        }
+                    }
+                }
+            }
+
+            Text {
                 id: clearBtn
                 text: "[clear all]"
                 font.family: "JetBrains Mono"
@@ -128,13 +155,64 @@ Item {
             }
         }
 
-        // Search bar ──────────────────────────────────────────────────────────
+        // Input area ──────────────────────────────────────────────────────────
         RowLayout {
             Layout.fillWidth: true
             spacing: 4
 
             Text {
-                text: ">"
+                text: "+"
+                font.family: "JetBrains Mono"
+                font.pixelSize: 12
+                color: "#00FF88"
+                Layout.alignment: Qt.AlignTop
+                topPadding: 6
+            }
+
+            TextArea {
+                id: inputArea
+                Layout.fillWidth: true
+                implicitHeight: Math.max(Math.min(contentHeight + topPadding + bottomPadding, 300), 1 * font.pixelSize * 1.4)
+                topPadding: 6
+                bottomPadding: 6
+                leftPadding: 0
+                wrapMode: TextEdit.Wrap
+                placeholderText: "New note… (Enter to save, Shift+Enter for newline)"
+                placeholderTextColor: "#30FFFFFF"
+                font.family: "JetBrains Mono"
+                font.pixelSize: 12
+                color: "#00FF88"
+                background: Item {}
+                selectByMouse: true
+
+                Keys.onReturnPressed: (event) => {
+                    if (event.modifiers & Qt.ShiftModifier) {
+                        inputArea.insert(inputArea.cursorPosition, "\n");
+                    } else {
+                        root.addNote(inputArea.text);
+                        inputArea.text = "";
+                        event.accepted = true;
+                    }
+                }
+            }
+        }
+
+        // Thin separator ──────────────────────────────────────────────────────
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
+            color: "#FFFFFF"
+            opacity: 0.12
+        }
+
+        // Search bar (toggle) ─────────────────────────────────────────────────
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 4
+            visible: root.searchVisible
+
+            Text {
+                text: "/"
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
                 color: "#00FF88"
@@ -154,15 +232,21 @@ Item {
                     root.searchFilter = text;
                     root.refreshView(text);
                 }
+                Keys.onEscapePressed: {
+                    root.searchVisible = false;
+                    text = "";
+                    root.searchFilter = "";
+                    root.refreshView("");
+                }
             }
         }
 
-        // Thin separator ──────────────────────────────────────────────────────
         Rectangle {
             Layout.fillWidth: true
             height: 1
             color: "#FFFFFF"
-            opacity: 0.12
+            opacity: 0.08
+            visible: root.searchVisible
         }
 
         // Note list ───────────────────────────────────────────────────────────
@@ -174,7 +258,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 visible: displayModel.count === 0
-                text: searchField.text !== "" ? "No matching notes." : "No notes yet…"
+                text: root.searchFilter !== "" ? "No matching notes." : "No notes yet…"
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
                 color: "#30FFFFFF"
@@ -186,14 +270,6 @@ Item {
                 clip: true
                 spacing: 4
                 model: displayModel
-                ScrollBar.vertical: ScrollBar {
-                    policy: ScrollBar.AsNeeded
-                    contentItem: Rectangle {
-                        implicitWidth: 3
-                        color: "#30FFFFFF"
-                        radius: 2
-                    }
-                }
 
                 delegate: Item {
                     required property var noteId
@@ -264,57 +340,6 @@ Item {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: root.deleteNote(noteId)
                         }
-                    }
-                }
-            }
-        }
-
-        // Separator before input ──────────────────────────────────────────────
-        Rectangle {
-            Layout.fillWidth: true
-            height: 1
-            color: "#FFFFFF"
-            opacity: 0.12
-        }
-
-        // Input area ──────────────────────────────────────────────────────────
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 4
-
-            Text {
-                text: ">"
-                font.family: "JetBrains Mono"
-                font.pixelSize: 12
-                color: "#00FF88"
-                Layout.alignment: Qt.AlignTop
-                topPadding: 6
-            }
-
-            TextArea {
-                id: inputArea
-                Layout.fillWidth: true
-                implicitHeight: Math.max(Math.min(contentHeight + topPadding + bottomPadding, 300), 10 * font.pixelSize * 1.4)
-                topPadding: 6
-                bottomPadding: 6
-                leftPadding: 0
-                wrapMode: TextEdit.Wrap
-                placeholderText: "New note… (Enter to save, Shift+Enter for newline)"
-                placeholderTextColor: "#30FFFFFF"
-                font.family: "JetBrains Mono"
-                font.pixelSize: 12
-                color: "#00FF88"
-                background: Item {}
-                selectByMouse: true
-
-                Keys.onReturnPressed: (event) => {
-                    if (event.modifiers & Qt.ShiftModifier) {
-                        // Insert newline
-                        inputArea.insert(inputArea.cursorPosition, "\n");
-                    } else {
-                        root.addNote(inputArea.text);
-                        inputArea.text = "";
-                        event.accepted = true;
                     }
                 }
             }

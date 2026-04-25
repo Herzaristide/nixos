@@ -38,7 +38,12 @@
       pkgs.xdg-desktop-portal-hyprland
       pkgs.xdg-desktop-portal-gtk
     ];
-    config.common.default = "hyprland;gtk";
+    config.common = {
+      default = "hyprland;gtk";
+      # xdph does not implement org.freedesktop.portal.Settings; route explicitly to gtk
+      # so Qt's GNOME theme plugin can read color-scheme/appearance without DBus errors.
+      "org.freedesktop.portal.Settings" = "gtk";
+    };
   };
 
   # X11 (for XWayland) and Hyprland
