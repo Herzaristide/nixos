@@ -10,6 +10,8 @@ Item {
     property var sinks: []
     property var sources: []
     property string pendingId: ""
+    property bool rainbowActive: false
+    property real rainbowHue: 0.0
 
     // ── wpctl status → parse sinks + sources with active flag ───
     Process {
@@ -62,6 +64,20 @@ Item {
         running: true
         onTriggered: {
             if (!statusProc.running) statusProc.running = true;
+        }
+    }
+
+    // ── Rainbow cycling timer ─────────────────────────────────────
+    Timer {
+        id: rainbowTimer
+        interval: 2000
+        repeat: true
+        running: root.rainbowActive
+        onTriggered: {
+            root.rainbowHue = (root.rainbowHue + 0.025) % 1.0
+            colorPicker.pickerH = root.rainbowHue
+            fieldCanvas.requestPaint()
+            colorPicker.updateAccent()
         }
     }
 
@@ -396,6 +412,94 @@ Item {
                         color: "#FFFFFF"
                         border.color: Qt.rgba(0, 0, 0, 0.45); border.width: 1
                         antialiasing: true
+                    }
+                }
+            }
+
+            // ── Rainbow cycling button ─────────────────────────
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 32
+                Layout.bottomMargin: 16
+
+                // Rainbow gradient background
+                Canvas {
+                    id: rainbowBtnBg
+                    anchors.fill: parent
+                    onPaint: {
+                        var ctx = getContext("2d")
+                        var grad = ctx.createLinearGradient(0, 0, width, 0)
+                        for (var i = 0; i <= 12; i++) {
+                            grad.addColorStop(i / 12, "hsl(" + Math.round(i / 12 * 360) + ",90%,55%)")
+                        }
+                        var r = 8
+                        ctx.beginPath()
+                        ctx.moveTo(r, 0); ctx.lineTo(width - r, 0)
+                        ctx.arcTo(width, 0,      width,      r,          r)
+                        ctx.lineTo(width, height - r)
+                        ctx.arcTo(width, height, width - r,  height,     r)
+                        ctx.lineTo(r, height)
+                        ctx.arcTo(0, height,     0,          height - r, r)
+                        ctx.lineTo(0, r)
+                        ctx.arcTo(0, 0,          r,          0,          r)
+                        ctx.closePath()
+                        ctx.fillStyle = grad
+                        ctx.fill()
+                    }
+                }
+
+                // Dimming overlay — lighter when active
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 8
+                    color: "#000000"
+                    opacity: root.rainbowActive ? 0.10 : 0.50
+                    Behavior on opacity { NumberAnimation { duration: 250 } }
+                }
+
+                // Active border glow
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 8
+                    color: "transparent"
+                    border.color: "#FFFFFF"
+                    border.width: 1
+                    opacity: root.rainbowActive ? 0.8 : 0.0
+                    Behavior on opacity { NumberAnimation { duration: 250 } }
+                }
+
+                // Icon + label
+                Row {
+                    anchors.centerIn: parent
+                    spacing: 6
+
+                    Text {
+                        text: root.rainbowActive ? "stop" : "gradient"
+                        font.family: "Material Symbols Rounded"
+                        font.pixelSize: 15
+                        color: "#FFFFFF"
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                        text: root.rainbowActive ? "Arrêter" : "Arc-en-ciel"
+                        font.family: "JetBrains Mono"
+                        font.pixelSize: 11
+                        font.weight: Font.Medium
+                        color: "#FFFFFF"
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (!root.rainbowActive) {
+                            // Start from current hue so it doesn't jump
+                            root.rainbowHue = colorPicker.pickerH
+                        }
+                        root.rainbowActive = !root.rainbowActive
                     }
                 }
             }
