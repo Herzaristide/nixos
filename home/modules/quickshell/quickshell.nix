@@ -3,6 +3,7 @@
   pkgs,
   lib,
   inputs,
+  palette,
   ...
 }:
 
@@ -29,8 +30,22 @@
     source = ./pitch-analyzer.sh;
     executable = true;
   };
+  xdg.configFile."quickshell/Settings.qml".source = ./Settings.qml;
   xdg.configFile."quickshell/nixos.svg".source =
     "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake-white.svg";
+
+  # Theme.qml: the @PALETTE_ACCENT@ placeholder is replaced at build time with
+  # the base0D color from palette.nix, so the default accent color always matches
+  # the system palette. The user can still override it at runtime via Settings.
+  xdg.configFile."quickshell/Theme.qml".text =
+    builtins.replaceStrings [ "@PALETTE_ACCENT@" ] [ "#${palette.base0D}" ]
+      (builtins.readFile ./Theme.qml);
+
+  xdg.configFile."quickshell/qmldir".source = ./qmldir;
+  xdg.configFile."quickshell/hypr-accent-sync.sh" = {
+    source = ./hypr-accent-sync.sh;
+    executable = true;
+  };
 
   # Note: Quickshell is started via Hyprland's exec-once (see home/modules/hyprland.nix)
   # No systemd service needed - that would run it twice!

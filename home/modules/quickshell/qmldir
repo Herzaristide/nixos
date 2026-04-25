@@ -1,0 +1,9 @@
+singleton Theme 1.0 Theme.qml
+BottomBar 1.0 BottomBar.qml
+SidePanel 1.0 SidePanel.qml
+HardwareStats 1.0 HardwareStats.qml
+OllamaChat 1.0 OllamaChat.qml
+NotesWidget 1.0 NotesWidget.qml
+MiniGraph 1.0 MiniGraph.qml
+PitchAnalyzer 1.0 PitchAnalyzer.qml
+Settings 1.0 Settings.qml

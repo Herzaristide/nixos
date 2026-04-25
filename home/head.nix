@@ -15,40 +15,22 @@
     ./modules/walker.nix
   ];
 
-  # Mouse cursor theme (Hyprland, GTK apps)
-  home.pointerCursor = {
-    gtk.enable = true;
-    package = pkgs.phinger-cursors;
-    name = "phinger-cursors-dark";
-    size = 32;
-  };
+  # Stylix target overrides
+  # wezterm uses a static hand-written Lua config; don't let stylix replace it
+  stylix.targets.wezterm.enable = false;
+  # hyprland border colors are managed at runtime by hypr-accent-sync.sh + Quickshell
+  stylix.targets.hyprland.enable = false;
+  # micro: keep our existing colorscheme config
+  stylix.targets.micro.enable = false;
 
-  # dconf: required for GTK portal dialogs (file picker, commit popup) to pick up font settings.
-  # GTK settings.ini alone is not enough — portal-spawned dialogs read from GSettings (dconf).
-  dconf = {
-    enable = true;
-    settings = {
-      "org/gnome/desktop/interface" = {
-        font-name = "DejaVu Sans 11";
-        document-font-name = "DejaVu Sans 11";
-        monospace-font-name = "DejaVu Sans Mono 11";
-        color-scheme = "prefer-dark";
-        gtk-theme = "adw-gtk3-dark";
-      };
-    };
-  };
+  # dconf: required for portal-spawned dialogs (file picker, git popups) to pick up
+  # GSettings values. Stylix manages gtk-theme, color-scheme, and font settings via dconf.
+  dconf.enable = true;
 
-  # Dark mode system-wide (GTK, GNOME apps, XDG portal, Chromium)
+  # GTK: stylix manages theme, font, and dconf color-scheme.
+  # We keep icon theme (stylix doesn't manage icons) and the dark-mode hint flags.
   gtk = {
     enable = true;
-    font = {
-      name = "DejaVu Sans";
-      size = 11;
-    };
-    theme = {
-      name = "adw-gtk3-dark";
-      package = pkgs.adw-gtk3;
-    };
     iconTheme = {
       name = "Adwaita";
       package = pkgs.adwaita-icon-theme;
@@ -57,26 +39,17 @@
       "gtk-application-prefer-dark-theme" = true;
     };
     gtk4 = {
-      theme = null;
+      theme = null; # adopt new home-manager 26.05 default (no forced GTK3 theme on GTK4)
       extraConfig = {
         "gtk-application-prefer-dark-theme" = true;
       };
     };
   };
 
-  # Qt: follow GTK theme + font (fixes broken fonts in Qt file dialogs and popups)
-  qt = {
-    enable = true;
-    platformTheme.name = "gtk";
-    style = {
-      name = "adwaita-dark";
-      package = pkgs.adwaita-qt6;
-    };
-  };
+  # Qt: stylix manages qt.platformTheme and qt.style via its targets.qt target.
 
   home.sessionVariables = {
     BROWSER = "chromium";
-    GTK_THEME = "adw-gtk3-dark";
   };
 
   # Rebuild fontconfig cache on every activation (nixos-rebuild / home-manager switch).
@@ -89,7 +62,6 @@
   home.packages = with pkgs; [
     inputs.voicemode.packages.${pkgs.stdenv.hostPlatform.system}.default
     aubio
-    adw-gtk3
     discord
     nautilus
     dgop

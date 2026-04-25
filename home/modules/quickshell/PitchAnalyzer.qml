@@ -167,7 +167,7 @@ Item {
                 font.family: "JetBrains Mono"
                 font.pixelSize: 11
                 font.weight: Font.Medium
-                color: "#7777aa"
+                color: Theme.accentMuted
                 font.letterSpacing: 1.5
             }
 
@@ -178,7 +178,7 @@ Item {
                 font.family: "JetBrains Mono"
                 font.pixelSize: 13
                 font.bold: true
-                color: "#00FF88"
+                color: Theme.accentColor
             }
         }
 
@@ -375,7 +375,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: "#2a2a4e"
+            color: Theme.accentDark
         }
 
         Item { Layout.preferredHeight: 10 }
@@ -394,7 +394,7 @@ Item {
                     font.family: "JetBrains Mono"
                     font.pixelSize: 11
                     font.weight: Font.Medium
-                    color: "#7777aa"
+                    color: Theme.accentMuted
                     font.letterSpacing: 1.5
                 }
 
@@ -494,7 +494,7 @@ Item {
         Item { Layout.preferredHeight: 12 }
 
         // ── Separator ────────────────────────────────────────────
-        Rectangle { Layout.fillWidth: true; height: 1; color: "#2a2a4e" }
+        Rectangle { Layout.fillWidth: true; height: 1; color: Theme.accentDark }
 
         Item { Layout.preferredHeight: 10 }
 
@@ -506,7 +506,7 @@ Item {
             Text {
                 text: "A4"
                 font.family: "JetBrains Mono"; font.pixelSize: 11
-                font.weight: Font.Medium; color: "#7777aa"
+                font.weight: Font.Medium; color: Theme.accentMuted
                 font.letterSpacing: 1.5
             }
 
@@ -514,8 +514,8 @@ Item {
 
             Rectangle {
                 width: 22; height: 22; radius: 4
-                color: refMinusMa.containsMouse ? "#2a2a4e" : "transparent"
-                border.color: "#2a2a4e"; border.width: 1
+                color: refMinusMa.containsMouse ? Theme.accentDark : "transparent"
+                border.color: Theme.accentDark; border.width: 1
                 Text {
                     anchors.centerIn: parent; text: "\u2212"
                     font.family: "JetBrains Mono"; font.pixelSize: 14; color: "#aaaacc"
@@ -556,8 +556,8 @@ Item {
 
             Rectangle {
                 width: 22; height: 22; radius: 4
-                color: refPlusMa.containsMouse ? "#2a2a4e" : "transparent"
-                border.color: "#2a2a4e"; border.width: 1
+                color: refPlusMa.containsMouse ? Theme.accentDark : "transparent"
+                border.color: Theme.accentDark; border.width: 1
                 Text {
                     anchors.centerIn: parent; text: "+"
                     font.family: "JetBrains Mono"; font.pixelSize: 13; color: "#aaaacc"
@@ -573,12 +573,12 @@ Item {
             // Reset to standard 440
             Rectangle {
                 width: 32; height: 22; radius: 4
-                color: resetRefMa.containsMouse ? "#2a2a4e" : "transparent"
-                border.color: "#2a2a4e"; border.width: 1
+                color: resetRefMa.containsMouse ? Theme.accentDark : "transparent"
+                border.color: Theme.accentDark; border.width: 1
                 Text {
                     anchors.centerIn: parent; text: "440"
                     font.family: "JetBrains Mono"; font.pixelSize: 9
-                    color: pitchPanel.refA4 === 440 ? "#2a2a4e" : "#aaaacc"
+                    color: pitchPanel.refA4 === 440 ? Theme.accentDark : "#aaaacc"
                 }
                 MouseArea {
                     id: resetRefMa
@@ -592,7 +592,7 @@ Item {
         Item { Layout.preferredHeight: 12 }
 
         // ── Separator ────────────────────────────────────────────
-        Rectangle { Layout.fillWidth: true; height: 1; color: "#2a2a4e" }
+        Rectangle { Layout.fillWidth: true; height: 1; color: Theme.accentDark }
 
         Item { Layout.preferredHeight: 10 }
 
@@ -604,7 +604,7 @@ Item {
             Text {
                 text: "M\u00C9TRONOME"
                 font.family: "JetBrains Mono"; font.pixelSize: 11
-                font.weight: Font.Medium; color: "#7777aa"
+                font.weight: Font.Medium; color: Theme.accentMuted
                 font.letterSpacing: 1.5
             }
 
@@ -613,9 +613,9 @@ Item {
             // Sound toggle
             Rectangle {
                 width: 22; height: 22; radius: 4
-                color: soundToggleMa.containsMouse ? "#2a2a4e"
-                       : pitchPanel.metroClickEnabled ? "#4a4a8e" : "transparent"
-                border.color: "#2a2a4e"; border.width: 1
+                color: soundToggleMa.containsMouse ? Theme.accentDark
+                       : pitchPanel.metroClickEnabled ? Theme.accentColor : "transparent"
+                border.color: Theme.accentDark; border.width: 1
                 Text {
                     anchors.centerIn: parent; text: "\u266A"
                     font.family: "JetBrains Mono"; font.pixelSize: 13
@@ -634,9 +634,9 @@ Item {
             // Start / stop
             Rectangle {
                 width: 28; height: 22; radius: 4
-                color: startStopMa.containsMouse ? "#2a2a4e"
-                       : pitchPanel.metroRunning ? "#4a4a8e" : "transparent"
-                border.color: "#2a2a4e"; border.width: 1
+                color: startStopMa.containsMouse ? Theme.accentDark
+                       : pitchPanel.metroRunning ? Theme.accentColor : "transparent"
+                border.color: Theme.accentDark; border.width: 1
                 Text {
                     anchors.centerIn: parent
                     text: pitchPanel.metroRunning ? "\u25A0" : "\u25B6"
@@ -671,7 +671,7 @@ Item {
                     height: 10; radius: 5
                     property bool isActive: pitchPanel.metroRunning && pitchPanel.beatIndex === index
                     color: isActive
-                           ? (index === 0 ? "#00FF88" : "#4a4a8e")
+                           ? (index === 0 ? "#00FF88" : Theme.accentColor)
                            : "#1a1a2e"
                     Behavior on color { ColorAnimation { duration: 60 } }
                     SequentialAnimation on scale {
@@ -692,10 +692,10 @@ Item {
 
             Rectangle {
                 width: 28; height: 24; radius: 4
-                color: bpmMinus5Ma.containsMouse ? "#2a2a4e" : "transparent"
+                color: bpmMinus5Ma.containsMouse ? Theme.accentDark : "transparent"
                 border.color: "#1e1e30"; border.width: 1
                 Text { anchors.centerIn: parent; text: "\u22125"
-                    font.family: "JetBrains Mono"; font.pixelSize: 10; color: "#7777aa" }
+                    font.family: "JetBrains Mono"; font.pixelSize: 10; color: Theme.accentMuted }
                 MouseArea {
                     id: bpmMinus5Ma; anchors.fill: parent; hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
@@ -705,10 +705,10 @@ Item {
 
             Rectangle {
                 width: 24; height: 24; radius: 4
-                color: bpmMinus1Ma.containsMouse ? "#2a2a4e" : "transparent"
+                color: bpmMinus1Ma.containsMouse ? Theme.accentDark : "transparent"
                 border.color: "#1e1e30"; border.width: 1
                 Text { anchors.centerIn: parent; text: "\u22121"
-                    font.family: "JetBrains Mono"; font.pixelSize: 10; color: "#7777aa" }
+                    font.family: "JetBrains Mono"; font.pixelSize: 10; color: Theme.accentMuted }
                 MouseArea {
                     id: bpmMinus1Ma; anchors.fill: parent; hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
@@ -755,10 +755,10 @@ Item {
 
             Rectangle {
                 width: 24; height: 24; radius: 4
-                color: bpmPlus1Ma.containsMouse ? "#2a2a4e" : "transparent"
+                color: bpmPlus1Ma.containsMouse ? Theme.accentDark : "transparent"
                 border.color: "#1e1e30"; border.width: 1
                 Text { anchors.centerIn: parent; text: "+1"
-                    font.family: "JetBrains Mono"; font.pixelSize: 10; color: "#7777aa" }
+                    font.family: "JetBrains Mono"; font.pixelSize: 10; color: Theme.accentMuted }
                 MouseArea {
                     id: bpmPlus1Ma; anchors.fill: parent; hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
@@ -768,10 +768,10 @@ Item {
 
             Rectangle {
                 width: 28; height: 24; radius: 4
-                color: bpmPlus5Ma.containsMouse ? "#2a2a4e" : "transparent"
+                color: bpmPlus5Ma.containsMouse ? Theme.accentDark : "transparent"
                 border.color: "#1e1e30"; border.width: 1
                 Text { anchors.centerIn: parent; text: "+5"
-                    font.family: "JetBrains Mono"; font.pixelSize: 10; color: "#7777aa" }
+                    font.family: "JetBrains Mono"; font.pixelSize: 10; color: Theme.accentMuted }
                 MouseArea {
                     id: bpmPlus5Ma; anchors.fill: parent; hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
@@ -786,13 +786,13 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 28; radius: 4
-            color: tapMa.containsMouse ? "#2a2a4e" : "#1a1a2e"
-            border.color: "#2a2a4e"; border.width: 1
+            color: tapMa.containsMouse ? Theme.accentDark : "#1a1a2e"
+            border.color: Theme.accentDark; border.width: 1
             Text {
                 anchors.centerIn: parent; text: "TAP TEMPO"
                 font.family: "JetBrains Mono"; font.pixelSize: 11
                 font.letterSpacing: 1.5
-                color: tapMa.containsMouse ? "#e0e0ff" : "#7777aa"
+                color: tapMa.containsMouse ? "#e0e0ff" : Theme.accentMuted
             }
             MouseArea {
                 id: tapMa
@@ -822,7 +822,7 @@ Item {
                 width: 7
                 height: 7
                 radius: 3.5
-                color: pitchPanel.isSilent ? "#2a2a4e" : "#00FF88"
+                color: pitchPanel.isSilent ? Theme.accentDark : Theme.accentColor
                 Behavior on color { ColorAnimation { duration: 200 } }
             }
 
@@ -839,7 +839,7 @@ Item {
                 text: "aubio / yin"
                 font.family: "JetBrains Mono"
                 font.pixelSize: 9
-                color: "#2a2a4e"
+                color: Theme.accentDark
             }
         }
 

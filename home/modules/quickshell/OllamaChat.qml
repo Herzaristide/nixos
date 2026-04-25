@@ -725,7 +725,7 @@ Item {
 
             Text {
                 text: "// qwen3:latest"
-                color: "#00FF88"
+                color: Theme.accentColor
                 opacity: 0.4
                 font.family: "JetBrains Mono"
                 font.pixelSize: 10
@@ -747,7 +747,7 @@ Item {
                         default: return "\u23F3";
                     }
                 }
-                color: "#00FF88"
+                color: Theme.accentColor
                 font.pixelSize: 11
                 opacity: 0.6
 
@@ -764,7 +764,7 @@ Item {
             // Mic toggle
             Text {
                 text: root.voiceEnabled ? "[mic:on]" : "[mic]"
-                color: root.voiceEnabled ? "#00FF88" : "#444444"
+                color: root.voiceEnabled ? Theme.accentColor : "#444444"
                 font.family: "JetBrains Mono"
                 font.pixelSize: 10
                 opacity: micMa.containsMouse ? 1.0 : 0.7
@@ -873,7 +873,7 @@ Item {
                     Text {
                         id: prefixText
                         text: role === "user" ? "> " : (msgType === "action" ? "$ " : "  ")
-                        color: role === "user" ? "#00FF88" : (msgType === "action" ? "#FFCC44" : "#444444")
+                        color: role === "user" ? Theme.accentColor : (msgType === "action" ? "#FFCC44" : "#444444")
                         font.family: "JetBrains Mono"
                         font.pixelSize: 12
                     }
@@ -886,11 +886,11 @@ Item {
                         text: (role === "assistant" && content === "" && root.isStreaming)
                               ? "\u258B" : content
                         color: {
-                            if (role === "user") return "#00FF88";
+                            if (role === "user") return Theme.accentColor;
                             if (msgType === "action") return "#FFCC44";
                             return "#CCCCCC";
                         }
-                        selectionColor: "#00FF88"
+                        selectionColor: Theme.accentColor
                         selectedTextColor: "#000000"
                         font.family: "JetBrains Mono"
                         font.pixelSize: 12
@@ -901,7 +901,7 @@ Item {
                         id: copyBtn
                         visible: role === "assistant" && content !== "" && !root.isStreaming
                         text: copyTimer.running ? "[copied]" : "[copy]"
-                        color: copyMa.containsMouse ? "#00FF88" : "#333333"
+                        color: copyMa.containsMouse ? Theme.accentColor : "#333333"
                         font.family: "JetBrains Mono"
                         font.pixelSize: 10
                         leftPadding: 6
@@ -936,7 +936,7 @@ Item {
 
             Text {
                 text: "> "
-                color: root.isStreaming ? "#444444" : "#00FF88"
+                color: root.isStreaming ? "#444444" : Theme.accentColor
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
             }
@@ -948,7 +948,7 @@ Item {
                 placeholderTextColor: "#30FFFFFF"
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
-                color: "#00FF88"
+                color: Theme.accentColor
                 background: Item {}
                 enabled: !root.isStreaming
                 Keys.onReturnPressed: root.sendMessage()

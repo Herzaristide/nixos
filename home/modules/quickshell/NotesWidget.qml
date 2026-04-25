@@ -100,7 +100,7 @@ Item {
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
                 font.bold: true
-                color: "#00FF88"
+                color: Theme.accentColor
             }
 
             Text {
@@ -117,8 +117,8 @@ Item {
                 font.family: "JetBrains Mono"
                 font.pixelSize: 11
                 color: searchToggleHover.containsMouse
-                    ? "#00FF88"
-                    : (root.searchVisible ? "#00CC66" : "#444444")
+                    ? Theme.accentColor
+                    : (root.searchVisible ? Qt.darker(Theme.accentColor, 1.2) : "#444444")
 
                 MouseArea {
                     id: searchToggleHover
@@ -164,7 +164,7 @@ Item {
                 text: "+"
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
-                color: "#00FF88"
+                color: Theme.accentColor
                 Layout.alignment: Qt.AlignTop
                 topPadding: 6
             }
@@ -181,7 +181,7 @@ Item {
                 placeholderTextColor: "#30FFFFFF"
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
-                color: "#00FF88"
+                color: Theme.accentColor
                 background: Item {}
                 selectByMouse: true
 
@@ -215,7 +215,7 @@ Item {
                 text: "/"
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
-                color: "#00FF88"
+                color: Theme.accentColor
             }
 
             TextField {
@@ -225,7 +225,7 @@ Item {
                 placeholderTextColor: "#30FFFFFF"
                 font.family: "JetBrains Mono"
                 font.pixelSize: 12
-                color: "#00FF88"
+                color: Theme.accentColor
                 background: Item {}
                 leftPadding: 0
                 onTextChanged: {
@@ -314,7 +314,7 @@ Item {
                             font.pixelSize: 12
                             color: "#CCCCCC"
                             width: parent.width
-                            selectionColor: "#00FF88"
+                            selectionColor: Theme.accentColor
                             selectedTextColor: "#000000"
                         }
                     }

@@ -6,6 +6,9 @@
   ...
 }:
 
+let
+  palette = import ../palette.nix;
+in
 {
   # Option for head (GUI) configuration
   options.head = lib.mkOption {
@@ -190,6 +193,7 @@
       backupFileExtension = "bak";
       extraSpecialArgs = {
         inherit inputs;
+        inherit palette;
         head = config.head;
       };
       users.aristide = import ../home/home.nix;

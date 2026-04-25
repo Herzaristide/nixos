@@ -45,7 +45,7 @@ PanelWindow {
                 anchors.fill: parent
                 radius: 8
                 color: window.panelOpen && window.activeWidget === 1
-                       ? "#4a4a8e" : (aiMa.containsMouse ? "#2a2a4e" : "transparent")
+                       ? Theme.accentColor : (aiMa.containsMouse ? Theme.accentDark : "transparent")
 
                 Text {
                     anchors.centerIn: parent
@@ -78,7 +78,7 @@ PanelWindow {
                 anchors.fill: parent
                 radius: 8
                 color: window.panelOpen && window.activeWidget === 2
-                       ? "#4a4a8e" : (notesMa.containsMouse ? "#2a2a4e" : "transparent")
+                       ? Theme.accentColor : (notesMa.containsMouse ? Theme.accentDark : "transparent")
 
                 Text {
                     anchors.centerIn: parent
@@ -111,7 +111,7 @@ PanelWindow {
                 anchors.fill: parent
                 radius: 8
                 color: window.panelOpen && window.activeWidget === 3
-                       ? "#4a4a8e" : (pitchMa.containsMouse ? "#2a2a4e" : "transparent")
+                       ? Theme.accentColor : (pitchMa.containsMouse ? Theme.accentDark : "transparent")
 
                 Text {
                     anchors.centerIn: parent
@@ -180,6 +180,39 @@ PanelWindow {
         // ── Bottom spacer ────────────────────────────────────────
         Item { Layout.fillHeight: true }
 
+        // ── Settings button ──────────────────────────────────────
+        Item {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: 36
+            Layout.preferredHeight: 36
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 8
+                color: window.panelOpen && window.activeWidget === 4
+                       ? Theme.accentColor : (settingsMa.containsMouse ? Theme.accentDark : "transparent")
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "settings"
+                    font.family: "Material Symbols Rounded"
+                    font.pixelSize: 20
+                    color: "#FFFFFF"
+                    opacity: window.panelOpen && window.activeWidget === 4 ? 1.0 : 0.55
+                }
+
+                MouseArea {
+                    id: settingsMa
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: window.selectWidget(4)
+                }
+            }
+        }
+
+        Item { Layout.preferredHeight: 8 }
+
         // ── NixOS button (HardwareStats) ─────────────────────────
         Item {
             Layout.alignment: Qt.AlignHCenter
@@ -190,7 +223,7 @@ PanelWindow {
                 anchors.fill: parent
                 radius: 8
                 color: window.panelOpen && window.activeWidget === 0
-                       ? "#4a4a8e" : (nixMa.containsMouse ? "#2a2a4e" : "transparent")
+                       ? Theme.accentColor : (nixMa.containsMouse ? Theme.accentDark : "transparent")
 
                 Image {
                     anchors.centerIn: parent

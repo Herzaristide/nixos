@@ -84,6 +84,7 @@ PanelWindow {
             OllamaChat {}
             NotesWidget {}
             PitchAnalyzer {}
+            Settings {}
         }
     }
 }
