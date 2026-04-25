@@ -5,10 +5,55 @@
   ...
 }:
 
+let
+  palette = import ../palette.nix;
+in
 {
   imports = [
+    inputs.stylix.nixosModules.stylix
     ./audio.nix
   ];
+
+  # ── Stylix: system-wide color palette ────────────────────────────────────
+  # base16Scheme is the single source of truth for all colors.
+  # GTK, Qt, Hyprland borders, cursor, and terminal colors are all derived from it.
+  # The user can still override the accent at runtime via the Quickshell Settings UI.
+  stylix = {
+    enable = true;
+    base16Scheme = palette;
+    # Wallpaper (required by stylix even when not using generated colors)
+    image = ../src/nix-wallpaper-binary-black.png;
+    # Polarity tells stylix this is a dark scheme
+    polarity = "dark";
+    # Font configuration
+    fonts = {
+      monospace = {
+        package = pkgs.jetbrains-mono;
+        name = "JetBrains Mono";
+      };
+      sansSerif = {
+        package = pkgs.dejavu_fonts;
+        name = "DejaVu Sans";
+      };
+      serif = {
+        package = pkgs.dejavu_fonts;
+        name = "DejaVu Serif";
+      };
+      emoji = {
+        package = pkgs.noto-fonts-color-emoji;
+        name = "Noto Color Emoji";
+      };
+    };
+    # Cursor
+    cursor = {
+      package = pkgs.phinger-cursors;
+      name = "phinger-cursors-dark";
+      size = 32;
+    };
+    # Disable stylix targets managed manually (Quickshell runtime sync handles Hyprland borders)
+    targets.gtk.enable = true;
+    targets.qt.enable = true;
+  };
 
   # Disable the experimental Fontations (Rust/Skrifa) font rendering backend.
   # NixOS 26.05 enables FC_FONTATIONS=1 by default, but this causes white/blank

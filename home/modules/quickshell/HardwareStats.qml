@@ -304,7 +304,7 @@ Item {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; height: 1; color: "#2a2a4e" }
+            Rectangle { Layout.fillWidth: true; height: 1; color: Theme.accentDark }
 
             // ── CPU ──────────────────────────────────────────────────
             ColumnLayout {
@@ -319,7 +319,7 @@ Item {
                         font.pixelSize: 10
                         font.weight: Font.Bold
                         font.letterSpacing: 1.5
-                        color: "#7777aa"
+                        color: Theme.accentMuted
                         Layout.fillWidth: true
                     }
                     Text {
@@ -358,7 +358,7 @@ Item {
                             radius: parent.radius
                             color: hwPanel.cpuUsage > 80 ? "#cc4444"
                                  : hwPanel.cpuUsage > 60 ? "#cc8844"
-                                 : "#4a4a8e"
+                                 : Theme.accentColor
                             Behavior on width { NumberAnimation { duration: 400 } }
                         }
                     }
@@ -376,7 +376,7 @@ Item {
                 MiniGraph {
                     Layout.fillWidth: true
                     values: hwPanel.cpuHistory
-                    lineColor: "#5a5aaa"
+                    lineColor: Theme.accentColor
                 }
             }
 
@@ -393,7 +393,7 @@ Item {
                     font.pixelSize: 10
                     font.weight: Font.Bold
                     font.letterSpacing: 1.5
-                    color: "#7777aa"
+                    color: Theme.accentMuted
                 }
 
                 RowLayout {
@@ -452,7 +452,7 @@ Item {
                         font.pixelSize: 10
                         font.weight: Font.Bold
                         font.letterSpacing: 1.5
-                        color: "#7777aa"
+                        color: Theme.accentMuted
                         Layout.fillWidth: true
                     }
                     Text {
@@ -535,7 +535,7 @@ Item {
                     font.pixelSize: 10
                     font.weight: Font.Bold
                     font.letterSpacing: 1.5
-                    color: "#7777aa"
+                    color: Theme.accentMuted
                 }
 
                 Text {
@@ -587,8 +587,8 @@ Item {
                                 width: 22
                                 height: 22
                                 radius: 4
-                                color: openBtn.containsMouse ? "#2a2a4e" : "transparent"
-                                border.color: openBtn.containsMouse ? "#4a4a8e" : "#2a2a3e"
+                                color: openBtn.containsMouse ? Theme.accentDark : "transparent"
+                                border.color: openBtn.containsMouse ? Theme.accentColor : "#2a2a3e"
                                 border.width: 1
 
                                 Text {

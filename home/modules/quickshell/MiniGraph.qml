@@ -5,7 +5,7 @@ Canvas {
     id: graph
 
     property var values: []
-    property color lineColor: "#4a4a8e"
+    property color lineColor: Theme.accentColor
 
     // implicitHeight (not height) is what ColumnLayout reads to allocate space
     implicitHeight: 42

@@ -77,7 +77,8 @@ in
       general = {
         gaps_in = 8;
         gaps_out = 12;
-        "col.active_border" = "rgba(88aaee66)";
+        # active_border color is set at runtime by ~/.config/quickshell/hypr-accent-sync.sh
+        "col.active_border" = "rgba(4a4a8eff)";
         "col.inactive_border" = "rgba(44444433)";
       };
 
@@ -115,6 +116,9 @@ in
 
         # Closed lid + HDMI: static monitor rules re-enable eDP after restart/rebuild before this ran.
         "${hyprClosedLidLayout}"
+
+        # Apply saved Quickshell accent color to Hyprland borders
+        "$HOME/.config/quickshell/hypr-accent-sync.sh"
 
         # Quickshell (headless - no visible interface)
         "quickshell"
