@@ -44,7 +44,7 @@ in
       env = FC_FONTATIONS,0
 
       # Dark mode + theming for all apps
-      env = GTK_THEME,adw-gtk3-dark
+      env = GTK_THEME,Breeze-Dark
 
       # Runtime accent color (managed by accent-sync, regenerated on every change)
       source = ~/.config/accent/hyprland.conf
@@ -114,7 +114,7 @@ in
 
       # Autostart: Dark mode for portal/Chromium, then bar and wallpaper
       exec-once = [
-        "gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark"
+        "gsettings set org.gnome.desktop.interface gtk-theme Breeze-Dark"
         "gsettings set org.gnome.desktop.interface color-scheme prefer-dark"
 
         # Closed lid + HDMI: static monitor rules re-enable eDP after restart/rebuild before this ran.
@@ -220,8 +220,10 @@ in
 
         # Generic dialog windows
         "match:title ^(.*)(Open|Save|Select|Choose|Upload|Download)(.*), float on"
-        # Nautilus file manager
-        "match:class ^(org.gnome.Nautilus)$, float on"
+        # Dolphin file manager
+        "match:class ^(org.kde.dolphin)$, float on"
+        "match:class ^(org.kde.dolphin)$, size 1100 700"
+        "match:class ^(org.kde.dolphin)$, center 1"
 
         "match:class ^(file_progress)$, float on"
         "match:class ^(confirm)$, float on"

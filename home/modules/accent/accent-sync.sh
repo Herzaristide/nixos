@@ -129,6 +129,8 @@ render() {
     -e "s|@ACCENT_ANSI@|${ACCENT_ANSI}|g" \
     -e "s|@HEX@|${HEX}|g" \
     -e "s|@LOGO_PATH@|${FASTFETCH_LOGO}|g" \
+    -e "s|@ACCENT_RGB@|${R},${G},${B}|g" \
+    -e "s|@ACCENT_DARK_RGB@|${RD},${GD},${BD}|g" \
     "$src" > "$tmp"
   mv -f "$tmp" "$dst"
 }
@@ -145,6 +147,7 @@ render "$TEMPLATE_DIR/micro.tmpl"                "$HOME/.config/micro/colorschem
 render "$TEMPLATE_DIR/wezterm-accent.lua.tmpl"   "$HOME/.config/wezterm/wezterm.lua"
 render "$TEMPLATE_DIR/vesktop-quickcss.css.tmpl"   "$HOME/.config/vesktop/settings/quickCss.css"
 render "$TEMPLATE_DIR/gtk4.css.tmpl"               "$HOME/.config/gtk-4.0/gtk.css"
+render "$TEMPLATE_DIR/kdeglobals.tmpl"             "$HOME/.config/kdeglobals"
 
 # ── Live-reload Hyprland ──────────────────────────────────────────────────
 if [ "$NO_HYPRCTL" -eq 0 ] && command -v hyprctl >/dev/null 2>&1; then
@@ -225,6 +228,14 @@ if [ -e "$VSCODE_SETTINGS" ] || [ -L "$VSCODE_SETTINGS" ]; then
   if jq -s '.[0] * .[1]' "$VSCODE_SETTINGS" "$tmp_colors" > "$tmp_out" 2>/dev/null; then
     mv -f "$tmp_out" "$VSCODE_SETTINGS"
   fi
+fi
+
+# ── Live-reload KDE apps (Dolphin, etc.) ────────────────────────────────
+# notifyChange(7=PaletteChanged) tells running KDE/Qt apps to re-read kdeglobals
+if command -v dbus-send >/dev/null 2>&1; then
+  dbus-send --session --dest=org.kde.KGlobalSettings \
+    / org.kde.KGlobalSettings.notifyChange \
+    int32:7 int32:0 2>/dev/null || true
 fi
 
 exit 0

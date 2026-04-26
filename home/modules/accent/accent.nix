@@ -52,6 +52,7 @@ in
   xdg.configFile."accent/templates/vesktop-quickcss.css.tmpl".source =
     ./templates/vesktop-quickcss.css.tmpl;
   xdg.configFile."accent/templates/gtk4.css.tmpl".source = ./templates/gtk4.css.tmpl;
+  xdg.configFile."accent/templates/kdeglobals.tmpl".source = ./templates/kdeglobals.tmpl;
 
   # Make starship pick up the runtime-generated config (override programs.starship default).
   home.sessionVariables.STARSHIP_CONFIG = lib.mkForce "${config.home.homeDirectory}/.config/accent/starship.toml";

@@ -35,6 +35,7 @@ Item {
     property var diskHistories: ({})
     property var diskGroups: []   // [{disk, usedPct, history}]
     readonly property var diskColors: ["#4a6a8e", "#8e6a4a", "#4a8e6a", "#8e4a6a", "#6a8e4a", "#6a4a8e"]
+    property var diskTemps: ({})
 
     // Combined series for the merged CPU/RAM/GPU graph
     readonly property var combinedSeries: {
@@ -120,6 +121,7 @@ Item {
             if (!gpuProc.running) gpuProc.running = true;
             if (!diskProc.running) diskProc.running = true;
             if (!tempProc.running) tempProc.running = true;
+            if (!diskTempProc.running) diskTempProc.running = true;
         }
     }
 
@@ -245,10 +247,10 @@ Item {
         }
     }
 
-    // ── Open folder ──────────────────────────────────────────────────────
+    // ── Open folder in Dolphin ────────────────────────────────────────────
     Process {
         id: openFolderProc
-        command: ["nautilus", hwPanel.openTarget]
+        command: ["dolphin", hwPanel.openTarget]
     }
 
     // ── Temperatures ─────────────────────────────────────────────────────
@@ -283,6 +285,47 @@ Item {
                 const g = parts[1] ? parts[1].trim() : "";
                 hwPanel.cpuTemp = (c.length > 0 && c !== "0") ? c + "°C" : "";
                 hwPanel.gpuTemp = (g.length > 0 && g !== "0") ? g + "°C" : "";
+            }
+        }
+    }
+
+    // ── Températures disques (NVMe sysfs + SATA/HDD via smartctl) ─────────
+    Process {
+        id: diskTempProc
+        command: [
+            "sh", "-c",
+            // NVMe via sysfs (no sudo needed)
+            "for dev in /sys/class/nvme/nvme*; do " +
+            "  [ -d \"$dev\" ] || continue; " +
+            "  name=$(basename \"$dev\"); " +
+            "  for h in \"$dev\"/hwmon/hwmon*/temp1_input; do " +
+            "    [ -f \"$h\" ] || continue; " +
+            "    t=$(cat \"$h\" 2>/dev/null); " +
+            "    [ -n \"$t\" ] && [ \"$t\" -gt 0 ] 2>/dev/null && echo \"${name}:$((t/1000))\" && break; " +
+            "  done; " +
+            "done; " +
+            // SATA/HDD via smartctl (NOPASSWD sudoers rule)
+            "for dev in /dev/sd?; do " +
+            "  [ -b \"$dev\" ] || continue; " +
+            "  name=$(basename \"$dev\"); " +
+            "  t=$(sudo smartctl -A \"$dev\" 2>/dev/null | awk '/^190 |^194 /{print $10; exit}'); " +
+            "  [ -n \"$t\" ] && [ \"$t\" -gt 0 ] 2>/dev/null && echo \"${name}:${t}\"; " +
+            "done"
+        ]
+        stdout: StdioCollector { id: diskTempOut }
+        onRunningChanged: {
+            if (!running) {
+                const lines = diskTempOut.text.trim().split('\n');
+                const temps = {};
+                for (const line of lines) {
+                    const idx = line.indexOf(':');
+                    if (idx > 0) {
+                        const dev = line.substring(0, idx).trim();
+                        const val = line.substring(idx + 1).trim();
+                        if (dev && val) temps[dev] = val;
+                    }
+                }
+                hwPanel.diskTemps = temps;
             }
         }
     }
@@ -633,6 +676,26 @@ Item {
                             }
 
                             Text {
+                                // Resolve the physical device key in diskTemps:
+                                // /dev/nvme0n1p2 → "nvme0" ; /dev/sda1 or /dev/sda → "sda"
+                                property string diskTempKey: {
+                                    let m = modelData.source.match(/\/dev\/(nvme\d+)n\d+/);
+                                    if (m) return m[1];
+                                    m = modelData.source.match(/\/dev\/([shv]d[a-z]+)\d*$/);
+                                    if (m) return m[1];
+                                    return "";
+                                }
+                                visible: diskTempKey.length > 0 && hwPanel.diskTemps[diskTempKey] !== undefined
+                                text: (hwPanel.diskTemps[diskTempKey] || "") + "°C"
+                                font.family: "JetBrains Mono"
+                                font.pixelSize: 11
+                                color: {
+                                    const v = parseInt(hwPanel.diskTemps[diskTempKey] || "0") || 0;
+                                    return v > 60 ? "#cc4444" : v > 45 ? "#cc8844" : "#88ccaa";
+                                }
+                            }
+
+                            Text {
                                 text: modelData.used + " Go / " + modelData.size + " Go"
                                 font.family: "JetBrains Mono"
                                 font.pixelSize: 11
@@ -659,7 +722,7 @@ Item {
 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: "\u23CD"
+                                    text: "↗"
                                     font.pixelSize: 12
                                     color: openBtn.containsMouse ? Theme.textPrimary : Theme.textSecondary
                                 }

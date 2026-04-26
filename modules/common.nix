@@ -173,6 +173,19 @@ in
       ];
     };
 
+    # Allow aristide to query disk temperatures without password (read-only, safe)
+    security.sudo.extraRules = [
+      {
+        users = [ "aristide" ];
+        commands = [
+          {
+            command = "${pkgs.smartmontools}/bin/smartctl";
+            options = [ "NOPASSWD" ];
+          }
+        ];
+      }
+    ];
+
     # Docker
     virtualisation.docker.enable = true;
 
