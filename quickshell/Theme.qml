@@ -7,9 +7,10 @@ QtObject {
     id: themeRoot
 
     // ── Persistence ───────────────────────────────────────────────────────
+    // Only UI layout preferences live in QSettings.
+    // The accent color is NOT stored here — accent.hex on disk is authoritative.
     property Settings themeSettings: Settings {
         category: "theme_v1"
-        property string accentColorStr: "@PALETTE_ACCENT@"
         property bool darkMode: true
     }
 
@@ -65,8 +66,36 @@ QtObject {
         wallpaperProcess.running = true
     }
 
-    // ── Accent color ──────────────────────────────────────────────────────
-    readonly property color accentColor: themeSettings.accentColorStr
+    // ── Accent color — source of truth: ~/.config/accent/accent.hex ───────
+    //
+    // _accentStr is seeded with the palette default at build time (@PALETTE_ACCENT@),
+    // then immediately overwritten by _accentFile once the file loads.
+    // Any subsequent change — from the color picker, the terminal, or a rebuild —
+    // writes accent.hex, which FileView detects and propagates here automatically.
+    //
+    // Flow: setAccentColor(str)
+    //   → _accentStr = str  (instant visual feedback)
+    //   → accent-sync writes str to accent.hex          (+ reloads kitty/Hyprland/VSCode/…)
+    //   → _accentFile.fileChanged() fires
+    //   → reload() → onLoaded → _readAccentFile()       (confirms / no-op)
+    property string _accentStr: "@PALETTE_ACCENT@"
+    readonly property color accentColor: _accentStr
+
+    property FileView _accentFile: FileView {
+        path: StandardPaths.writableLocation(StandardPaths.HomeLocation) + "/.config/accent/accent.hex"
+        watchChanges: true
+        // Silence "file not found" on first install — accentSeed creates the file
+        // during home-manager activation; watchChanges catches it when it appears.
+        printErrors: false
+        onLoaded:      themeRoot._readAccentFile()
+        onFileChanged: reload()
+    }
+
+    function _readAccentFile() {
+        var c = _accentFile.text().trim()
+        // Basic sanity check: must be a 7-char "#rrggbb" string
+        if (c.length === 7 && c[0] === "#") themeRoot._accentStr = c
+    }
 
     // Darker variant — used for hover backgrounds and separators
     readonly property color accentDark: Qt.darker(accentColor, 1.8)
@@ -85,13 +114,13 @@ QtObject {
         "#7ebae4",  // NixOS light blue
         "#44aa88",  // teal-green
         "#cc5544",  // coral
-        "#ccaa44",  // amber
-        "#7755cc"   // purple
+        "#ccaa44"   // amber
     ]
 
-    // ── Accent propagation (live) ─────────────────────────────────────────
-    // Delegates to ~/.nix-profile/bin/accent-sync, which updates Hyprland borders,
-    // starship, fastfetch, micro and wezterm in one shot.
+    // ── Accent propagation ────────────────────────────────────────────────
+    // accent-sync writes accent.hex first, then reloads kitty, Hyprland,
+    // VSCode, starship and fastfetch.  The FileView watch above picks up
+    // the accent.hex change and updates _accentStr automatically.
     property Process accentSync: Process {
         property string pendingColor: ""
         command: ["accent-sync", pendingColor]
@@ -99,8 +128,9 @@ QtObject {
 
     // ── Setter ────────────────────────────────────────────────────────────
     function setAccentColor(str) {
-        themeSettings.accentColorStr = str
+        _accentStr = str        // instant visual feedback, no waiting for file I/O
         accentSync.pendingColor = str
         accentSync.running = true
     }
 }
+

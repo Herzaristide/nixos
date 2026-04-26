@@ -13,46 +13,62 @@
     ./modules/vscode/vscode.nix
     ./modules/kitty.nix
     ./modules/ghostty.nix
+    ./modules/wezterm.nix
+    ./modules/alacritty.nix
     ./modules/zen.nix
     ../quickshell/quickshell.nix
     ./modules/walker.nix
     ./modules/accent/accent.nix
   ];
 
-  # Stylix target overrides
-  # kitty: accent overrides are managed at runtime via accent-sync (kitty-accent.conf)
-  stylix.targets.kitty.enable = false;
-  # ghostty: accent overrides are managed at runtime via accent-sync (accent-colors)
-  stylix.targets.ghostty.enable = false;
-  # hyprland border colors are managed at runtime by hypr-accent-sync.sh + Quickshell
-  stylix.targets.hyprland.enable = false;
-  # micro: keep our existing colorscheme config
-  stylix.targets.micro.enable = false;
-
   # dconf: required for portal-spawned dialogs (file picker, git popups) to pick up
-  # GSettings values. Stylix manages gtk-theme, color-scheme, and font settings via dconf.
+  # GSettings values (gtk-theme, color-scheme, font settings).
   dconf.enable = true;
 
-  # GTK: stylix manages theme, font, and dconf color-scheme.
-  # We keep icon theme (stylix doesn't manage icons) and the dark-mode hint flags.
+  # GTK theme
   gtk = {
     enable = true;
+    theme = {
+      name = if darkMode then "adw-gtk3-dark" else "adw-gtk3";
+      package = pkgs.adw-gtk3;
+    };
     iconTheme = {
       name = "Adwaita";
       package = pkgs.adwaita-icon-theme;
+    };
+    font = {
+      name = "DejaVu Sans";
+      package = pkgs.dejavu_fonts;
+      size = 11;
     };
     gtk3.extraConfig = {
       "gtk-application-prefer-dark-theme" = darkMode;
     };
     gtk4 = {
-      theme = null; # adopt new home-manager 26.05 default (no forced GTK3 theme on GTK4)
+      theme = null;
       extraConfig = {
         "gtk-application-prefer-dark-theme" = darkMode;
       };
     };
   };
 
-  # Qt: stylix manages qt.platformTheme and qt.style via its targets.qt target.
+  # Qt theming — use adwaita-qt for visual consistency with GTK
+  qt = {
+    enable = true;
+    platformTheme.name = "adwaita";
+    style = {
+      name = "adwaita-dark";
+      package = pkgs.adwaita-qt;
+    };
+  };
+
+  # Cursor theme
+  home.pointerCursor = {
+    package = pkgs.phinger-cursors;
+    name = if darkMode then "phinger-cursors-dark" else "phinger-cursors";
+    size = 32;
+    gtk.enable = true;
+  };
 
   home.sessionVariables = {
     BROWSER = "chromium";

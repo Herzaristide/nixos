@@ -17,7 +17,7 @@ let
     gawk
     gnused
     gnugrep
-    kitty
+    procps # killall — SIGUSR1 to running kitty instances
     jq # merge accent into VSCode settings.json
   ];
 
@@ -49,6 +49,12 @@ in
   xdg.configFile."accent/templates/micro.tmpl".source = ./templates/micro.tmpl;
   xdg.configFile."accent/templates/kitty-accent.conf.tmpl".source =
     ./templates/kitty-accent.conf.tmpl;
+  xdg.configFile."accent/templates/ghostty-accent.tmpl".source =
+    ./templates/ghostty-accent.tmpl;
+  xdg.configFile."accent/templates/wezterm-accent.lua.tmpl".source =
+    ./templates/wezterm-accent.lua.tmpl;
+  xdg.configFile."accent/templates/alacritty-accent.toml.tmpl".source =
+    ./templates/alacritty-accent.toml.tmpl;
 
   # Make starship pick up the runtime-generated config (override programs.starship default).
   home.sessionVariables.STARSHIP_CONFIG = lib.mkForce "${config.home.homeDirectory}/.config/accent/starship.toml";
@@ -64,14 +70,25 @@ in
 
   # Seed accent.hex on first activation, then regenerate every derived file.
   # Skip hyprctl during activation (might run on rebuild while no Hyprland is up).
+  #
+  # Source-of-truth: accent.hex
+  #   - Written by accent-sync (colorpicker, terminal).
+  #   - Read by Quickshell's FileView at runtime — no QSettings involved.
+  #   - On first install accent.hex doesn't exist yet: use the compiled-in default.
+  #   - On every rebuild accentSeed re-runs accent-sync so all derived files
+  #     (kitty-accent.conf, starship.toml, VSCode settings, …) stay coherent
+  #     with whatever color the user had chosen.
   home.activation.accentSeed = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     accent_dir="$HOME/.config/accent"
-    mkdir -p "$accent_dir" "$HOME/.config/micro/colorschemes" "$HOME/.config/kitty"
-    if [ ! -s "$accent_dir/accent.hex" ]; then
-      echo "${defaultAccent}" > "$accent_dir/accent.hex"
+    mkdir -p "$accent_dir" "$HOME/.config/micro/colorschemes" "$HOME/.config/wezterm" "$HOME/.config/alacritty"
+
+    # Use the persisted color when available, fall back to the compiled default.
+    if [ -s "$accent_dir/accent.hex" ]; then
+      current="$(cat "$accent_dir/accent.hex")"
+    else
+      current="${defaultAccent}"
     fi
-    current="$(cat "$accent_dir/accent.hex" 2>/dev/null || echo "${defaultAccent}")"
-    # Retry up to 3 times in case of a transient issue (e.g. first-run template deploy).
+
     for _attempt in 1 2 3; do
       if ${accent-sync}/bin/accent-sync "$current" --no-hyprctl 2>&1; then
         break

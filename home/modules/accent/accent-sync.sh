@@ -4,19 +4,21 @@
 # Usage: accent-sync "#rrggbb" [--no-hyprctl]
 #
 # Reads templates from ~/.config/accent/templates/ and writes:
-#   ~/.config/accent/accent.hex            (state for fish hook + boot init)
-#   ~/.config/accent/hyprland.conf         (sourced by Hyprland)
-#   ~/.config/accent/starship.toml         (pointed to by STARSHIP_CONFIG)
-#   ~/.config/accent/fastfetch-full.jsonc  (used by `nf`)
-#   ~/.config/accent/fastfetch-logo.jsonc  (used by `nf`)
+#   ~/.config/accent/accent.hex                  (state for fish hook + boot init)
+#   ~/.config/accent/hyprland.conf               (sourced by Hyprland)
+#   ~/.config/accent/starship.toml               (pointed to by STARSHIP_CONFIG)
+#   ~/.config/accent/fastfetch-full.jsonc        (used by `nf`)
+#   ~/.config/accent/fastfetch-logo.jsonc        (used by `nf`)
 #   ~/.config/micro/colorschemes/accent.micro
-#   ~/.config/accent/kitty-accent.conf  (included from ~/.config/kitty/kitty.conf)
+#   ~/.config/wezterm/wezterm.lua                 (full config with accent baked in; auto-reloaded)
+#   ~/.config/alacritty/accent-colors.toml       (imported by alacritty; auto-reloaded)
 #
 # Live-reload:
 #   - Hyprland: hyprctl keyword (unless --no-hyprctl)
-#   - Kitty: SIGUSR1 to every running instance (re-reads kitty.conf + includes)
+#   - WezTerm: auto (watches config dir for changes, reads accent.hex on reload)
+#   - Alacritty: auto (watches imported files for changes)
 #   - Fish/starship: next prompt (fish hook re-sources starship)
-#   - Fastfetch / micro: next launch (inherit kitty's color4/color12)
+#   - Fastfetch / micro: next launch
 set -euo pipefail
 
 # Path to the NixOS ASCII logo, baked in at build time by accent.nix.
@@ -26,7 +28,12 @@ ACCENT_DIR="$HOME/.config/accent"
 TEMPLATE_DIR="$ACCENT_DIR/templates"
 mkdir -p "$ACCENT_DIR" \
          "$HOME/.config/micro/colorschemes" \
-         "$HOME/.config/kitty"
+         "$HOME/.config/wezterm" \
+         "$HOME/.config/alacritty"
+
+# Cleanup any temporary files on exit (covers both success and error paths).
+_TMPFILES=()
+trap 'rm -f "${_TMPFILES[@]}"' EXIT
 
 NO_HYPRCTL=0
 COLOR=""
@@ -115,6 +122,7 @@ render() {
   # Use a temp file then mv for atomic update (avoids partial reads on reload)
   local tmp
   tmp="$(mktemp "${dst}.XXXXXX")"
+  _TMPFILES+=("$tmp")
   sed \
     -e "s|@ACCENT@|#${HEX}|g" \
     -e "s|@ACCENT_DARK@|${HEX_DARK}|g" \
@@ -135,22 +143,22 @@ render "$TEMPLATE_DIR/starship.toml.tmpl"        "$ACCENT_DIR/starship.toml"
 render "$TEMPLATE_DIR/fastfetch-full.jsonc.tmpl" "$ACCENT_DIR/fastfetch-full.jsonc"
 render "$TEMPLATE_DIR/fastfetch-logo.jsonc.tmpl" "$ACCENT_DIR/fastfetch-logo.jsonc"
 render "$TEMPLATE_DIR/micro.tmpl"                "$HOME/.config/micro/colorschemes/accent.micro"
-render "$TEMPLATE_DIR/kitty-accent.conf.tmpl"    "$ACCENT_DIR/kitty-accent.conf"
+render "$TEMPLATE_DIR/wezterm-accent.lua.tmpl"   "$HOME/.config/wezterm/wezterm.lua"
+render "$TEMPLATE_DIR/alacritty-accent.toml.tmpl" "$HOME/.config/alacritty/accent-colors.toml"
 
 # ── Live-reload Hyprland ──────────────────────────────────────────────────
 if [ "$NO_HYPRCTL" -eq 0 ] && command -v hyprctl >/dev/null 2>&1; then
   hyprctl keyword general:col.active_border "rgba(${HEX}ff)" >/dev/null 2>&1 || true
 fi
 
-# ── Live-reload Kitty (set colors directly via remote control sockets) ────
-# Each kitty instance listens on unix:/tmp/kitty-<pid>. We push the new
-# palette to every running instance; --all applies to every window/tab,
-# --configured makes it the default for new windows too.
-for sock in /tmp/kitty-*; do
-  [ -S "$sock" ] || continue
-  kitten @ --to "unix:$sock" set-colors --all --configured \
-    "$ACCENT_DIR/kitty-accent.conf" 2>/dev/null || true
-done
+# ── Live-reload WezTerm ───────────────────────────────────────────────────
+# Writing ~/.config/wezterm/accent.lua triggers WezTerm's built-in file watcher.
+# WezTerm reloads its entire Lua config, which calls read_accent() → accent.hex.
+# No signal needed.
+
+# ── Live-reload Alacritty ─────────────────────────────────────────────────
+# Writing ~/.config/alacritty/accent-colors.toml triggers Alacritty's file watcher.
+# The import is applied immediately in every open window. No signal needed.
 
 # ── Live-reload VSCode color customizations ───────────────────────────────
 # settings.json is normally a nix-store symlink (read-only). We replace it
@@ -165,6 +173,7 @@ if [ -e "$VSCODE_SETTINGS" ] || [ -L "$VSCODE_SETTINGS" ]; then
   A40="${HEX}66"   # 40 % opacity — scrollbar active
 
   tmp_colors="$(mktemp)"
+  _TMPFILES+=("$tmp_colors")
   # Build the colorCustomizations patch as a JSON object
   jq -n \
     --arg a  "#${HEX}" \
@@ -218,12 +227,10 @@ if [ -e "$VSCODE_SETTINGS" ] || [ -L "$VSCODE_SETTINGS" ]; then
   # Merge the patch into the existing settings (the nix store copy is readable
   # even as a symlink). `mv` atomically replaces the symlink with a real file.
   tmp_out="$(mktemp)"
+  _TMPFILES+=("$tmp_out")
   if jq -s '.[0] * .[1]' "$VSCODE_SETTINGS" "$tmp_colors" > "$tmp_out" 2>/dev/null; then
     mv -f "$tmp_out" "$VSCODE_SETTINGS"
-  else
-    rm -f "$tmp_out"
   fi
-  rm -f "$tmp_colors"
 fi
 
 exit 0

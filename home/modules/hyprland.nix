@@ -147,7 +147,7 @@ in
 
       # Minimal binds - terminal, apps
       bind = [
-        "$mod, Return, exec, ghostty"
+        "$mod, Return, exec, wezterm --config-file ~/.config/wezterm/wezterm.lua"
         "$mod, C, exec, code"
         "$mod, B, exec, chromium"
         "$mod, Z, exec, zen-twilight"

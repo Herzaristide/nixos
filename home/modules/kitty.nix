@@ -20,16 +20,10 @@
       cursor_blink_interval = "0.5";
       scrollback_lines = 5000;
 
-      # Remote control via Unix socket — accent-sync uses `kitten @ set-colors`
-      # to live-update colors without relying on SIGUSR1 config reload.
-      allow_remote_control = "socket-only";
-      listen_on = "unix:/tmp/kitty-{kitty_pid}";
-
       # Tab bar — colors managed via kitty-accent.conf include
       tab_bar_edge = "bottom";
       tab_bar_style = "powerline";
       tab_powerline_style = "slanted";
-      # Simple title: let active_tab_foreground (= accent) apply via include
       tab_title_template = " {index} {title[:20]} ";
 
       # Bell off
