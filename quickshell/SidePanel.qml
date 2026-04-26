@@ -69,15 +69,22 @@ PanelWindow {
     }
 
     // ── Main content ─────────────────────────────────────────────
-    Item {
+    ColumnLayout {
         anchors.fill: parent
         anchors.margins: 8
         anchors.leftMargin: 0
         anchors.rightMargin: 12
         visible: panelOpen
+        spacing: 0
+
+        // Always-visible controls: volume + screenshot
+        QuickControls {
+            Layout.fillWidth: true
+        }
 
         StackLayout {
-            anchors.fill: parent
+            Layout.fillWidth: true
+            Layout.fillHeight: true
             currentIndex: panel.activeWidget
 
             HardwareStats {}

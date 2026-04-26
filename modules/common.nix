@@ -138,6 +138,7 @@ in
       tmux
       jq # JSON processor
       yq-go # YAML processor
+      openssl
       envsubst # env variable substitution
       gnumake
       gcc

@@ -3,7 +3,9 @@ BottomBar 1.0 BottomBar.qml
 SidePanel 1.0 SidePanel.qml
 HardwareStats 1.0 HardwareStats.qml
 OllamaChat 1.0 OllamaChat.qml
+OllamaTools 1.0 OllamaTools.qml
 NotesWidget 1.0 NotesWidget.qml
 MiniGraph 1.0 MiniGraph.qml
 PitchAnalyzer 1.0 PitchAnalyzer.qml
 Settings 1.0 Settings.qml
+QuickControls 1.0 QuickControls.qml
