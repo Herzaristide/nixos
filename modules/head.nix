@@ -5,57 +5,10 @@
   ...
 }:
 
-let
-  darkPalette = import ../palette.nix;
-  lightPalette = import ../palette-light.nix;
-in
 {
   imports = [
-    inputs.stylix.nixosModules.stylix
     ./audio.nix
   ];
-
-  # ── Stylix: system-wide color palette ────────────────────────────────────
-  # base16Scheme is sourced from palette.nix (dark) or palette-light.nix (light),
-  # selected by the host-level `darkMode` option (default: true).
-  # GTK, Qt, VSCode, cursor, and terminal colors are all derived from it.
-  stylix = {
-    enable = true;
-    # Wallpaper (used as background; palette is explicit via base16Scheme)
-    image = ../src/nix-wallpaper-binary-black_8k.png;
-    # Explicit palette attrset — not auto-generated from the wallpaper, not parsed as YAML
-    base16Scheme = if config.darkMode then darkPalette else lightPalette;
-    # Polarity derives from darkMode: tells Stylix how to apply the palette
-    polarity = if config.darkMode then "dark" else "light";
-    # Font configuration
-    fonts = {
-      monospace = {
-        package = pkgs.jetbrains-mono;
-        name = "JetBrains Mono";
-      };
-      sansSerif = {
-        package = pkgs.dejavu_fonts;
-        name = "DejaVu Sans";
-      };
-      serif = {
-        package = pkgs.dejavu_fonts;
-        name = "DejaVu Serif";
-      };
-      emoji = {
-        package = pkgs.noto-fonts-color-emoji;
-        name = "Noto Color Emoji";
-      };
-    };
-    # Cursor — use the dark or light variant to match the active mode
-    cursor = {
-      package = pkgs.phinger-cursors;
-      name = if config.darkMode then "phinger-cursors-dark" else "phinger-cursors";
-      size = 32;
-    };
-    # Disable stylix targets managed manually (Quickshell runtime sync handles Hyprland borders)
-    targets.gtk.enable = true;
-    targets.qt.enable = true;
-  };
 
   # Disable the experimental Fontations (Rust/Skrifa) font rendering backend.
   # NixOS 26.05 enables FC_FONTATIONS=1 by default, but this causes white/blank
