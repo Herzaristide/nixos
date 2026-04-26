@@ -49,8 +49,7 @@ in
   xdg.configFile."accent/templates/micro.tmpl".source = ./templates/micro.tmpl;
   xdg.configFile."accent/templates/kitty-accent.conf.tmpl".source =
     ./templates/kitty-accent.conf.tmpl;
-  xdg.configFile."accent/templates/ghostty-accent.tmpl".source =
-    ./templates/ghostty-accent.tmpl;
+  xdg.configFile."accent/templates/ghostty-accent.tmpl".source = ./templates/ghostty-accent.tmpl;
   xdg.configFile."accent/templates/wezterm-accent.lua.tmpl".source =
     ./templates/wezterm-accent.lua.tmpl;
   xdg.configFile."accent/templates/alacritty-accent.toml.tmpl".source =
@@ -78,23 +77,37 @@ in
   #   - On every rebuild accentSeed re-runs accent-sync so all derived files
   #     (kitty-accent.conf, starship.toml, VSCode settings, …) stay coherent
   #     with whatever color the user had chosen.
-  home.activation.accentSeed = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    accent_dir="$HOME/.config/accent"
-    mkdir -p "$accent_dir" "$HOME/.config/micro/colorschemes" "$HOME/.config/wezterm" "$HOME/.config/alacritty"
+  #
+  # Must run AFTER vscodeProfiles, vscodeRemoteExtensions, AND linkGeneration:
+  # linkGeneration is the HM step that symlinks all managed files (including
+  # settings.json) into the home directory. It runs after writeBoundary and
+  # after vscodeProfiles, so any earlier replacement gets overwritten.
+  # Ordering after linkGeneration ensures accent-sync always runs last.
+  home.activation.accentSeed =
+    lib.hm.dag.entryAfter
+      [
+        "writeBoundary"
+        "vscodeProfiles"
+        "vscodeRemoteExtensions"
+        "linkGeneration"
+      ]
+      ''
+        accent_dir="$HOME/.config/accent"
+        mkdir -p "$accent_dir" "$HOME/.config/micro/colorschemes" "$HOME/.config/wezterm" "$HOME/.config/alacritty"
 
-    # Use the persisted color when available, fall back to the compiled default.
-    if [ -s "$accent_dir/accent.hex" ]; then
-      current="$(cat "$accent_dir/accent.hex")"
-    else
-      current="${defaultAccent}"
-    fi
+        # Use the persisted color when available, fall back to the compiled default.
+        if [ -s "$accent_dir/accent.hex" ]; then
+          current="$(cat "$accent_dir/accent.hex")"
+        else
+          current="${defaultAccent}"
+        fi
 
-    for _attempt in 1 2 3; do
-      if ${accent-sync}/bin/accent-sync "$current" --no-hyprctl 2>&1; then
-        break
-      fi
-      $VERBOSE_ECHO "accent-sync failed (attempt $_attempt), retrying in 1s..."
-      sleep 1
-    done || true
-  '';
+        for _attempt in 1 2 3; do
+          if ${accent-sync}/bin/accent-sync "$current" --no-hyprctl 2>&1; then
+            break
+          fi
+          $VERBOSE_ECHO "accent-sync failed (attempt $_attempt), retrying in 1s..."
+          sleep 1
+        done || true
+      '';
 }

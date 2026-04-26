@@ -70,7 +70,7 @@ Item {
     // ── Rainbow cycling timer ─────────────────────────────────────
     Timer {
         id: rainbowTimer
-        interval: 2000
+        interval: 100
         repeat: true
         running: root.rainbowActive
         onTriggered: {
@@ -300,6 +300,17 @@ Item {
                     Theme.setAccentColor(hsvToHex(pickerH, pickerS, pickerV))
                 }
 
+                // Re-sync HSV when accent.hex is loaded (or changed externally),
+                // but not while the user is actively dragging the picker.
+                property bool userInteracting: false
+                Connections {
+                    target: Theme
+                    function onAccentColorChanged() {
+                        if (!colorPicker.userInteracting)
+                            colorPicker.initFromColor(Theme.accentColor)
+                    }
+                }
+
                 // ── Saturation / brightness field ─────────────────
                 Canvas {
                     id: fieldCanvas
@@ -354,7 +365,8 @@ Item {
                             colorPicker.pickerV = Math.max(0, Math.min(1, 1 - mouse.y / height))
                             colorPicker.updateAccent()
                         }
-                        onPressed:         (mouse) => pick(mouse)
+                        onPressed:         (mouse) => { colorPicker.userInteracting = true; pick(mouse) }
+                        onReleased:        colorPicker.userInteracting = false
                         onPositionChanged: (mouse) => { if (pressed) pick(mouse) }
                     }
                 }
@@ -399,7 +411,8 @@ Item {
                                 fieldCanvas.requestPaint()
                                 colorPicker.updateAccent()
                             }
-                            onPressed:         (mouse) => pick(mouse)
+                            onPressed:         (mouse) => { colorPicker.userInteracting = true; pick(mouse) }
+                            onReleased:        colorPicker.userInteracting = false
                             onPositionChanged: (mouse) => { if (pressed) pick(mouse) }
                         }
                     }
