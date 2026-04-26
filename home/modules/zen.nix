@@ -1,9 +1,75 @@
 {
   inputs,
-  palette,
+  palettes,
+  lib,
   ...
 }:
 
+let
+  # Convert a 6-char lowercase hex string (no #) to "r,g,b"
+  hexToRgb =
+    hex:
+    let
+      d2i =
+        d:
+        {
+          "0" = 0;
+          "1" = 1;
+          "2" = 2;
+          "3" = 3;
+          "4" = 4;
+          "5" = 5;
+          "6" = 6;
+          "7" = 7;
+          "8" = 8;
+          "9" = 9;
+          "a" = 10;
+          "b" = 11;
+          "c" = 12;
+          "d" = 13;
+          "e" = 14;
+          "f" = 15;
+        }
+        .${d};
+      byte =
+        s:
+        (d2i (builtins.substring 0 1 (lib.toLower s))) * 16
+        + (d2i (builtins.substring 1 1 (lib.toLower s)));
+    in
+    "${toString (byte (builtins.substring 0 2 hex))},${toString (byte (builtins.substring 2 2 hex))},${
+      toString (byte (builtins.substring 4 2 hex))
+    }";
+
+  # Build the palette CSS variables for one mode
+  mkZenCSS = p: ''
+    :root {
+      --toolbar-bgcolor:                #${p.base01} !important;
+      --toolbar-color:                  #${p.base05} !important;
+      --toolbarbutton-hover-background: rgba(${hexToRgb p.base05}, 0.08) !important;
+      --tab-selected-bgcolor:           #${p.base02} !important;
+      --focus-outline-color:            #${p.base0D} !important;
+      --link-color:                     #${p.base0D} !important;
+      --accent-color:                   #${p.base0D} !important;
+      --accent-color-a30:               rgba(${hexToRgb p.base0D}, 0.3) !important;
+    }
+
+    #navigator-toolbox {
+      background-color: #${p.base01} !important;
+    }
+
+    #sidebar-box,
+    .sidebar-panel,
+    #sidebar-header {
+      background-color: #${p.base00} !important;
+      color: #${p.base05} !important;
+    }
+
+    #urlbar-background {
+      background-color: #${p.base02} !important;
+      border-color: #${p.base0D} !important;
+    }
+  '';
+in
 {
   imports = [ inputs.zen-browser.homeModules.twilight ];
 
@@ -55,35 +121,18 @@
         "4ab93b88-151c-451b-a1b7-a1e0e28fa7f8" # No Sidebar Scrollbar
       ];
 
-      # Theme aligned to the NixOS palette (dark background, NixOS blue accent)
+      # Both palette modes embedded at build time. Zen switches instantly when the
+      # Quickshell toggle fires gsettings color-scheme, because Firefox/Zen honours
+      # prefers-color-scheme from the system setting — no rebuild required.
       userChrome = ''
-        /* ── NixOS palette overrides ────────────────────────── */
-        :root {
-          --toolbar-bgcolor:                #${palette.base01} !important;
-          --toolbar-color:                  #${palette.base05} !important;
-          --toolbarbutton-hover-background: rgba(224, 224, 255, 0.08) !important;
-          --tab-selected-bgcolor:           #${palette.base02} !important;
-          --focus-outline-color:            #${palette.base0D} !important;
-          --link-color:                     #${palette.base0D} !important;
-          --accent-color:                   #${palette.base0D} !important;
-          --accent-color-a30:               rgba(82, 119, 195, 0.3) !important;
+        /* ── NixOS palette — dark/light via prefers-color-scheme ───────── */
+
+        @media (prefers-color-scheme: dark) {
+          ${mkZenCSS palettes.dark}
         }
 
-        #navigator-toolbox {
-          background-color: #${palette.base01} !important;
-        }
-
-        #sidebar-box,
-        .sidebar-panel,
-        #sidebar-header {
-          background-color: #${palette.base00} !important;
-          color: #${palette.base05} !important;
-        }
-
-        /* URL bar */
-        #urlbar-background {
-          background-color: #${palette.base02} !important;
-          border-color: #${palette.base0D} !important;
+        @media (prefers-color-scheme: light) {
+          ${mkZenCSS palettes.light}
         }
       '';
 

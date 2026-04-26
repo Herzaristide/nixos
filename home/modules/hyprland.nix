@@ -222,7 +222,7 @@ in
         "match:title ^(.*)(Open|Save|Select|Choose|Upload|Download)(.*), float on"
         # Dolphin file manager
         "match:class ^(org.kde.dolphin)$, float on"
-        "match:class ^(org.kde.dolphin)$, size 1100 700"
+        "match:class ^(org.kde.dolphin)$, size 600 400"
         "match:class ^(org.kde.dolphin)$, center 1"
 
         "match:class ^(file_progress)$, float on"

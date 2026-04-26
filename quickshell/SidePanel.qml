@@ -13,7 +13,7 @@ PanelWindow {
     readonly property real minWidth: 250
     readonly property real maxWidth: 600
 
-    WlrLayershell.layer: WlrLayer.Top
+    WlrLayershell.layer: WlrLayer.Bottom
     WlrLayershell.namespace: "quickshell-sidepanel"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 

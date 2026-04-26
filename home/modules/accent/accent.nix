@@ -3,12 +3,37 @@
   pkgs,
   lib,
   palette,
+  palettes,
+  darkMode ? true,
   ...
 }:
 
 let
   defaultAccent = "#${palette.base0D}";
+  defaultMode = if darkMode then "dark" else "light";
   logoPath = ../../../src/nixos_logo.txt;
+
+  # Generate a shell-sourceable env file from a palette attrset.
+  # Each base16 key is uppercased: base00 → BASE00=rrggbb (no #).
+  mkPaletteEnv = p: extra: ''
+    BASE00=${p.base00}
+    BASE01=${p.base01}
+    BASE02=${p.base02}
+    BASE03=${p.base03}
+    BASE04=${p.base04}
+    BASE05=${p.base05}
+    BASE06=${p.base06}
+    BASE07=${p.base07}
+    BASE08=${p.base08}
+    BASE09=${p.base09}
+    BASE0A=${p.base0A}
+    BASE0B=${p.base0B}
+    BASE0C=${p.base0C}
+    BASE0D=${p.base0D}
+    BASE0E=${p.base0E}
+    BASE0F=${p.base0F}
+    ${extra}
+  '';
 
   # Tools accent-sync calls. Prepended to PATH so the script works during
   # home-manager activation (where PATH is minimal) and inside Quickshell.
@@ -38,6 +63,13 @@ let
 in
 {
   home.packages = [ accent-sync ];
+
+  # Palette env files — sourced by accent-sync at runtime to apply the right
+  # base16 colors for the active mode.  Rebuilt on every nixos-rebuild so they
+  # always reflect the current palette.nix values.
+  xdg.configFile."accent/palette-dark.env".text =
+    mkPaletteEnv palettes.dark "ICONS_THEME=breeze-dark";
+  xdg.configFile."accent/palette-light.env".text = mkPaletteEnv palettes.light "ICONS_THEME=breeze";
 
   # Templates installed read-only under ~/.config/accent/templates/
   xdg.configFile."accent/templates/hyprland.conf.tmpl".source = ./templates/hyprland.conf.tmpl;
@@ -69,19 +101,17 @@ in
   # Seed accent.hex on first activation, then regenerate every derived file.
   # Skip hyprctl during activation (might run on rebuild while no Hyprland is up).
   #
-  # Source-of-truth: accent.hex
-  #   - Written by accent-sync (colorpicker, terminal).
-  #   - Read by Quickshell's FileView at runtime — no QSettings involved.
-  #   - On first install accent.hex doesn't exist yet: use the compiled-in default.
-  #   - On every rebuild accentSeed re-runs accent-sync so all derived files
-  #   (starship.toml, VSCode settings, …) stay coherent
-  #     with whatever color the user had chosen.
+  # Source-of-truth: accent.hex + mode.txt
+  #   - accent.hex: written by accent-sync (colorpicker, terminal, rebuild).
+  #   - mode.txt:   dark|light; written by accent-sync on each run.
+  #   - Both are read by Quickshell's FileView at runtime.
+  #   - On first install these files don't exist yet; defaults are used.
+  #   - On every rebuild accentSeed re-runs accent-sync with --mode matching
+  #     config.darkMode so all derived files stay coherent.
   #
-  # Must run AFTER vscodeProfiles, vscodeRemoteExtensions, AND linkGeneration:
-  # linkGeneration is the HM step that symlinks all managed files (including
-  # settings.json) into the home directory. It runs after writeBoundary and
-  # after vscodeProfiles, so any earlier replacement gets overwritten.
-  # Ordering after linkGeneration ensures accent-sync always runs last.
+  # Must run AFTER vscodeProfiles, vscodeRemoteExtensions, AND linkGeneration
+  # (linkGeneration symlinks managed files including settings.json; running
+  # accent-sync last ensures it always wins).
   home.activation.accentSeed =
     lib.hm.dag.entryAfter
       [
@@ -102,7 +132,7 @@ in
         fi
 
         for _attempt in 1 2 3; do
-          if ${accent-sync}/bin/accent-sync "$current" --no-hyprctl 2>&1; then
+          if ${accent-sync}/bin/accent-sync "$current" --mode ${defaultMode} --no-hyprctl 2>&1; then
             break
           fi
           $VERBOSE_ECHO "accent-sync failed (attempt $_attempt), retrying in 1s..."
