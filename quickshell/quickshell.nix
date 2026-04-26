@@ -18,6 +18,8 @@
   xdg.configFile."quickshell/BottomBar.qml".source = ./BottomBar.qml;
   xdg.configFile."quickshell/SidePanel.qml".source = ./SidePanel.qml;
   xdg.configFile."quickshell/OllamaChat.qml".source = ./OllamaChat.qml;
+  xdg.configFile."quickshell/OllamaTools.qml".source = ./OllamaTools.qml;
+  xdg.configFile."quickshell/QuickControls.qml".source = ./QuickControls.qml;
   xdg.configFile."quickshell/NotesWidget.qml".source = ./NotesWidget.qml;
   xdg.configFile."quickshell/HardwareStats.qml".source = ./HardwareStats.qml;
   xdg.configFile."quickshell/MiniGraph.qml".source = ./MiniGraph.qml;
