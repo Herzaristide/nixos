@@ -19,9 +19,8 @@
   # dconf: required for GTK app settings and GNOME applications
   programs.dconf.enable = true;
 
-  # udisks2 + gvfs: detect and mount external drives (required for Nautilus "Other Locations")
+  # udisks2: detect and mount external drives (Dolphin/KIO handles VFS natively)
   services.udisks2.enable = true;
-  services.gvfs.enable = true;
 
   # Power profiles daemon removed: conflicts with auto-cpufreq (see battery-optimization.nix)
   # services.power-profiles-daemon.enable = true;

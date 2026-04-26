@@ -28,30 +28,18 @@
       document-font-name = "JetBrains Mono 11";
       monospace-font-name = "JetBrains Mono 11";
     };
-    # Nautilus preferences
-    "org/gnome/nautilus/preferences" = {
-      show-hidden-files = false;
-      default-folder-viewer = "list-view";
-    };
-    "org/gnome/nautilus/list-view" = {
-      default-zoom-level = "small";
-      use-tree-view = false;
-    };
-    "org/gnome/nautilus/icon-view" = {
-      default-zoom-level = "small";
-    };
   };
 
-  # GTK theme
+  # GTK theme — Breeze for visual consistency with KDE/Dolphin
   gtk = {
     enable = true;
     theme = {
-      name = if darkMode then "adw-gtk3-dark" else "adw-gtk3";
-      package = pkgs.adw-gtk3;
+      name = if darkMode then "Breeze-Dark" else "Breeze";
+      package = pkgs.kdePackages.breeze-gtk;
     };
     iconTheme = {
-      name = "Adwaita";
-      package = pkgs.adwaita-icon-theme;
+      name = if darkMode then "breeze-dark" else "breeze";
+      package = pkgs.kdePackages.breeze-icons;
     };
     font = {
       name = "JetBrains Mono";
@@ -69,13 +57,13 @@
     };
   };
 
-  # Qt theming — use adwaita-qt for visual consistency with GTK
+  # Qt theming — Breeze natif KDE (cohérent avec Dolphin et les apps Qt)
   qt = {
     enable = true;
-    platformTheme.name = "adwaita";
+    platformTheme.name = "kde";
     style = {
-      name = "adwaita-dark";
-      package = pkgs.adwaita-qt;
+      name = "breeze";
+      package = pkgs.kdePackages.breeze;
     };
   };
 
@@ -102,7 +90,11 @@
     inputs.voicemode.packages.${pkgs.stdenv.hostPlatform.system}.default
     aubio
     vesktop
-    nautilus
+    kdePackages.dolphin
+    kdePackages.kio-extras
+    kdePackages.ark
+    kdePackages.ffmpegthumbs
+    kdePackages.kimageformats
     dgop
     spacedrive
     figma-linux
@@ -151,7 +143,7 @@
       "x-scheme-handler/about" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/figma" = [ "figma.desktop" ];
       "x-terminal-emulator" = [ "org.wezfurlong.wezterm.desktop" ];
-      "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
+      "inode/directory" = [ "org.kde.dolphin.desktop" ];
     };
   };
 
