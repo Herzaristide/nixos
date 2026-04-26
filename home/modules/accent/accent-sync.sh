@@ -35,19 +35,48 @@ _TMPFILES=()
 trap 'rm -f "${_TMPFILES[@]}"' EXIT
 
 NO_HYPRCTL=0
+MODE=""
 COLOR=""
-for arg in "$@"; do
-  case "$arg" in
-    --no-hyprctl) NO_HYPRCTL=1 ;;
-    -*) echo "accent-sync: unknown flag $arg" >&2; exit 2 ;;
-    *)  COLOR="$arg" ;;
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --no-hyprctl)  NO_HYPRCTL=1; shift ;;
+    --mode)        MODE="$2"; shift 2 ;;
+    --mode=*)      MODE="${1#--mode=}"; shift ;;
+    -*)            echo "accent-sync: unknown flag $1" >&2; exit 2 ;;
+    *)             COLOR="$1"; shift ;;
   esac
 done
 
 if [ -z "$COLOR" ]; then
-  echo "usage: accent-sync \"#rrggbb\" [--no-hyprctl]" >&2
+  echo "usage: accent-sync \"#rrggbb\" [--mode dark|light] [--no-hyprctl]" >&2
   exit 2
 fi
+
+# ── Resolve active mode ───────────────────────────────────────────────────
+if [ -z "$MODE" ]; then
+  if [ -s "$ACCENT_DIR/mode.txt" ]; then
+    MODE="$(cat "$ACCENT_DIR/mode.txt")"
+  else
+    MODE="dark"
+  fi
+fi
+case "$MODE" in
+  dark|light) ;;
+  *) echo "accent-sync: invalid mode '$MODE' (expected dark or light)" >&2; exit 2 ;;
+esac
+
+# ── Load palette for this mode ────────────────────────────────────────────
+PALETTE_ENV="$ACCENT_DIR/palette-${MODE}.env"
+if [ ! -f "$PALETTE_ENV" ]; then
+  echo "accent-sync: palette file not found: $PALETTE_ENV" >&2
+  echo "  → run 'sudo nixos-rebuild switch' to regenerate it." >&2
+  exit 1
+fi
+# shellcheck source=/dev/null
+. "$PALETTE_ENV"
+
+# Persist the active mode so subsequent calls inherit it
+echo "$MODE" > "$ACCENT_DIR/mode.txt"
 
 HEX="${COLOR#\#}"
 HEX="$(printf '%s' "$HEX" | tr '[:upper:]' '[:lower:]')"
@@ -111,6 +140,23 @@ HEX_MUTED=$(printf '#%02x%02x%02x' "$RM" "$GM" "$BM")
 
 ACCENT_ANSI="38;2;${R};${G};${B}"
 
+# ── RGB helper: rrggbb → "r,g,b" ─────────────────────────────────────────
+_hex_to_rgb() {
+  local h="$1"
+  printf '%d,%d,%d' \
+    "$((16#${h:0:2}))" "$((16#${h:2:2}))" "$((16#${h:4:2}))"
+}
+
+# Pre-compute RGB forms for each palette base slot.
+BASE00_RGB=$(_hex_to_rgb "$BASE00"); BASE01_RGB=$(_hex_to_rgb "$BASE01")
+BASE02_RGB=$(_hex_to_rgb "$BASE02"); BASE03_RGB=$(_hex_to_rgb "$BASE03")
+BASE04_RGB=$(_hex_to_rgb "$BASE04"); BASE05_RGB=$(_hex_to_rgb "$BASE05")
+BASE06_RGB=$(_hex_to_rgb "$BASE06"); BASE07_RGB=$(_hex_to_rgb "$BASE07")
+BASE08_RGB=$(_hex_to_rgb "$BASE08"); BASE09_RGB=$(_hex_to_rgb "$BASE09")
+BASE0A_RGB=$(_hex_to_rgb "$BASE0A"); BASE0B_RGB=$(_hex_to_rgb "$BASE0B")
+BASE0C_RGB=$(_hex_to_rgb "$BASE0C"); BASE0D_RGB=$(_hex_to_rgb "$BASE0D")
+BASE0E_RGB=$(_hex_to_rgb "$BASE0E"); BASE0F_RGB=$(_hex_to_rgb "$BASE0F")
+
 # ── Render template helper ────────────────────────────────────────────────
 render() {
   local src="$1" dst="$2"
@@ -131,6 +177,23 @@ render() {
     -e "s|@LOGO_PATH@|${FASTFETCH_LOGO}|g" \
     -e "s|@ACCENT_RGB@|${R},${G},${B}|g" \
     -e "s|@ACCENT_DARK_RGB@|${RD},${GD},${BD}|g" \
+    -e "s|@BASE00@|#${BASE00}|g" -e "s|@BASE00_RGB@|${BASE00_RGB}|g" \
+    -e "s|@BASE01@|#${BASE01}|g" -e "s|@BASE01_RGB@|${BASE01_RGB}|g" \
+    -e "s|@BASE02@|#${BASE02}|g" -e "s|@BASE02_RGB@|${BASE02_RGB}|g" \
+    -e "s|@BASE03@|#${BASE03}|g" -e "s|@BASE03_RGB@|${BASE03_RGB}|g" \
+    -e "s|@BASE04@|#${BASE04}|g" -e "s|@BASE04_RGB@|${BASE04_RGB}|g" \
+    -e "s|@BASE05@|#${BASE05}|g" -e "s|@BASE05_RGB@|${BASE05_RGB}|g" \
+    -e "s|@BASE06@|#${BASE06}|g" -e "s|@BASE06_RGB@|${BASE06_RGB}|g" \
+    -e "s|@BASE07@|#${BASE07}|g" -e "s|@BASE07_RGB@|${BASE07_RGB}|g" \
+    -e "s|@BASE08@|#${BASE08}|g" -e "s|@BASE08_RGB@|${BASE08_RGB}|g" \
+    -e "s|@BASE09@|#${BASE09}|g" -e "s|@BASE09_RGB@|${BASE09_RGB}|g" \
+    -e "s|@BASE0A@|#${BASE0A}|g" -e "s|@BASE0A_RGB@|${BASE0A_RGB}|g" \
+    -e "s|@BASE0B@|#${BASE0B}|g" -e "s|@BASE0B_RGB@|${BASE0B_RGB}|g" \
+    -e "s|@BASE0C@|#${BASE0C}|g" -e "s|@BASE0C_RGB@|${BASE0C_RGB}|g" \
+    -e "s|@BASE0D@|#${BASE0D}|g" -e "s|@BASE0D_RGB@|${BASE0D_RGB}|g" \
+    -e "s|@BASE0E@|#${BASE0E}|g" -e "s|@BASE0E_RGB@|${BASE0E_RGB}|g" \
+    -e "s|@BASE0F@|#${BASE0F}|g" -e "s|@BASE0F_RGB@|${BASE0F_RGB}|g" \
+    -e "s|@ICONS_THEME@|${ICONS_THEME}|g" \
     "$src" > "$tmp"
   mv -f "$tmp" "$dst"
 }

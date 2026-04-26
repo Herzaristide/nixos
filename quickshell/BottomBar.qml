@@ -11,7 +11,7 @@ PanelWindow {
     property int activeWidget: 0
     signal selectWidget(int index)
 
-    WlrLayershell.layer: WlrLayer.Top
+    WlrLayershell.layer: WlrLayer.Bottom
     WlrLayershell.namespace: "quickshell-leftbar"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 

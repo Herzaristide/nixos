@@ -6,10 +6,6 @@
   ...
 }:
 
-let
-  darkPalette = import ../palette.nix;
-  lightPalette = import ../palette-light.nix;
-in
 {
   # Option for head (GUI) configuration
   options.head = lib.mkOption {
@@ -215,7 +211,6 @@ in
       backupFileExtension = "bak";
       extraSpecialArgs = {
         inherit inputs;
-        palette = if config.darkMode then darkPalette else lightPalette;
         head = config.head;
         darkMode = config.darkMode;
       };

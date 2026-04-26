@@ -64,6 +64,10 @@ QtObject {
         gtkProcess.running = true
         wallpaperProcess.pendingVariant = themeSettings.darkMode ? "dark" : "light"
         wallpaperProcess.running = true
+        // Regenerate all palette-derived files (GTK4 css, WezTerm, Micro, KDE, …)
+        // with the colours for the new mode, keeping the current accent color.
+        accentResync._pendingMode = themeSettings.darkMode ? "dark" : "light"
+        accentResync.running = true
     }
 
     // ── Accent color — source of truth: ~/.config/accent/accent.hex ───────
@@ -124,6 +128,13 @@ QtObject {
     property Process accentSync: Process {
         property string pendingColor: ""
         command: ["accent-sync", pendingColor]
+    }
+
+    // Full re-render with a different palette mode (called by toggleTheme).
+    // Keeps the current accent color, just switches dark ↔ light base colors.
+    property Process accentResync: Process {
+        property string _pendingMode: "dark"
+        command: ["accent-sync", themeRoot._accentStr, "--mode", _pendingMode]
     }
 
     // ── Setter ────────────────────────────────────────────────────────────
