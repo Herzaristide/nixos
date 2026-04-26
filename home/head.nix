@@ -11,10 +11,7 @@
   imports = [
     ./modules/hyprland.nix
     ./modules/vscode/vscode.nix
-    ./modules/kitty.nix
-    ./modules/ghostty.nix
     ./modules/wezterm.nix
-    ./modules/alacritty.nix
     ./modules/zen.nix
     ../quickshell/quickshell.nix
     ./modules/walker.nix
@@ -84,14 +81,13 @@
   home.packages = with pkgs; [
     inputs.voicemode.packages.${pkgs.stdenv.hostPlatform.system}.default
     aubio
-    discord
+    vesktop
     nautilus
     dgop
     spacedrive
     figma-linux
-    ghostty
     awww # Wallpaper daemon for Wayland
-    (writeShellScriptBin "hypr-gemini-launch" "gemini-pwa & kitty")
+    (writeShellScriptBin "hypr-gemini-launch" "gemini-pwa & wezterm --config-file ~/.config/wezterm/wezterm.lua")
     (writeShellScriptBin "gemini-pwa" "chromium --app=https://gemini.google.com --user-data-dir=$HOME/.config/chromium-$(hostname)")
     (writeShellScriptBin "claude-pwa" "chromium --app=https://claude.ai --user-data-dir=$HOME/.config/chromium-$(hostname)")
     (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium-$(hostname)")
@@ -134,7 +130,7 @@
       "x-scheme-handler/https" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/about" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/figma" = [ "figma.desktop" ];
-      "x-terminal-emulator" = [ "kitty.desktop" ];
+      "x-terminal-emulator" = [ "org.wezfurlong.wezterm.desktop" ];
       "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
     };
   };
