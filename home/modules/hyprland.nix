@@ -147,9 +147,10 @@ in
 
       # Minimal binds - terminal, apps
       bind = [
-        "$mod, Return, exec, kitty"
+        "$mod, Return, exec, ghostty"
         "$mod, C, exec, code"
         "$mod, B, exec, chromium"
+        "$mod, Z, exec, zen-twilight"
         "$mod, R, exec, walker"
         "$mod, Q, killactive"
         "$mod, T, togglefloating"

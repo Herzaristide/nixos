@@ -12,6 +12,8 @@
     ./modules/hyprland.nix
     ./modules/vscode/vscode.nix
     ./modules/kitty.nix
+    ./modules/ghostty.nix
+    ./modules/zen.nix
     ../quickshell/quickshell.nix
     ./modules/walker.nix
     ./modules/accent/accent.nix
@@ -20,6 +22,8 @@
   # Stylix target overrides
   # kitty: accent overrides are managed at runtime via accent-sync (kitty-accent.conf)
   stylix.targets.kitty.enable = false;
+  # ghostty: accent overrides are managed at runtime via accent-sync (accent-colors)
+  stylix.targets.ghostty.enable = false;
   # hyprland border colors are managed at runtime by hypr-accent-sync.sh + Quickshell
   stylix.targets.hyprland.enable = false;
   # micro: keep our existing colorscheme config

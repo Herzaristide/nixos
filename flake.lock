@@ -302,7 +302,8 @@
         "nixpkgs": "nixpkgs",
         "quickshell": "quickshell",
         "stylix": "stylix",
-        "voicemode": "voicemode"
+        "voicemode": "voicemode",
+        "zen-browser": "zen-browser"
       }
     },
     "stylix": {
@@ -450,6 +451,29 @@
       "original": {
         "owner": "mbailey",
         "repo": "voicemode",
+        "type": "github"
+      }
+    },
+    "zen-browser": {
+      "inputs": {
+        "home-manager": [
+          "home-manager"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1777138694,
+        "narHash": "sha256-yjAFuyqQyOtQ5entLYmSRf/1L0kuSDWQndS2QNBLQlc=",
+        "owner": "0xc000022070",
+        "repo": "zen-browser-flake",
+        "rev": "5ceb2bfc5671bfca6b1b363669309d6871043d66",
+        "type": "github"
+      },
+      "original": {
+        "owner": "0xc000022070",
+        "repo": "zen-browser-flake",
         "type": "github"
       }
     }

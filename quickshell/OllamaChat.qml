@@ -257,11 +257,11 @@ Item {
             type: "function",
             "function": {
                 name: "set_accent_color",
-                description: "Change the desktop accent color used by Hyprland window borders, the shell bar, and terminal colors. Accepts a hex color (#rrggbb) or a preset name: nixos (#5277c3), nixos-light (#7ebae4), teal (#44aa88), coral (#cc5544), amber (#ccaa44), purple (#7755cc).",
+                description: "Change the desktop accent color used by Hyprland window borders, the shell bar, and terminal colors. Accepts a hex color (#rrggbb) or a preset name: nixos (#5277c3), nixos-light (#7ebae4), teal (#44aa88), coral (#cc5544), amber (#ccaa44).",
                 parameters: {
                     type: "object",
                     properties: {
-                        color: { type: "string", description: "Hex color (#rrggbb) or preset name: nixos, nixos-light, teal, coral, amber, purple" }
+                        color: { type: "string", description: "Hex color (#rrggbb) or preset name: nixos, nixos-light, teal, coral, amber" }
                     },
                     required: ["color"]
                 }
@@ -704,12 +704,11 @@ Item {
                     "nixos-light": "#7ebae4",
                     "teal":        "#44aa88",
                     "coral":       "#cc5544",
-                    "amber":       "#ccaa44",
-                    "purple":      "#7755cc"
+                    "amber":       "#ccaa44"
                 };
                 var hexColor = presetMap[colorInput] || colorInput;
                 if (!/^#[0-9a-f]{6}$/.test(hexColor)) {
-                    handleToolResult(name, assistantIdx, "Couleur invalide : '" + args.color + "'. Utilise #rrggbb ou un nom : nixos, nixos-light, teal, coral, amber, purple.");
+                    handleToolResult(name, assistantIdx, "Couleur invalide : '" + args.color + "'. Utilise #rrggbb ou un nom : nixos, nixos-light, teal, coral, amber.");
                     break;
                 }
                 Theme.setAccentColor(hexColor);

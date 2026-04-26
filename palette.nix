@@ -9,7 +9,7 @@
 #   base03  muted / comments         base0B  green
 #   base04  dark foreground          base0C  teal / cyan
 #   base05  foreground               base0D  blue / accent  ← THE accent
-#   base06  light foreground         base0E  purple
+#   base06  light foreground         base0E  blue variant
 #   base07  bright foreground        base0F  coral / brown
 {
   base00 = "0d0d0d"; # true black (matches binary wallpaper background)
@@ -26,6 +26,6 @@
   base0B = "44aa88"; # green (teal-green, RAM bar, in-tune)
   base0C = "7ebae4"; # teal / cyan (NixOS logo light blue)
   base0D = "5277c3"; # blue / accent (NixOS primary blue — seeds Quickshell accent)
-  base0E = "7755cc"; # purple (GPU bar)
+  base0E = "4488cc"; # blue variant (GPU bar)
   base0F = "cc5566"; # coral
 }
