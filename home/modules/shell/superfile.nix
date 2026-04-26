@@ -1,6 +1,70 @@
 { ... }:
 
 {
+  # Blue theme — palette blues hardcoded so superfile always looks cohesive
+  # with the rest of the NixOS blue aesthetic.
+  xdg.configFile."superfile/theme/nixos-blue.toml".text = ''
+    # NixOS Blue — static blue theme
+    code_syntax_highlight = "nord"
+
+    # ========= Border =========
+    file_panel_border = "#2a2a3a"
+    sidebar_border    = "#1a1a2a"
+    footer_border     = "#2a2a3a"
+
+    # ========= Border Active =========
+    # "4" = ANSI blue, "12" = ANSI bright-blue — both remapped to the accent
+    # color by WezTerm, so the theme follows accent-sync automatically.
+    file_panel_border_active = "4"
+    sidebar_border_active    = "12"
+    footer_border_active     = "12"
+    modal_border_active      = "4"
+
+    # ========= Background =========
+    full_screen_bg = "#0d0d0d"
+    file_panel_bg  = "#0d0d0d"
+    sidebar_bg     = "#0d0d0d"
+    footer_bg      = "#0d0d0d"
+    modal_bg       = "#1a1a2a"
+
+    # ========= Foreground =========
+    full_screen_fg = "#e0e0ff"
+    file_panel_fg  = "#e0e0ff"
+    sidebar_fg     = "#e0e0ff"
+    footer_fg      = "#8a90b0"
+    modal_fg       = "#e0e0ff"
+
+    # ========= Special Color =========
+    cursor  = "4"
+    correct = "#44aa88"
+    error   = "#cc4444"
+    hint    = "12"
+    cancel  = "#cc8844"
+    gradient_color = ["4", "12"]
+
+    # ========= File Panel Special Items =========
+    file_panel_top_directory_icon = "12"
+    file_panel_top_path           = "4"
+    file_panel_item_selected_fg   = "12"
+    file_panel_item_selected_bg   = "#1a1a2a"
+
+    # ========= Sidebar Special Items =========
+    sidebar_title            = "4"
+    sidebar_item_selected_fg = "12"
+    sidebar_item_selected_bg = "#1a1a2a"
+    sidebar_divider          = "#2a2a3a"
+
+    # ========= Modal Special Items =========
+    modal_cancel_fg  = "#0d0d0d"
+    modal_cancel_bg  = "#cc8844"
+    modal_confirm_fg = "#0d0d0d"
+    modal_confirm_bg = "#44aa88"
+
+    # ========= Help Menu =========
+    help_menu_hotkey = "12"
+    help_menu_title  = "4"
+  '';
+
   programs.superfile = {
     enable = true;
 
@@ -14,7 +78,7 @@
     # totalité des champs par défaut, avec nos personnalisations.
     settings = {
       # --- Personnalisations ---
-      theme = "default";
+      theme = "nixos-blue";
       editor = "micro";
       dir_editor = "micro";
       cd_on_quit = true;

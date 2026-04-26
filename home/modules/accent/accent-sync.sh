@@ -11,12 +11,10 @@
 #   ~/.config/accent/fastfetch-logo.jsonc        (used by `nf`)
 #   ~/.config/micro/colorschemes/accent.micro
 #   ~/.config/wezterm/wezterm.lua                 (full config with accent baked in; auto-reloaded)
-#   ~/.config/alacritty/accent-colors.toml       (imported by alacritty; auto-reloaded)
 #
 # Live-reload:
 #   - Hyprland: hyprctl keyword (unless --no-hyprctl)
 #   - WezTerm: auto (watches config dir for changes, reads accent.hex on reload)
-#   - Alacritty: auto (watches imported files for changes)
 #   - Fish/starship: next prompt (fish hook re-sources starship)
 #   - Fastfetch / micro: next launch
 set -euo pipefail
@@ -29,7 +27,7 @@ TEMPLATE_DIR="$ACCENT_DIR/templates"
 mkdir -p "$ACCENT_DIR" \
          "$HOME/.config/micro/colorschemes" \
          "$HOME/.config/wezterm" \
-         "$HOME/.config/alacritty"
+         "$HOME/.config/vesktop/settings"
 
 # Cleanup any temporary files on exit (covers both success and error paths).
 _TMPFILES=()
@@ -144,7 +142,7 @@ render "$TEMPLATE_DIR/fastfetch-full.jsonc.tmpl" "$ACCENT_DIR/fastfetch-full.jso
 render "$TEMPLATE_DIR/fastfetch-logo.jsonc.tmpl" "$ACCENT_DIR/fastfetch-logo.jsonc"
 render "$TEMPLATE_DIR/micro.tmpl"                "$HOME/.config/micro/colorschemes/accent.micro"
 render "$TEMPLATE_DIR/wezterm-accent.lua.tmpl"   "$HOME/.config/wezterm/wezterm.lua"
-render "$TEMPLATE_DIR/alacritty-accent.toml.tmpl" "$HOME/.config/alacritty/accent-colors.toml"
+render "$TEMPLATE_DIR/vesktop-quickcss.css.tmpl"   "$HOME/.config/vesktop/settings/quickCss.css"
 
 # ── Live-reload Hyprland ──────────────────────────────────────────────────
 if [ "$NO_HYPRCTL" -eq 0 ] && command -v hyprctl >/dev/null 2>&1; then
@@ -155,10 +153,6 @@ fi
 # Writing ~/.config/wezterm/accent.lua triggers WezTerm's built-in file watcher.
 # WezTerm reloads its entire Lua config, which calls read_accent() → accent.hex.
 # No signal needed.
-
-# ── Live-reload Alacritty ─────────────────────────────────────────────────
-# Writing ~/.config/alacritty/accent-colors.toml triggers Alacritty's file watcher.
-# The import is applied immediately in every open window. No signal needed.
 
 # ── Live-reload VSCode color customizations ───────────────────────────────
 # settings.json is normally a nix-store symlink (read-only). We replace it

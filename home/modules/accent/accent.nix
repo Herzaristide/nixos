@@ -47,13 +47,10 @@ in
   xdg.configFile."accent/templates/fastfetch-logo.jsonc.tmpl".source =
     ./templates/fastfetch-logo.jsonc.tmpl;
   xdg.configFile."accent/templates/micro.tmpl".source = ./templates/micro.tmpl;
-  xdg.configFile."accent/templates/kitty-accent.conf.tmpl".source =
-    ./templates/kitty-accent.conf.tmpl;
-  xdg.configFile."accent/templates/ghostty-accent.tmpl".source = ./templates/ghostty-accent.tmpl;
   xdg.configFile."accent/templates/wezterm-accent.lua.tmpl".source =
     ./templates/wezterm-accent.lua.tmpl;
-  xdg.configFile."accent/templates/alacritty-accent.toml.tmpl".source =
-    ./templates/alacritty-accent.toml.tmpl;
+  xdg.configFile."accent/templates/vesktop-quickcss.css.tmpl".source =
+    ./templates/vesktop-quickcss.css.tmpl;
 
   # Make starship pick up the runtime-generated config (override programs.starship default).
   home.sessionVariables.STARSHIP_CONFIG = lib.mkForce "${config.home.homeDirectory}/.config/accent/starship.toml";
@@ -75,7 +72,7 @@ in
   #   - Read by Quickshell's FileView at runtime — no QSettings involved.
   #   - On first install accent.hex doesn't exist yet: use the compiled-in default.
   #   - On every rebuild accentSeed re-runs accent-sync so all derived files
-  #     (kitty-accent.conf, starship.toml, VSCode settings, …) stay coherent
+  #   (starship.toml, VSCode settings, …) stay coherent
   #     with whatever color the user had chosen.
   #
   # Must run AFTER vscodeProfiles, vscodeRemoteExtensions, AND linkGeneration:
@@ -93,7 +90,7 @@ in
       ]
       ''
         accent_dir="$HOME/.config/accent"
-        mkdir -p "$accent_dir" "$HOME/.config/micro/colorschemes" "$HOME/.config/wezterm" "$HOME/.config/alacritty"
+        mkdir -p "$accent_dir" "$HOME/.config/micro/colorschemes" "$HOME/.config/wezterm" "$HOME/.config/vesktop/settings"
 
         # Use the persisted color when available, fall back to the compiled default.
         if [ -s "$accent_dir/accent.hex" ]; then
