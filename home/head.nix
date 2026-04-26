@@ -21,6 +21,26 @@
   # dconf: required for portal-spawned dialogs (file picker, git popups) to pick up
   # GSettings values (gtk-theme, color-scheme, font settings).
   dconf.enable = true;
+  dconf.settings = {
+    "org/gnome/desktop/interface" = {
+      color-scheme = if darkMode then "prefer-dark" else "prefer-light";
+      font-name = "JetBrains Mono 11";
+      document-font-name = "JetBrains Mono 11";
+      monospace-font-name = "JetBrains Mono 11";
+    };
+    # Nautilus preferences
+    "org/gnome/nautilus/preferences" = {
+      show-hidden-files = false;
+      default-folder-viewer = "list-view";
+    };
+    "org/gnome/nautilus/list-view" = {
+      default-zoom-level = "small";
+      use-tree-view = false;
+    };
+    "org/gnome/nautilus/icon-view" = {
+      default-zoom-level = "small";
+    };
+  };
 
   # GTK theme
   gtk = {

@@ -31,6 +31,30 @@ Item {
     property real prevCpuActive: 0
     property bool cpuNameLoaded: false
 
+    // Disk grouping and per-disk history
+    property var diskHistories: ({})
+    property var diskGroups: []   // [{disk, usedPct, history}]
+    readonly property var diskColors: ["#4a6a8e", "#8e6a4a", "#4a8e6a", "#8e4a6a", "#6a8e4a", "#6a4a8e"]
+
+    // Combined series for the merged CPU/RAM/GPU graph
+    readonly property var combinedSeries: {
+        const s = [];
+        if (hwPanel.cpuHistory.length > 0)
+            s.push({ values: hwPanel.cpuHistory, color: Theme.accentColor });
+        if (hwPanel.ramHistory.length > 0)
+            s.push({ values: hwPanel.ramHistory, color: "#4a8e4a" });
+        if (hwPanel.gpuHistory.length > 0 && hwPanel.gpuUsage.length > 0)
+            s.push({ values: hwPanel.gpuHistory, color: "#9e4a9e" });
+        return s;
+    }
+
+    // One series entry per physical disk for the combined disk graph
+    readonly property var diskSeries: {
+        return hwPanel.diskGroups.map(function(g, i) {
+            return { values: g.history, color: hwPanel.diskColors[i % hwPanel.diskColors.length] };
+        });
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────
     function formatGiB(bytes) {
         if (bytes <= 0) return "0 Mo";
@@ -44,6 +68,41 @@ Item {
         copy.push(Math.max(0, Math.min(100, Math.round(value))));
         if (copy.length > hwPanel.historySize) copy.splice(0, 1);
         return copy;
+    }
+
+    // Extract the physical disk from a partition path
+    // e.g. /dev/nvme0n1p2 → /dev/nvme0n1 ; /dev/sda1 → /dev/sda
+    function getPhysicalDisk(source) {
+        let m = source.match(/^(\/dev\/nvme\d+n\d+)p\d+$/);
+        if (m) return m[1];
+        m = source.match(/^(\/dev\/[shv]d[a-z]+)\d+$/);
+        if (m) return m[1];
+        return source;
+    }
+
+    onDiskDataChanged: {
+        // Aggregate used/total by physical disk
+        const groups = {};
+        for (const d of diskData) {
+            const key = getPhysicalDisk(d.source);
+            if (!groups[key]) groups[key] = { usedBytes: 0, totalBytes: 0 };
+            groups[key].usedBytes  += d.used;
+            groups[key].totalBytes += d.size;
+        }
+        // Push a new sample into each disk's history
+        const histories = Object.assign({}, hwPanel.diskHistories);
+        const newGroups = [];
+        for (const disk of Object.keys(groups).sort()) {
+            const g   = groups[disk];
+            const pct = g.totalBytes > 0 ? Math.round((g.usedBytes / g.totalBytes) * 100) : 0;
+            const hist = (histories[disk] || []).slice();
+            hist.push(Math.max(0, Math.min(100, pct)));
+            if (hist.length > hwPanel.historySize) hist.splice(0, 1);
+            histories[disk] = hist;
+            newGroups.push({ disk: disk, usedPct: pct, history: hist.slice() });
+        }
+        hwPanel.diskHistories = histories;
+        hwPanel.diskGroups    = newGroups;
     }
 
     // ── Refresh timer ────────────────────────────────────────────────────
@@ -245,6 +304,8 @@ Item {
                     if (!trimmed) continue;
                     const p = trimmed.split(/\s+/);
                     if (p.length >= 5) {
+                        const mount = p[4];
+                        if (mount === "/boot" || mount.startsWith("/boot/")) continue;
                         const size = parseInt(p[1]) || 0;
                         const used = parseInt(p[2]) || 0;
                         if (size > 0) {
@@ -253,7 +314,7 @@ Item {
                                 size:   size,
                                 used:   used,
                                 avail:  parseInt(p[3]) || 0,
-                                mount:  p[4]
+                                mount:  mount
                             });
                         }
                     }
@@ -278,33 +339,6 @@ Item {
             id: cardColumn
             width: parent.width
             spacing: 14
-
-            // ── Header ───────────────────────────────────────────────
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 8
-
-                Image {
-                    source: "nixos.svg"
-                    Layout.preferredWidth: 20
-                    Layout.preferredHeight: 20
-                    sourceSize.width: 48
-                    sourceSize.height: 48
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                }
-
-                Text {
-                    text: "Informations système"
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 14
-                    font.weight: Font.Bold
-                    color: Theme.textPrimary
-                    Layout.fillWidth: true
-                }
-            }
-
-            Rectangle { Layout.fillWidth: true; height: 1; color: Theme.accentDark }
 
             // ── CPU ──────────────────────────────────────────────────
             ColumnLayout {
@@ -373,11 +407,6 @@ Item {
                     }
                 }
 
-                MiniGraph {
-                    Layout.fillWidth: true
-                    values: hwPanel.cpuHistory
-                    lineColor: Theme.accentColor
-                }
             }
 
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.bgElevated }
@@ -430,11 +459,6 @@ Item {
                     }
                 }
 
-                MiniGraph {
-                    Layout.fillWidth: true
-                    values: hwPanel.ramHistory
-                    lineColor: "#4a8e4a"
-                }
             }
 
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.bgElevated }
@@ -515,10 +539,52 @@ Item {
                     }
                 }
 
+            }
+
+            // ── CPU / RAM / GPU — combined graph ─────────────────────
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 6
+                visible: hwPanel.combinedSeries.length > 0
+
                 MiniGraph {
                     Layout.fillWidth: true
-                    values: hwPanel.gpuHistory
-                    lineColor: "#8e4a9e"
+                    Layout.preferredHeight: 72
+                    series: hwPanel.combinedSeries
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 16
+
+                    Repeater {
+                        model: [
+                            { label: "CPU", value: hwPanel.cpuUsage + "%",
+                              color: Theme.accentColor },
+                            { label: "RAM", value: hwPanel.ramTotalBytes > 0
+                                ? hwPanel.formatGiB(hwPanel.ramUsedBytes) : "...",
+                              color: "#4a8e4a" },
+                            { label: "GPU", value: hwPanel.gpuUsage.length > 0
+                                ? hwPanel.gpuUsagePercent + "%" : "—",
+                              color: "#9e4a9e" }
+                        ]
+                        delegate: RowLayout {
+                            required property var modelData
+                            spacing: 4
+                            Rectangle {
+                                width: 8; height: 8; radius: 4
+                                color: modelData.color
+                            }
+                            Text {
+                                text: modelData.label + " " + modelData.value
+                                font.family: "JetBrains Mono"
+                                font.pixelSize: 10
+                                color: Theme.textSecondary
+                            }
+                        }
+                    }
+
+                    Item { Layout.fillWidth: true }
                 }
             }
 
@@ -636,6 +702,7 @@ Item {
                         }
                     }
                 }
+
             }
 
             Item { height: 8 }
