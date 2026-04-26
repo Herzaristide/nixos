@@ -11,7 +11,7 @@
 #   base03  muted / comments          base0B  green
 #   base04  secondary foreground      base0C  teal / cyan
 #   base05  main foreground           base0D  blue / accent
-#   base06  dark secondary text       base0E  purple
+#   base06  dark secondary text       base0E  blue variant
 #   base07  darkest (near-black)      base0F  coral / brown
 {
   base00 = "f5f5ff"; # near-white with blue tint (default background)
@@ -28,6 +28,6 @@
   base0B = "2a8855"; # green
   base0C = "1a77bb"; # teal / cyan
   base0D = "3355aa"; # blue / accent (darker variant of 5277c3 for light bg contrast)
-  base0E = "5533aa"; # purple
+  base0E = "2266bb"; # blue variant
   base0F = "bb2244"; # coral
 }
