@@ -113,8 +113,11 @@ let
     # "window.openFoldersInNewWindow" = "on";
     "workbench.activityBar.location" = "top";
     "terminal.integrated.fontSize" = lib.mkForce 12;
+    "terminal.integrated.fontFamily" = "JetBrains Mono";
     "editor.mouseWheelZoom" = true;
     "editor.fontSize" = lib.mkForce 12;
+    "editor.fontFamily" = "Monocraft";
+    "editor.fontLigatures" = false;
   };
 
   # MCP servers (dedicated config, not user settings)

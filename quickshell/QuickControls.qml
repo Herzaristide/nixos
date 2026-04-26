@@ -69,15 +69,76 @@ Item {
         shotProc.running    = true;
     }
 
+    // ── wpctl status → parse sinks + sources ──────────────────────────────
+    property var    sinks:           []
+    property var    sources:         []
+    property string pendingDeviceId: ""
+
+    Process {
+        id: statusProc
+        command: [
+            "sh", "-c",
+            "wpctl status | awk '" +
+            "/Sinks:/{sec=\"sink\"} /Sources:/{sec=\"source\"} /Filters:|Streams:|Video/{sec=\"\"} " +
+            "sec&&/[0-9]+\\./{act=(index($0,\"*\")>0)?\"true\":\"false\"; line=$0; gsub(/^[^0-9]*/,\"\",line); id=line+0; " +
+            "desc=line; sub(/^[0-9]+\\. */,\"\",desc); gsub(/ *\\[.*/,\"\",desc); gsub(/ *$/,\"\",desc); " +
+            "print sec\"|\"id\"|\"act\"|\"desc}'" ]
+        stdout: StdioCollector { id: statusOut }
+        onRunningChanged: {
+            if (!running) {
+                const newSinks = [];
+                const newSources = [];
+                const lines = statusOut.text.trim().split('\n');
+                for (const line of lines) {
+                    if (!line) continue;
+                    const parts = line.split('|');
+                    if (parts.length < 4) continue;
+                    const entry = { id: parts[1], active: parts[2] === "true", desc: parts.slice(3).join('|') };
+                    if (parts[0] === "sink")   newSinks.push(entry);
+                    if (parts[0] === "source") newSources.push(entry);
+                }
+                root.sinks   = newSinks;
+                root.sources = newSources;
+            }
+        }
+    }
+
+    Process {
+        id: setDefaultProc
+        command: ["sh", "-c", "wpctl set-default \"$1\"", "--", root.pendingDeviceId]
+        onRunningChanged: {
+            if (!running && !statusProc.running) statusProc.running = true;
+        }
+    }
+
+    function activeSinkName() {
+        var a = sinks.find(function(s) { return s.active; });
+        return a ? a.desc : (sinks.length ? sinks[0].desc : "—");
+    }
+    function activeSourceName() {
+        var a = sources.find(function(s) { return s.active; });
+        return a ? a.desc : (sources.length ? sources[0].desc : "—");
+    }
+    function cycleDevice(list, dir) {
+        if (list.length === 0) return;
+        var cur = list.findIndex(function(s) { return s.active; });
+        var next = (cur + dir + list.length) % list.length;
+        root.pendingDeviceId = list[next].id;
+        setDefaultProc.running = true;
+    }
+
     // ── Refresh timer ──────────────────────────────────────────────────────
     Timer {
         interval: 3000
         repeat:   true
         running:  true
-        onTriggered: { if (!getVolProc.running) getVolProc.running = true; }
+        onTriggered: {
+            if (!getVolProc.running)  getVolProc.running  = true;
+            if (!statusProc.running) statusProc.running = true;
+        }
     }
 
-    Component.onCompleted: getVolProc.running = true
+    Component.onCompleted: { getVolProc.running = true; statusProc.running = true; }
 
     // ── UI ─────────────────────────────────────────────────────────────────
     ColumnLayout {
@@ -174,6 +235,112 @@ Item {
                         cursorShape:  Qt.PointingHandCursor
                         onClicked:    root.takeScreenshot(modelData.region)
                     }
+                }
+            }
+        }
+
+        // Output device row ────────────────────────────────────────────────
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 6
+
+            Text {
+                text:           "SORTIE"
+                font.family:    "JetBrains Mono"
+                font.pixelSize: 11
+                font.bold:      true
+                color:          Theme.textInactive
+            }
+
+            Text {
+                Layout.fillWidth: true
+                text:           root.activeSinkName()
+                font.family:    "JetBrains Mono"
+                font.pixelSize: 11
+                color:          Theme.textBody
+                elide:          Text.ElideRight
+            }
+
+            Text {
+                text:           "[<]"
+                font.family:    "JetBrains Mono"
+                font.pixelSize: 11
+                color:          sinkPrevHover.containsMouse ? Theme.accentColor : Theme.textInactive
+                Behavior on color { ColorAnimation { duration: 100 } }
+                MouseArea {
+                    id:           sinkPrevHover
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape:  Qt.PointingHandCursor
+                    onClicked:    root.cycleDevice(root.sinks, -1)
+                }
+            }
+
+            Text {
+                text:           "[>]"
+                font.family:    "JetBrains Mono"
+                font.pixelSize: 11
+                color:          sinkNextHover.containsMouse ? Theme.accentColor : Theme.textInactive
+                Behavior on color { ColorAnimation { duration: 100 } }
+                MouseArea {
+                    id:           sinkNextHover
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape:  Qt.PointingHandCursor
+                    onClicked:    root.cycleDevice(root.sinks, 1)
+                }
+            }
+        }
+
+        // Input device row ─────────────────────────────────────────────────
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 6
+
+            Text {
+                text:           "ENTRÉE"
+                font.family:    "JetBrains Mono"
+                font.pixelSize: 11
+                font.bold:      true
+                color:          Theme.textInactive
+            }
+
+            Text {
+                Layout.fillWidth: true
+                text:           root.activeSourceName()
+                font.family:    "JetBrains Mono"
+                font.pixelSize: 11
+                color:          Theme.textBody
+                elide:          Text.ElideRight
+            }
+
+            Text {
+                text:           "[<]"
+                font.family:    "JetBrains Mono"
+                font.pixelSize: 11
+                color:          srcPrevHover.containsMouse ? Theme.accentColor : Theme.textInactive
+                Behavior on color { ColorAnimation { duration: 100 } }
+                MouseArea {
+                    id:           srcPrevHover
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape:  Qt.PointingHandCursor
+                    onClicked:    root.cycleDevice(root.sources, -1)
+                }
+            }
+
+            Text {
+                text:           "[>]"
+                font.family:    "JetBrains Mono"
+                font.pixelSize: 11
+                color:          srcNextHover.containsMouse ? Theme.accentColor : Theme.textInactive
+                Behavior on color { ColorAnimation { duration: 100 } }
+                MouseArea {
+                    id:           srcNextHover
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape:  Qt.PointingHandCursor
+                    onClicked:    root.cycleDevice(root.sources, 1)
                 }
             }
         }

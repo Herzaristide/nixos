@@ -272,6 +272,7 @@ Item {
             id: msgList
             Layout.fillWidth: true
             Layout.fillHeight: true
+            visible: messages.count > 0
             clip: true
             spacing: 6
             model: messages
@@ -395,6 +396,13 @@ Item {
                     }
                 }
             }
+        }
+
+        // Spacer: centers input when conversation is empty
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: messages.count === 0
         }
 
         // -- Input bar --
@@ -600,6 +608,13 @@ Item {
                     onClicked: root.clearChat()
                 }
             }
+        }
+
+        // Spacer: balances centering when conversation is empty
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: messages.count === 0
         }
     }
 }

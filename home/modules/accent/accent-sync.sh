@@ -191,8 +191,6 @@ if [ -e "$VSCODE_SETTINGS" ] || [ -L "$VSCODE_SETTINGS" ]; then
         "editorCursor.foreground":              $a,
         "tab.activeBorderTop":                  $a,
         "panelTitle.activeBorder":              $a,
-        "statusBar.background":                 $d,
-        "statusBar.focusBorder":                $a,
         "list.activeSelectionBackground":       $a20,
         "list.focusHighlightForeground":        $a,
         "scrollbarSlider.activeBackground":     $a40,

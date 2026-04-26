@@ -7,65 +7,8 @@ import Quickshell.Io
 Item {
     id: root
 
-    property var sinks: []
-    property var sources: []
-    property string pendingId: ""
     property bool rainbowActive: false
     property real rainbowHue: 0.0
-
-    // ── wpctl status → parse sinks + sources with active flag ───
-    Process {
-        id: statusProc
-        command: [
-            "sh", "-c",
-            "wpctl status | awk '" +
-            "/Sinks:/{sec=\"sink\"} /Sources:/{sec=\"source\"} /Filters:|Streams:|Video/{sec=\"\"} " +
-            "sec&&/[0-9]+\\./{act=(index($0,\"*\")>0)?\"true\":\"false\"; line=$0; gsub(/^[^0-9]*/,\"\",line); id=line+0; " +
-            "desc=line; sub(/^[0-9]+\\. */,\"\",desc); gsub(/ *\\[.*/,\"\",desc); gsub(/ *$/,\"\",desc); " +
-            "print sec\"|\"id\"|\"act\"|\"desc}'"
-        ]
-        stdout: StdioCollector { id: statusOut }
-        onRunningChanged: {
-            if (!running) {
-                const newSinks = [];
-                const newSources = [];
-                const lines = statusOut.text.trim().split('\n');
-                for (const line of lines) {
-                    if (!line) continue;
-                    const parts = line.split('|');
-                    if (parts.length < 4) continue;
-                    const entry = {
-                        id:     parts[1],
-                        active: parts[2] === "true",
-                        desc:   parts.slice(3).join('|')
-                    };
-                    if (parts[0] === "sink")   newSinks.push(entry);
-                    if (parts[0] === "source") newSources.push(entry);
-                }
-                root.sinks   = newSinks;
-                root.sources = newSources;
-            }
-        }
-    }
-
-    // ── wpctl set-default <id> ───────────────────────────────────
-    Process {
-        id: setDefaultProc
-        command: ["sh", "-c", "wpctl set-default \"$1\"", "--", root.pendingId]
-        onRunningChanged: {
-            if (!running && !statusProc.running) statusProc.running = true;
-        }
-    }
-
-    // ── Refresh timer ────────────────────────────────────────────
-    Timer {
-        interval: 3000
-        repeat: true
-        running: true
-        onTriggered: {
-            if (!statusProc.running) statusProc.running = true;
-        }
-    }
 
     // ── Rainbow cycling timer ─────────────────────────────────────
     Timer {
@@ -80,8 +23,6 @@ Item {
             colorPicker.updateAccent()
         }
     }
-
-    Component.onCompleted: statusProc.running = true
 
     // ── UI ────────────────────────────────────────────────────────
     Flickable {
@@ -104,13 +45,6 @@ Item {
                 Layout.fillWidth: true
                 Layout.bottomMargin: 8
                 spacing: 8
-
-                Text {
-                    text: "settings"
-                    font.family: "Material Symbols Rounded"
-                    font.pixelSize: 18
-                    color: Theme.accentMuted
-                }
 
                 Text {
                     text: "Paramètres"
@@ -145,15 +79,6 @@ Item {
                 Layout.bottomMargin: 12
                 spacing: 8
 
-                // Sun icon
-                Text {
-                    text: "light_mode"
-                    font.family: "Material Symbols Rounded"
-                    font.pixelSize: 16
-                    color: Theme.darkMode ? Theme.textDim : Theme.accentColor
-                    Behavior on color { ColorAnimation { duration: 150 } }
-                }
-
                 // Toggle pill
                 Rectangle {
                     id: themePill
@@ -175,15 +100,6 @@ Item {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: Theme.toggleTheme()
                     }
-                }
-
-                // Moon icon
-                Text {
-                    text: "dark_mode"
-                    font.family: "Material Symbols Rounded"
-                    font.pixelSize: 16
-                    color: Theme.darkMode ? Theme.accentColor : Theme.textDim
-                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
 
                 Item { Layout.fillWidth: true }
@@ -487,14 +403,6 @@ Item {
                     spacing: 6
 
                     Text {
-                        text: root.rainbowActive ? "stop" : "gradient"
-                        font.family: "Material Symbols Rounded"
-                        font.pixelSize: 15
-                        color: "#FFFFFF"
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Text {
                         text: root.rainbowActive ? "Arrêter" : "Arc-en-ciel"
                         font.family: "JetBrains Mono"
                         font.pixelSize: 11
@@ -517,160 +425,8 @@ Item {
                 }
             }
 
-            // ── AUDIO section ──────────────────────────────
-            Text {
-                Layout.leftMargin: 4
-                Layout.bottomMargin: 12
-                text: "AUDIO"
-                font.family: "JetBrains Mono"
-                font.pixelSize: 10
-                font.letterSpacing: 1.5
-                color: Theme.accentMuted
-            }
-
-            // ── Output (Sortie) ──────────────────────────────────
-            Text {
-                Layout.leftMargin: 4
-                Layout.bottomMargin: 8
-                text: "SORTIE"
-                font.family: "JetBrains Mono"
-                font.pixelSize: 10
-                font.letterSpacing: 1.5
-                color: Theme.accentMuted
-            }
-
-            AudioComboBox {
-                Layout.fillWidth: true
-                Layout.bottomMargin: 16
-                devices: root.sinks
-                onActivate: (id) => {
-                    root.pendingId = id;
-                    setDefaultProc.running = true;
-                }
-            }
-
-            // ── Input ─────────────────────────────────────────────
-            Text {
-                Layout.leftMargin: 4
-                Layout.bottomMargin: 8
-                text: "ENTRÉE"
-                font.family: "JetBrains Mono"
-                font.pixelSize: 10
-                font.letterSpacing: 1.5
-                color: Theme.accentMuted
-            }
-
-            AudioComboBox {
-                Layout.fillWidth: true
-                Layout.bottomMargin: 16
-                devices: root.sources
-                onActivate: (id) => {
-                    root.pendingId = id;
-                    setDefaultProc.running = true;
-                }
-            }
-
             Item { Layout.preferredHeight: 8 }
         }
     }
 
-    // ── Styled audio device ComboBox ─────────────────────────────
-    component AudioComboBox: ComboBox {
-        id: audioCombo
-        property var devices: []
-        signal activate(string id)
-
-        model: devices.map(d => d.desc)
-        currentIndex: {
-            const idx = devices.findIndex(d => d.active);
-            return idx >= 0 ? idx : 0;
-        }
-
-        onActivated: (index) => {
-            if (index >= 0 && index < devices.length)
-                activate(devices[index].id);
-        }
-
-        // ── Dropdown arrow ────────────────────────────────────
-        indicator: Text {
-            x: parent.width - width - 12
-            anchors.verticalCenter: parent.verticalCenter
-            text: "expand_more"
-            font.family: "Material Symbols Rounded"
-            font.pixelSize: 18
-            color: Theme.textSecondary
-        }
-
-        // ── Selected value text ───────────────────────────────
-        contentItem: Text {
-            leftPadding: 12
-            rightPadding: 36
-            text: parent.displayText
-            font.family: "JetBrains Mono"
-            font.pixelSize: 12
-            color: Theme.textPrimary
-            verticalAlignment: Text.AlignVCenter
-            elide: Text.ElideRight
-        }
-
-        // ── Box background ────────────────────────────────────
-        background: Rectangle {
-            radius: 8
-            color: parent.pressed ? Theme.bgElevated
-                 : parent.hovered ? Qt.lighter(Theme.bgElevated, 1.05)
-                 : Theme.bgInput
-            border.color: parent.popup.visible ? Theme.accentColor : Theme.bgElevated
-            border.width: 1
-            implicitHeight: 40
-        }
-
-        // ── Dropdown popup ────────────────────────────────────
-        popup: Popup {
-            y: parent.height + 4
-            width: parent.width
-            padding: 0
-
-            background: Rectangle {
-                radius: 8
-                color: Theme.bgInput
-                border.color: Theme.bgElevated
-                border.width: 1
-            }
-
-            contentItem: ListView {
-                implicitHeight: contentHeight
-                model: audioCombo.delegateModel
-                clip: true
-            }
-        }
-
-        // ── Per-item delegate ─────────────────────────────────
-        delegate: ItemDelegate {
-            required property int index
-            required property string modelData
-
-            width: audioCombo.width
-            highlighted: audioCombo.currentIndex === index
-
-            contentItem: Text {
-                leftPadding: 12
-                rightPadding: 12
-                text: modelData
-                font.family: "JetBrains Mono"
-                font.pixelSize: 12
-                color: Theme.textPrimary
-                verticalAlignment: Text.AlignVCenter
-                elide: Text.ElideRight
-            }
-
-            background: Rectangle {
-                color: parent.highlighted ? Theme.accentColor
-                     : parent.hovered     ? Theme.bgElevated
-                     : "transparent"
-                radius: 6
-            }
-
-            implicitHeight: 40
-        }
-    }
 }

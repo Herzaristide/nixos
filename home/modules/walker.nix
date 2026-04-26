@@ -54,9 +54,8 @@
 
     #search {
       color: #33D4C4;
-      font-family: "MonoidNerdFont";
+      font-family: "JetBrains Mono";
       font-size: 15px;
-      padding: 15px 30px;
       border-bottom: 2px solid #D90202;
       background: transparent;
     }
@@ -87,12 +86,12 @@
     }
 
     #label {
-      font-family: "MonoidNerdFont";
+      font-family: "JetBrains Mono";
       font-size: 14px;
     }
 
     #sub {
-      font-family: "MonoidNerdFont";
+      font-family: "JetBrains Mono";
       font-size: 11px;
       opacity: 0.6;
     }

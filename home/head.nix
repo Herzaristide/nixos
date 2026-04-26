@@ -34,8 +34,8 @@
       package = pkgs.adwaita-icon-theme;
     };
     font = {
-      name = "DejaVu Sans";
-      package = pkgs.dejavu_fonts;
+      name = "JetBrains Mono";
+      package = pkgs.jetbrains-mono;
       size = 11;
     };
     gtk3.extraConfig = {

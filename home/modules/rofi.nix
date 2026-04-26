@@ -4,7 +4,6 @@
   # Rofi launcher configuration
   home.packages = [
     pkgs.rofi
-    pkgs.nerd-fonts.monoid
   ];
 
   xdg.configFile."rofi/config.rasi".text = ''
@@ -26,7 +25,7 @@
       NeonPurple:   #932CB0;
       Cyan:         #33D4C4;
       Orange:       #B5340E;
-      font: "MonoidNerdFont 15";
+      font: "JetBrains Mono 15";
 
       background-color: transparent;
     }
