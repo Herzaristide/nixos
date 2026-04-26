@@ -27,7 +27,8 @@ TEMPLATE_DIR="$ACCENT_DIR/templates"
 mkdir -p "$ACCENT_DIR" \
          "$HOME/.config/micro/colorschemes" \
          "$HOME/.config/wezterm" \
-         "$HOME/.config/vesktop/settings"
+         "$HOME/.config/vesktop/settings" \
+         "$HOME/.config/gtk-4.0"
 
 # Cleanup any temporary files on exit (covers both success and error paths).
 _TMPFILES=()
@@ -143,6 +144,7 @@ render "$TEMPLATE_DIR/fastfetch-logo.jsonc.tmpl" "$ACCENT_DIR/fastfetch-logo.jso
 render "$TEMPLATE_DIR/micro.tmpl"                "$HOME/.config/micro/colorschemes/accent.micro"
 render "$TEMPLATE_DIR/wezterm-accent.lua.tmpl"   "$HOME/.config/wezterm/wezterm.lua"
 render "$TEMPLATE_DIR/vesktop-quickcss.css.tmpl"   "$HOME/.config/vesktop/settings/quickCss.css"
+render "$TEMPLATE_DIR/gtk4.css.tmpl"               "$HOME/.config/gtk-4.0/gtk.css"
 
 # ── Live-reload Hyprland ──────────────────────────────────────────────────
 if [ "$NO_HYPRCTL" -eq 0 ] && command -v hyprctl >/dev/null 2>&1; then
