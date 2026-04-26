@@ -49,9 +49,9 @@ PanelWindow {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "psychology"
-                    font.family: "Material Symbols Rounded"
-                    font.pixelSize: 20
+                    text: "AI"
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 12
                     color: Theme.iconColor
                     opacity: window.panelOpen && window.activeWidget === 1 ? 1.0 : 0.55
                 }
@@ -82,9 +82,9 @@ PanelWindow {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "edit_note"
-                    font.family: "Material Symbols Rounded"
-                    font.pixelSize: 20
+                    text: "N"
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 14
                     color: Theme.iconColor
                     opacity: window.panelOpen && window.activeWidget === 2 ? 1.0 : 0.55
                 }
@@ -115,9 +115,9 @@ PanelWindow {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "graphic_eq"
-                    font.family: "Material Symbols Rounded"
-                    font.pixelSize: 20
+                    text: "~"
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 16
                     color: Theme.iconColor
                     opacity: window.panelOpen && window.activeWidget === 3 ? 1.0 : 0.55
                 }
@@ -194,9 +194,9 @@ PanelWindow {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "settings"
-                    font.family: "Material Symbols Rounded"
-                    font.pixelSize: 20
+                    text: "⚙"
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 14
                     color: Theme.iconColor
                     opacity: window.panelOpen && window.activeWidget === 4 ? 1.0 : 0.55
                 }
