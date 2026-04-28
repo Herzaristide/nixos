@@ -45,6 +45,10 @@ in
 
       # Dark mode + theming for all apps
       env = GTK_THEME,Breeze-Dark
+      # Qt/KDE theming — ensures Dolphin and other Qt apps use Breeze + kdeglobals
+      # even when launched indirectly (e.g. from Quickshell Process nodes)
+      env = QT_QPA_PLATFORMTHEME,kde
+      env = KDE_SESSION_VERSION,6
 
       # Runtime accent color (managed by accent-sync, regenerated on every change)
       source = ~/.config/accent/hyprland.conf
@@ -188,6 +192,14 @@ in
 
         # Workspace spécial Gemini (Super+G) – s'affiche en overlay
         "$mod, G, togglespecialworkspace, gemini"
+
+        # Quickshell panel widgets (Super+F1…F5)
+        # 0=Stats  1=IA  2=Notes  3=PitchAnalyzer  4=Settings
+        "$mod, F1, exec, echo widget:0 > /tmp/qs-panel.fifo"
+        "$mod, F2, exec, echo widget:1 > /tmp/qs-panel.fifo"
+        "$mod, F3, exec, echo widget:2 > /tmp/qs-panel.fifo"
+        "$mod, F4, exec, echo widget:3 > /tmp/qs-panel.fifo"
+        "$mod, F5, exec, echo widget:4 > /tmp/qs-panel.fifo"
       ];
 
       bindm = [

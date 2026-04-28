@@ -212,6 +212,142 @@ render "$TEMPLATE_DIR/vesktop-quickcss.css.tmpl"   "$HOME/.config/vesktop/settin
 render "$TEMPLATE_DIR/gtk4.css.tmpl"               "$HOME/.config/gtk-4.0/gtk.css"
 render "$TEMPLATE_DIR/kdeglobals.tmpl"             "$HOME/.config/kdeglobals"
 
+# ── Goldy Accent folder icons ────────────────────────────────────────────
+# Creates/refreshes ~/.local/share/icons/Goldy-Accent-Icons — a thin overlay
+# that inherits Goldy-Dark-Icons but rewrites the places/ SVGs so default
+# folders use the current accent color instead of the original golden tone.
+GOLDY_BASE="$HOME/.local/share/icons/Goldy-Dark-Icons"
+GOLDY_ACCENT="$HOME/.local/share/icons/Goldy-Accent-Icons"
+if [ -e "$GOLDY_BASE" ]; then
+  mkdir -p "$GOLDY_ACCENT"
+  # Write the index.theme that declares overridden places/ sizes and inherits
+  # everything else from the base theme.
+  cat > "$GOLDY_ACCENT/index.theme" << 'THEME_EOF'
+[Icon Theme]
+Name=Goldy-Accent-Icons
+Comment=Goldy Dark with accent-colored default folders
+Inherits=Goldy-Dark-Icons,breeze-dark,Adwaita,hicolor
+FollowsColorScheme=true
+Example=folder
+Directories=places/16,places/16@2x,places/16@3x,places/22,places/22@2x,places/22@3x,places/32,places/48,places/64,places/96,places/symbolic
+
+[places/16]
+Size=16
+Context=Places
+Type=Fixed
+MinSize=16
+
+[places/16@2x]
+Size=16
+Scale=2
+Context=Places
+Type=Fixed
+MinSize=16
+
+[places/16@3x]
+Size=16
+Scale=3
+Context=Places
+Type=Fixed
+MinSize=16
+
+[places/22]
+Size=22
+Context=Places
+Type=Fixed
+
+[places/22@2x]
+Size=22
+Scale=2
+Context=Places
+Type=Fixed
+
+[places/22@3x]
+Size=22
+Scale=3
+Context=Places
+Type=Fixed
+
+[places/32]
+Size=32
+Context=Places
+Type=Fixed
+
+[places/48]
+Size=48
+Context=Places
+Type=Fixed
+
+[places/64]
+Size=64
+Context=Places
+Type=Fixed
+
+[places/96]
+Size=96
+Context=Places
+Type=Scalable
+MinSize=96
+MaxSize=256
+
+[places/symbolic]
+Context=Places
+Size=16
+MinSize=8
+MaxSize=512
+Type=Scalable
+THEME_EOF
+
+  # Copy all places/ subdirs from the base theme; recolor folder icons to
+  # the current accent color.
+  #
+  # Two cases:
+  #   1. Large sizes (32, 64, 96…): folders have a hardcoded golden stop
+  #      #af905e — replace it with #HEX.
+  #   2. Small symbolic sizes (16, 22, symbolic): folders use ColorScheme-Text
+  #      (fill:currentColor) whose CSS fallback is #eff0f1.  On Hyprland the
+  #      KDE color-scheme daemon is absent so they always render that gray.
+  #      For files whose name belongs to the "default folder" set we rewrite
+  #      the CSS fallback to the accent color so they match the larger sizes.
+  #      Non-folder monochrome icons (network-server, etc.) are left alone.
+  _is_default_folder() {
+    local name="$1"
+    case "$name" in
+      folder.svg|folder-open.svg|user-home.svg|user-desktop.svg|\
+      stock_folder.svg|user-trash.svg|user-trash-full.svg)
+        return 0 ;;
+      folder-*.svg) return 0 ;;
+      *) return 1 ;;
+    esac
+  }
+
+  for subdir in "$GOLDY_BASE/places"/*/; do
+    dname="$(basename "$subdir")"
+    mkdir -p "$GOLDY_ACCENT/places/$dname"
+    for svg in "$subdir"*.svg; do
+      [ -f "$svg" ] || continue
+      bname="$(basename "$svg")"
+      if _is_default_folder "$bname"; then
+        sed -E \
+          -e "s|#af905e|#${HEX}|gi" \
+          -e "s|fill:currentColor|fill:#${HEX}|gi" \
+          -e "s|color:#eff0f1|color:#${HEX}|gi" \
+          -e 's|class="ColorScheme-[A-Za-z]+"||g' \
+          -e "s|id=\"current-color-scheme\"|id=\"static-color\"|g" \
+          "$svg" > "$GOLDY_ACCENT/places/$dname/$bname"
+      else
+        sed \
+          -e "s|#af905e|#${HEX}|gi" \
+          "$svg" > "$GOLDY_ACCENT/places/$dname/$bname"
+      fi
+    done
+  done
+
+  # Regenerate the icon-theme.cache so GTK/Qt find the recolored icons
+  # without needing a logout.  Failures are non-fatal (cache is optional).
+  gtk-update-icon-cache -f -t "$GOLDY_ACCENT" 2>/dev/null || true
+fi
+
 # ── Live-reload Hyprland ──────────────────────────────────────────────────
 if [ "$NO_HYPRCTL" -eq 0 ] && command -v hyprctl >/dev/null 2>&1; then
   hyprctl keyword general:col.active_border "rgba(${HEX}ff)" >/dev/null 2>&1 || true

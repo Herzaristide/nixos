@@ -90,6 +90,51 @@ Item {
 
     property bool pendingVoiceResponse: false
 
+    property bool ttsEnabled: false
+    property var ttsPendingQueue: []
+
+    // ── TTS process: piper → aplay, indépendant du mode voix ───────
+    // Le texte est passé via la commande shell (pas via stdin) pour éviter
+    // que closeStdin() bloque les appels suivants au redémarrage du process.
+    Process {
+        id: ttsProcess
+        running: false
+        onExited: {
+            running = false;
+            if (root.ttsPendingQueue.length > 0) {
+                var nextText = root.ttsPendingQueue.shift();
+                Qt.callLater(function() { root._ttsRun(nextText); });
+            }
+        }
+    }
+
+    function _ttsRun(text) {
+        // Single-quote escaping : remplace ' par '\'' (safe pour tout texte arbitraire)
+        var q = "'" + text.replace(/'/g, "'\\''") + "'";
+        ttsProcess.command = [
+            "bash", "-c",
+            "printf '%s' " + q + " | piper -m \"$HOME/.local/share/piper/fr_FR-siwis-medium.onnx\" --length-scale 0.75 --output-raw 2>/dev/null | " +
+            "aplay -r 22050 -f S16_LE -t raw -q 2>/dev/null"
+        ];
+        ttsProcess.running = true;
+    }
+
+    // Lit le texte d'une réponse IA via piper (nettoyage markdown basique).
+    function speakResponse(text) {
+        if (!root.ttsEnabled) return;
+        var clean = text
+            .replace(/\*{1,2}([^*]*)\*{1,2}/g, "$1")
+            .replace(/`[^`]*`/g, "")
+            .replace(/#{1,6}\s*/g, "")
+            .replace(/\n+/g, " ")
+            .trim();
+        if (clean === "") return;
+        if (ttsProcess.running)
+            root.ttsPendingQueue.push(clean);
+        else
+            root._ttsRun(clean);
+    }
+
     function sendMessage() {
         var text = inputField.text.trim();
         if (text === "" || root.isStreaming) return;
@@ -181,11 +226,13 @@ Item {
 
                             // Normal text response
                             root.conversationContext.push({ role: "assistant", content: fullResponse });
-                            // TTS if this was a voice-initiated message
-                            if (root.pendingVoiceResponse && fullResponse !== "") {
+                            // TTS : mode global lit toutes les réponses ; mode voix lit les réponses initiées par micro
+                            if (root.ttsEnabled && fullResponse !== "") {
+                                root.speakResponse(fullResponse);
+                            } else if (root.pendingVoiceResponse && fullResponse !== "") {
                                 root.speakText(fullResponse);
-                                root.pendingVoiceResponse = false;
                             }
+                            root.pendingVoiceResponse = false;
                             return;
                         }
                     } catch (e) {}
@@ -590,6 +637,23 @@ Item {
                         if (!root.voiceEnabled)
                             root.voiceStatus = "OFF";
                     }
+                }
+            }
+
+            // TTS toggle
+            Text {
+                text: root.ttsEnabled ? "[tts:on]" : "[tts]"
+                color: root.ttsEnabled ? Theme.accentColor : Theme.textInactive
+                font.family: "JetBrains Mono"
+                font.pixelSize: 10
+                opacity: ttsMa.containsMouse ? 1.0 : 0.7
+
+                MouseArea {
+                    id: ttsMa
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.ttsEnabled = !root.ttsEnabled
                 }
             }
 

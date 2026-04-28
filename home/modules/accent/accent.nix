@@ -44,6 +44,7 @@ let
     gnugrep
     procps # killall — SIGUSR1 to running kitty instances
     jq # merge accent into VSCode settings.json
+    gtk3 # gtk-update-icon-cache — refresh icon overlay after recoloring
   ];
 
   # Build accent-sync with the logo path and runtime PATH baked in.
@@ -68,8 +69,9 @@ in
   # base16 colors for the active mode.  Rebuilt on every nixos-rebuild so they
   # always reflect the current palette.nix values.
   xdg.configFile."accent/palette-dark.env".text =
-    mkPaletteEnv palettes.dark "ICONS_THEME=breeze-dark";
-  xdg.configFile."accent/palette-light.env".text = mkPaletteEnv palettes.light "ICONS_THEME=breeze";
+    mkPaletteEnv palettes.dark "ICONS_THEME=Goldy-Accent-Icons";
+  xdg.configFile."accent/palette-light.env".text =
+    mkPaletteEnv palettes.light "ICONS_THEME=Goldy-Accent-Icons";
 
   # Templates installed read-only under ~/.config/accent/templates/
   xdg.configFile."accent/templates/hyprland.conf.tmpl".source = ./templates/hyprland.conf.tmpl;
