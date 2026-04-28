@@ -16,6 +16,7 @@
     ../quickshell/quickshell.nix
     ./modules/walker.nix
     ./modules/accent/accent.nix
+    ./modules/kde.nix
   ];
 
   # dconf: required for portal-spawned dialogs (file picker, git popups) to pick up
@@ -27,43 +28,6 @@
       font-name = "JetBrains Mono 11";
       document-font-name = "JetBrains Mono 11";
       monospace-font-name = "JetBrains Mono 11";
-    };
-  };
-
-  # GTK theme — Breeze for visual consistency with KDE/Dolphin
-  gtk = {
-    enable = true;
-    theme = {
-      name = if darkMode then "Breeze-Dark" else "Breeze";
-      package = pkgs.kdePackages.breeze-gtk;
-    };
-    iconTheme = {
-      name = if darkMode then "breeze-dark" else "breeze";
-      package = pkgs.kdePackages.breeze-icons;
-    };
-    font = {
-      name = "JetBrains Mono";
-      package = pkgs.jetbrains-mono;
-      size = 11;
-    };
-    gtk3.extraConfig = {
-      "gtk-application-prefer-dark-theme" = darkMode;
-    };
-    gtk4 = {
-      theme = null;
-      extraConfig = {
-        "gtk-application-prefer-dark-theme" = darkMode;
-      };
-    };
-  };
-
-  # Qt theming — Breeze natif KDE (cohérent avec Dolphin et les apps Qt)
-  qt = {
-    enable = true;
-    platformTheme.name = "kde";
-    style = {
-      name = "breeze";
-      package = pkgs.kdePackages.breeze;
     };
   };
 
@@ -79,7 +43,6 @@
     BROWSER = "chromium";
   };
 
-  # Rebuild fontconfig cache on every activation (nixos-rebuild / home-manager switch).
   # NixOS font store paths change on rebuild; stale caches cause white squares in GTK popups.
   home.activation.refreshFontCache = lib.hm.dag.entryAfter [ "installPackages" ] ''
     run rm -rf "$HOME/.cache/fontconfig"
@@ -90,11 +53,6 @@
     inputs.voicemode.packages.${pkgs.stdenv.hostPlatform.system}.default
     aubio
     vesktop
-    kdePackages.dolphin
-    kdePackages.kio-extras
-    kdePackages.ark
-    kdePackages.ffmpegthumbs
-    kdePackages.kimageformats
     dgop
     spacedrive
     figma-linux

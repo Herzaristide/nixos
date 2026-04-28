@@ -1,5 +1,6 @@
 {
   inputs,
+  pkgs,
   palettes,
   lib,
   ...
@@ -113,6 +114,8 @@ in
         "zen.urlbar.behavior" = "float";
         "zen.workspaces.continue-where-left-off" = true;
         "zen.view.compact.toolbar-flash-popup" = false;
+        # Required for userChrome.css to be loaded
+        "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
       };
 
       # Mods from https://zen-browser.app/mods
@@ -173,4 +176,27 @@ in
       ];
     };
   };
+
+  # The home-manager zen-browser module writes its profile to ~/.config/zen/default/
+  # but the live Zen browser uses ~/.zen/<random-id>.Default Profile/ (its own data dir).
+  # This activation script reads ~/.zen/profiles.ini at rebuild time and symlinks
+  # the generated userChrome.css and user.js into the actual active profile directory.
+  home.activation.zenBridgeProfile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    _ZEN_DIR="$HOME/.zen"
+    _HM_PROFILE="$HOME/.config/zen/default"
+
+    if [ -f "$_ZEN_DIR/profiles.ini" ]; then
+      _ZEN_PROFILE_PATH=$(${pkgs.gnugrep}/bin/grep -oP '(?<=Path=).*' "$_ZEN_DIR/profiles.ini" | head -1)
+      if [ -n "$_ZEN_PROFILE_PATH" ]; then
+        _ZEN_PROFILE="$_ZEN_DIR/$_ZEN_PROFILE_PATH"
+        mkdir -p "$_ZEN_PROFILE/chrome"
+
+        # userChrome.css — palette colors
+        ln -sf "$_HM_PROFILE/chrome/userChrome.css" "$_ZEN_PROFILE/chrome/userChrome.css"
+
+        # user.js — toolkit.legacyUserProfileCustomizations.stylesheets + other prefs
+        ln -sf "$_HM_PROFILE/user.js" "$_ZEN_PROFILE/user.js"
+      fi
+    fi
+  '';
 }

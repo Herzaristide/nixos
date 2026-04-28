@@ -298,7 +298,7 @@ Item {
             "for dev in /sys/class/nvme/nvme*; do " +
             "  [ -d \"$dev\" ] || continue; " +
             "  name=$(basename \"$dev\"); " +
-            "  for h in \"$dev\"/hwmon/hwmon*/temp1_input; do " +
+            "  for h in \"$dev\"/hwmon*/temp1_input; do " +
             "    [ -f \"$h\" ] || continue; " +
             "    t=$(cat \"$h\" 2>/dev/null); " +
             "    [ -n \"$t\" ] && [ \"$t\" -gt 0 ] 2>/dev/null && echo \"${name}:$((t/1000))\" && break; " +
