@@ -6,39 +6,39 @@
 }:
 
 let
-  # Goldy Plasma Themes — GPL-3.0 by L4ki
+  # Slot Plasma Themes — GPL-3.0 by L4ki
   # Only the GTK theme and icon themes are used here (Hyprland, not KDE Plasma).
-  goldy-src = pkgs.fetchFromGitHub {
+  slot-src = pkgs.fetchFromGitHub {
     owner = "L4ki";
-    repo = "Goldy-Plasma-Themes";
-    rev = "20e2b0eb3ed5f190496fc12ea027c63231d95ba0";
-    sha256 = "1d4v6wf7nlgkryjlz39m6bzcnqw81vjj6vkjsmywqra4q97scp6s";
+    repo = "Slot-Plasma-Themes";
+    rev = "4dd93ad62cf47307d85e3a624eacba34578bf1fe";
+    sha256 = "06pjizpkfd229mwa90a55888x15h5c9bvs59v12sh3ngyb4c4s1k";
   };
 
-  goldy-gtk-theme = pkgs.stdenv.mkDerivation {
-    name = "goldy-gtk-theme";
-    src = goldy-src;
+  slot-gtk-theme = pkgs.stdenv.mkDerivation {
+    name = "slot-gtk-theme";
+    src = slot-src;
     dontBuild = true;
     installPhase = ''
       mkdir -p $out/share/themes
-      cp -r "Goldy GTK Themes" $out/share/themes/Goldy-Dark-GTK
+      cp -r "Slot GTK Themes/Slot-Dark-GTK" $out/share/themes/Slot-Dark-GTK
     '';
   };
 
 in
 {
-  # GTK theme — Goldy Dark (Hyprland-compatible GTK theme by L4ki)
+  # GTK theme — Slot Dark (Hyprland-compatible GTK theme by L4ki)
   gtk = {
     enable = true;
     theme = {
-      # Goldy only ships a dark variant; fall back to Breeze for light mode.
-      name = if darkMode then "Goldy-Dark-GTK" else "Breeze";
-      package = if darkMode then goldy-gtk-theme else pkgs.kdePackages.breeze-gtk;
+      # Slot only ships a dark variant; fall back to Breeze for light mode.
+      name = if darkMode then "Slot-Dark-GTK" else "Breeze";
+      package = if darkMode then slot-gtk-theme else pkgs.kdePackages.breeze-gtk;
     };
     iconTheme = {
-      name = "Goldy-Accent-Icons";
+      name = "Slot-Gray-Accent-Icons";
       # Populated at activation time by accent-sync (places/ recolored with accent).
-      # Falls back to Goldy-Dark-Icons via Inherits.
+      # Falls back to Slot-Gray-Dark-Icons via Inherits.
     };
     font = {
       name = "JetBrains Mono";
@@ -82,7 +82,10 @@ in
 
   # Icon themes — symlinked into ~/.local/share/icons/ so both GTK and Qt/KDE
   # find them without any cache generation step.
-  xdg.dataFile."icons/Goldy-Dark-Icons".source = "${goldy-src}/Goldy Icons Themes/Goldy-Dark-Icons";
+  xdg.dataFile."icons/Slot-Gray-Dark-Icons" = {
+    source = "${slot-src}/Slot Icons Themes/Slot-Gray-Dark-Icons";
+    force = true;
+  };
 
   home.packages = with pkgs; [
     kdePackages.dolphin

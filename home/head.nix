@@ -56,11 +56,13 @@
     dgop
     spacedrive
     figma-linux
+    teams-for-linux
     awww # Wallpaper daemon for Wayland
-    (writeShellScriptBin "hypr-gemini-launch" "gemini-pwa & wezterm --config-file ~/.config/wezterm/wezterm.lua")
-    (writeShellScriptBin "gemini-pwa" "chromium --app=https://gemini.google.com --user-data-dir=$HOME/.config/chromium-$(hostname)")
-    (writeShellScriptBin "claude-pwa" "chromium --app=https://claude.ai --user-data-dir=$HOME/.config/chromium-$(hostname)")
-    (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium-$(hostname)")
+    (writeShellScriptBin "hypr-claude-launch" "claude-pwa")
+    (writeShellScriptBin "hypr-gemini-launch" "gemini-pwa")
+    (writeShellScriptBin "gemini-pwa" "chromium --app=https://gemini.google.com --user-data-dir=$HOME/.config/chromium-$(hostname) --enable-features=WebUIDarkMode --force-dark-mode")
+    (writeShellScriptBin "claude-pwa" "chromium --app=https://claude.ai --user-data-dir=$HOME/.config/chromium-$(hostname) --enable-features=WebUIDarkMode --force-dark-mode")
+    (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium-$(hostname) --enable-features=WebUIDarkMode --force-dark-mode")
     (writeShellScriptBin "set-wallpaper" ''
       #!/bin/sh
       # Set wallpaper using awww

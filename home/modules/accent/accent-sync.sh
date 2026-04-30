@@ -157,6 +157,9 @@ BASE0A_RGB=$(_hex_to_rgb "$BASE0A"); BASE0B_RGB=$(_hex_to_rgb "$BASE0B")
 BASE0C_RGB=$(_hex_to_rgb "$BASE0C"); BASE0D_RGB=$(_hex_to_rgb "$BASE0D")
 BASE0E_RGB=$(_hex_to_rgb "$BASE0E"); BASE0F_RGB=$(_hex_to_rgb "$BASE0F")
 
+# Icon theme name injected into kdeglobals (read by Dolphin and all Qt/KDE apps)
+ICONS_THEME="Slot-Gray-Accent-Icons"
+
 # ── Render template helper ────────────────────────────────────────────────
 render() {
   local src="$1" dst="$2"
@@ -212,85 +215,84 @@ render "$TEMPLATE_DIR/vesktop-quickcss.css.tmpl"   "$HOME/.config/vesktop/settin
 render "$TEMPLATE_DIR/gtk4.css.tmpl"               "$HOME/.config/gtk-4.0/gtk.css"
 render "$TEMPLATE_DIR/kdeglobals.tmpl"             "$HOME/.config/kdeglobals"
 
-# ── Goldy Accent folder icons ────────────────────────────────────────────
-# Creates/refreshes ~/.local/share/icons/Goldy-Accent-Icons — a thin overlay
-# that inherits Goldy-Dark-Icons but rewrites the places/ SVGs so default
-# folders use the current accent color instead of the original golden tone.
-GOLDY_BASE="$HOME/.local/share/icons/Goldy-Dark-Icons"
-GOLDY_ACCENT="$HOME/.local/share/icons/Goldy-Accent-Icons"
-if [ -e "$GOLDY_BASE" ]; then
-  mkdir -p "$GOLDY_ACCENT"
+# ── Slot Gray Accent folder icons ────────────────────────────────────────
+# Creates/refreshes ~/.local/share/icons/Slot-Gray-Accent-Icons — a thin overlay
+# that inherits Slot-Gray-Dark-Icons but rewrites places/ SVGs so default
+# folders use the current accent color instead of the original blue tone.
+SLOT_BASE="$HOME/.local/share/icons/Slot-Gray-Dark-Icons"
+SLOT_ACCENT="$HOME/.local/share/icons/Slot-Gray-Accent-Icons"
+if [ -e "$SLOT_BASE" ]; then
+  mkdir -p "$SLOT_ACCENT"
   # Write the index.theme that declares overridden places/ sizes and inherits
   # everything else from the base theme.
-  cat > "$GOLDY_ACCENT/index.theme" << 'THEME_EOF'
+  cat > "$SLOT_ACCENT/index.theme" << 'THEME_EOF'
 [Icon Theme]
-Name=Goldy-Accent-Icons
-Comment=Goldy Dark with accent-colored default folders
-Inherits=Goldy-Dark-Icons,breeze-dark,Adwaita,hicolor
+Name=Slot-Gray-Accent-Icons
+Comment=Slot Gray Dark with accent-colored default folders
+Inherits=Slot-Gray-Dark-Icons,breeze-dark,Adwaita,hicolor
 FollowsColorScheme=true
 Example=folder
-Directories=places/16,places/16@2x,places/16@3x,places/22,places/22@2x,places/22@3x,places/32,places/48,places/64,places/96,places/symbolic
+Directories=16/places,16@2x/places,16@3x/places,22/places,22@2x/places,22@3x/places,24/places,24@2x/places,24@3x/places,scalable/places,symbolic/places
 
-[places/16]
+[16/places]
 Size=16
 Context=Places
 Type=Fixed
-MinSize=16
 
-[places/16@2x]
+[16@2x/places]
 Size=16
 Scale=2
 Context=Places
 Type=Fixed
-MinSize=16
 
-[places/16@3x]
+[16@3x/places]
 Size=16
 Scale=3
 Context=Places
 Type=Fixed
-MinSize=16
 
-[places/22]
+[22/places]
 Size=22
 Context=Places
 Type=Fixed
 
-[places/22@2x]
+[22@2x/places]
 Size=22
 Scale=2
 Context=Places
 Type=Fixed
 
-[places/22@3x]
+[22@3x/places]
 Size=22
 Scale=3
 Context=Places
 Type=Fixed
 
-[places/32]
-Size=32
+[24/places]
+Size=24
 Context=Places
 Type=Fixed
 
-[places/48]
-Size=48
+[24@2x/places]
+Size=24
+Scale=2
 Context=Places
 Type=Fixed
 
-[places/64]
+[24@3x/places]
+Size=24
+Scale=3
+Context=Places
+Type=Fixed
+
+[scalable/places]
 Size=64
-Context=Places
-Type=Fixed
-
-[places/96]
-Size=96
+MinSize=22
+MaxSize=512
 Context=Places
 Type=Scalable
-MinSize=96
-MaxSize=256
 
-[places/symbolic]
+[symbolic/places]
 Context=Places
 Size=16
 MinSize=8
@@ -321,31 +323,34 @@ THEME_EOF
     esac
   }
 
-  for subdir in "$GOLDY_BASE/places"/*/; do
-    dname="$(basename "$subdir")"
-    mkdir -p "$GOLDY_ACCENT/places/$dname"
-    for svg in "$subdir"*.svg; do
+  # Slot-Gray-Dark-Icons uses size/places/ layout (e.g. 16/places/, 22/places/)
+  for size_dir in "$SLOT_BASE"/*/; do
+    sname="$(basename "$size_dir")"
+    places_dir="$size_dir/places"
+    [ -d "$places_dir" ] || continue
+    mkdir -p "$SLOT_ACCENT/$sname/places"
+    for svg in "$places_dir"/*.svg; do
       [ -f "$svg" ] || continue
       bname="$(basename "$svg")"
       if _is_default_folder "$bname"; then
         sed -E \
-          -e "s|#af905e|#${HEX}|gi" \
+          -e "s|#5b72f6|#${HEX}|gi" \
           -e "s|fill:currentColor|fill:#${HEX}|gi" \
           -e "s|color:#eff0f1|color:#${HEX}|gi" \
           -e 's|class="ColorScheme-[A-Za-z]+"||g' \
           -e "s|id=\"current-color-scheme\"|id=\"static-color\"|g" \
-          "$svg" > "$GOLDY_ACCENT/places/$dname/$bname"
+          "$svg" > "$SLOT_ACCENT/$sname/places/$bname"
       else
         sed \
-          -e "s|#af905e|#${HEX}|gi" \
-          "$svg" > "$GOLDY_ACCENT/places/$dname/$bname"
+          -e "s|#5b72f6|#${HEX}|gi" \
+          "$svg" > "$SLOT_ACCENT/$sname/places/$bname"
       fi
     done
   done
 
   # Regenerate the icon-theme.cache so GTK/Qt find the recolored icons
   # without needing a logout.  Failures are non-fatal (cache is optional).
-  gtk-update-icon-cache -f -t "$GOLDY_ACCENT" 2>/dev/null || true
+  gtk-update-icon-cache -f -t "$SLOT_ACCENT" 2>/dev/null || true
 fi
 
 # ── Live-reload Hyprland ──────────────────────────────────────────────────
@@ -430,11 +435,16 @@ if [ -e "$VSCODE_SETTINGS" ] || [ -L "$VSCODE_SETTINGS" ]; then
 fi
 
 # ── Live-reload KDE apps (Dolphin, etc.) ────────────────────────────────
-# notifyChange(7=PaletteChanged) tells running KDE/Qt apps to re-read kdeglobals
+# Broadcast KGlobalSettings signals so running KDE/Qt apps (Dolphin, Ark…)
+# re-read kdeglobals without needing a restart.
+# No --dest: kded6 is absent on Hyprland; broadcast reaches all listeners.
+#   4 = IconChanged  — triggers icon theme reload
+#   7 = PaletteChanged — triggers color/palette reload
 if command -v dbus-send >/dev/null 2>&1; then
-  dbus-send --session --dest=org.kde.KGlobalSettings \
-    / org.kde.KGlobalSettings.notifyChange \
-    int32:7 int32:0 2>/dev/null || true
+  dbus-send --session --type=signal /KGlobalSettings \
+    org.kde.KGlobalSettings.notifyChange int32:4 int32:0 2>/dev/null || true
+  dbus-send --session --type=signal /KGlobalSettings \
+    org.kde.KGlobalSettings.notifyChange int32:7 int32:0 2>/dev/null || true
 fi
 
 exit 0

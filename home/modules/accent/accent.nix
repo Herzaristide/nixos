@@ -45,6 +45,7 @@ let
     procps # killall — SIGUSR1 to running kitty instances
     jq # merge accent into VSCode settings.json
     gtk3 # gtk-update-icon-cache — refresh icon overlay after recoloring
+    dbus # dbus-send — KGlobalSettings notifyChange for Dolphin live reload
   ];
 
   # Build accent-sync with the logo path and runtime PATH baked in.

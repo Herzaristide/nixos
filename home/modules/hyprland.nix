@@ -146,13 +146,15 @@ in
         "4, monitor:HDMI-A-1"
         "5, monitor:HDMI-A-1"
         "9, monitor:DP-3, default:true"
-        "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:40 100 40 100, gapsin:10"
+        "special:claude, on-created-empty:hypr-claude-launch, gapsout:60 300 60"
+        "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:60 300 60"
       ];
 
       # Minimal binds - terminal, apps
       bind = [
         "$mod, Return, exec, wezterm"
-        "$mod, C, exec, code"
+        "$mod, V, exec, code"
+        "$mod, F, exec, dolphin"
         "$mod, D, exec, vesktop"
         "$mod, Z, exec, zen-twilight"
         "$mod, R, exec, walker"
@@ -189,6 +191,9 @@ in
         "$mod SHIFT, parenleft, movetoworkspace, 5"
         # Déplacer fenêtre vers workspace 0 (DP-3)
         "$mod SHIFT, twosuperior, movetoworkspace, 9"
+
+        # Workspace spécial Claude (Super+C) – s'affiche en overlay
+        "$mod, C, togglespecialworkspace, claude"
 
         # Workspace spécial Gemini (Super+G) – s'affiche en overlay
         "$mod, G, togglespecialworkspace, gemini"

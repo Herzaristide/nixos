@@ -29,19 +29,20 @@
   services.upower.enable = true;
 
   # XDG Portal (for file picker, screen sharing in Hyprland)
-  # xdg-desktop-portal-gtk exposes color-scheme (dark mode) to Chrome/Gemini, etc.
-  # xdph alone doesn't implement the appearance protocol
+  # xdg-desktop-portal-kde exposes color-scheme (dark mode) to Chrome/Gemini, etc.
+  # via kdeglobals — no GNOME/GTK infrastructure required.
+  # xdph alone doesn't implement the appearance protocol.
   xdg.portal = {
     enable = true;
     extraPortals = [
       pkgs.xdg-desktop-portal-hyprland
-      pkgs.xdg-desktop-portal-gtk
+      pkgs.kdePackages.xdg-desktop-portal-kde
     ];
     config.common = {
-      default = "hyprland;gtk";
-      # xdph does not implement org.freedesktop.portal.Settings; route explicitly to gtk
-      # so Qt's GNOME theme plugin can read color-scheme/appearance without DBus errors.
-      "org.freedesktop.portal.Settings" = "gtk";
+      default = "hyprland;kde";
+      # xdph does not implement org.freedesktop.portal.Settings; route explicitly to kde
+      # so Chromium and Qt apps read color-scheme from kdeglobals.
+      "org.freedesktop.portal.Settings" = "kde";
     };
   };
 

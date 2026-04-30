@@ -19,7 +19,7 @@ ShellRoot {
     // ── IPC externe via FIFO /tmp/qs-panel.fifo ──────────────────────────
     //   echo "widget:N" > /tmp/qs-panel.fifo   → bascule le widget N
     //   echo "close"    > /tmp/qs-panel.fifo   → ferme le panel
-    //   N : 0=Stats  1=IA  2=Notes  3=Pitch  4=Settings
+    //   N : 0=Stats  1=IA  2=Notes  3=Pitch  4=Music
     Process {
         id: ipcListener
         command: [

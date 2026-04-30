@@ -63,6 +63,8 @@ in
         # GCM on Linux requires an explicit store; WSL has no Secret Service by default.
         # plaintext: persistent (dev/WSL). Alternatives: cache, gpg (pass), secretservice (GUI).
         credential.credentialStore = "plaintext";
+        # Disable GCM's Avalonia GUI (broken on Wayland/Hyprland): use device code flow in terminal.
+        credential.guiPrompt = "false";
       };
       signing = {
         key = "~/.ssh/siddhartha.pub";
@@ -121,6 +123,7 @@ in
     claude-code
     sox # Audio recording (required for Claude Code voice mode)
     gemini-cli
+    github-copilot-cli
     mistral-vibe # Mistral Vibe CLI (`vibe`)
     git-credential-manager
     cmatrix # Matrix-style falling characters
