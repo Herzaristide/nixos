@@ -50,13 +50,15 @@ ShellRoot {
         onExited: Qt.callLater(function() { ipcListener.running = true; })
     }
 
+    property string primaryScreen: "@PRIMARY_MONITOR@"
+
     Variants {
         model: Quickshell.screens
 
         BottomBar {
             property var modelData
             screen: modelData
-            visible: modelData && modelData.name === "HDMI-A-1"
+            visible: modelData && modelData.name === root.primaryScreen
             panelOpen: root.panelOpen
             activeWidget: root.activeWidget
             onSelectWidget: (idx) => {
@@ -76,7 +78,7 @@ ShellRoot {
         SidePanel {
             property var modelData
             screen: modelData
-            visible: modelData && modelData.name === "HDMI-A-1"
+            visible: modelData && modelData.name === root.primaryScreen
             panelOpen: root.panelOpen
             activeWidget: root.activeWidget
         }

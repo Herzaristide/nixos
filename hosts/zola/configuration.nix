@@ -20,6 +20,9 @@
   # Head configuration
   head = true;
 
+  # Primary monitor: built-in screen (laptop)
+  primaryMonitor = "eDP-1";
+
   # Bootloader (systemd-boot for UEFI; GRUB disabled)
   boot.loader.grub.enable = false;
   boot.loader.systemd-boot.enable = true;
