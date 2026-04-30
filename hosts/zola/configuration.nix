@@ -144,4 +144,14 @@
       "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
     ];
   };
+
+  # Ollama GPU acceleration — Prime Offload mode requires explicit NVIDIA env vars
+  # Without these, the ollama systemd service runs on the Intel iGPU by default.
+  services.ollama.package = pkgs.ollama-cuda;
+  services.ollama.environmentVariables = {
+    __NV_PRIME_RENDER_OFFLOAD = "1";
+    __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    __VK_LAYER_NV_OPTIMUS = "NVIDIA_only";
+  };
 }

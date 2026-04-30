@@ -146,6 +146,51 @@ Item {
         setDefaultProc.running = true;
     }
 
+    // ── Battery state ──────────────────────────────────────────────────────
+    property bool   batteryPresent: false
+    property int    batteryPercent: 0
+    property string batteryStatus:  ""
+
+    Process {
+        id: batteryProc
+        command: [
+            "sh", "-c",
+            "bat=$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -n1); " +
+            "if [ -n \"$bat\" ]; then " +
+            "  cap=$(cat \"$bat/capacity\" 2>/dev/null); " +
+            "  st=$(cat \"$bat/status\" 2>/dev/null); " +
+            "  echo \"$cap|$st\"; " +
+            "fi"
+        ]
+        stdout: StdioCollector { id: batteryOut }
+        onRunningChanged: {
+            if (!running) {
+                var line = batteryOut.text.trim();
+                if (line.length > 0) {
+                    var parts = line.split('|');
+                    root.batteryPercent = parseInt(parts[0]);
+                    root.batteryStatus  = parts.length > 1 ? parts[1] : "";
+                    root.batteryPresent = !isNaN(root.batteryPercent);
+                } else {
+                    root.batteryPresent = false;
+                }
+            }
+        }
+    }
+
+    function batteryString() {
+        if (!batteryPresent) return "";
+        var sym = "";
+        switch (batteryStatus) {
+            case "Charging":     sym = "+"; break;
+            case "Discharging":  sym = "-"; break;
+            case "Full":         sym = "="; break;
+            case "Not charging": sym = "~"; break;
+            default:             sym = "?"; break;
+        }
+        return "bat  " + sym + " " + batteryPercent + "%";
+    }
+
     // ── Refresh timer ──────────────────────────────────────────────────────
     Timer {
         interval: 3000
@@ -153,11 +198,12 @@ Item {
         running:  true
         onTriggered: {
             if (!getVolProc.running)  getVolProc.running  = true;
-            if (!statusProc.running) statusProc.running = true;
+            if (!statusProc.running)  statusProc.running  = true;
+            if (!batteryProc.running) batteryProc.running = true;
         }
     }
 
-    Component.onCompleted: { getVolProc.running = true; statusProc.running = true; }
+    Component.onCompleted: { getVolProc.running = true; statusProc.running = true; batteryProc.running = true; }
 
     // ── UI ─────────────────────────────────────────────────────────────────
     ColumnLayout {
@@ -483,6 +529,22 @@ Item {
             font.family:    "JetBrains Mono"
             font.pixelSize: 11
             color:          root.isMuted ? Theme.textDim : Theme.textInactive
+        }
+
+        // Battery readout ────────────────────────────────────────────────
+        Text {
+            visible:        root.batteryPresent
+            text:           root.batteryString()
+            font.family:    "JetBrains Mono"
+            font.pixelSize: 11
+            color: {
+                if (!root.batteryPresent) return Theme.textInactive;
+                if (root.batteryStatus === "Charging" || root.batteryStatus === "Full")
+                    return Theme.accentColor;
+                if (root.batteryPercent <= 15) return "#ff5555";
+                if (root.batteryPercent <= 30) return Theme.textDim;
+                return Theme.textInactive;
+            }
         }
 
         // Screenshot row ─────────────────────────────────────────────────
