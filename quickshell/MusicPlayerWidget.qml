@@ -1,7 +1,9 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Effects
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Mpris
 
 Item {
@@ -23,6 +25,118 @@ Item {
     readonly property bool hasPlayer: player !== null && player !== undefined
     readonly property bool isPlaying: hasPlayer && player.playbackState === MprisPlaybackState.Playing
 
+    // ── Real-time audio spectrum from cava (9 bars, 0–100) ─────────────
+    property var eqLevels: [0,0,0,0,0,0,0,0,0]
+
+    Process {
+        id: cavaProc
+        running: root.isPlaying
+        command: [
+            "sh", "-c",
+            "mkdir -p /tmp/qs-music && cat > /tmp/qs-music/cava.conf <<'EOF'\n" +
+            "[general]\nbars = 9\nframerate = 60\n" +
+            "[input]\nmethod = pulse\nsource = auto\n" +
+            "[output]\nmethod = raw\ndata_format = ascii\nascii_max_range = 100\nchannels = mono\n" +
+            "[smoothing]\nnoise_reduction = 35\n" +
+            "EOF\nexec cava -p /tmp/qs-music/cava.conf"
+        ]
+        stdout: SplitParser {
+            onRead: (line) => {
+                var parts = line.trim().split(';');
+                var arr = [];
+                for (var i = 0; i < 9; i++) {
+                    var v = parseInt(parts[i]);
+                    arr.push(isNaN(v) ? 0 : v);
+                }
+                root.eqLevels = arr;
+            }
+        }
+        // Reset bars when audio stops streaming
+        onRunningChanged: if (!running) root.eqLevels = [0,0,0,0,0,0,0,0,0]
+    }
+
+    // ── Vinyl disc rotation (25 fps) ──────────────────────────────────
+    property real vinylRotation: 0
+
+    Timer {
+        running: root.isPlaying
+        interval: 40
+        repeat: true
+        onTriggered: root.vinylRotation = (root.vinylRotation + 0.8) % 360
+    }
+
+    // ── Track-change accent flash ──────────────────────────────────────
+    property string currentTrackId: hasPlayer
+        ? ((player.trackTitle || "") + "|" + (player.trackArtist || ""))
+        : ""
+    onCurrentTrackIdChanged: flashAnim.restart()
+
+    SequentialAnimation {
+        id: flashAnim
+        NumberAnimation { target: trackFlash; property: "opacity"; to: 0.25; duration: 100 }
+        NumberAnimation { target: trackFlash; property: "opacity"; to: 0.0; duration: 600; easing.type: Easing.OutCubic }
+    }
+
+    // ── Lyrics ───────────────────────────────────────────────────────────
+    property bool   showLyrics:    false
+    property string lyricsText:    ""
+    property bool   lyricsLoading: false
+
+    // Animated height for the collapsible lyrics panel
+    property real lyricsH: 0
+    Behavior on lyricsH { NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
+
+    onShowLyricsChanged: {
+        lyricsH = showLyrics ? 200 : 0;
+        if (showLyrics && lyricsText.length === 0 && !lyricsLoading
+                && hasPlayer && player.trackTitle && player.trackArtist) {
+            lyricsLoading = true;
+            lyricsFetcher.pendingArtist = player.trackArtist;
+            lyricsFetcher.pendingTitle  = player.trackTitle;
+            Qt.callLater(function() { lyricsFetcher.running = true; });
+        }
+    }
+
+    // Re-fetch when the track changes (only if the panel is open)
+    property string trackId: hasPlayer && player.trackTitle
+                             ? (player.trackArtist + "|||" + player.trackTitle) : ""
+    onTrackIdChanged: {
+        lyricsText    = "";
+        lyricsLoading = false;
+        lyricsFetcher.running = false;
+        if (showLyrics && hasPlayer && player.trackTitle && player.trackArtist) {
+            lyricsLoading = true;
+            lyricsFetcher.pendingArtist = player.trackArtist;
+            lyricsFetcher.pendingTitle  = player.trackTitle;
+            Qt.callLater(function() { lyricsFetcher.running = true; });
+        }
+    }
+
+    // Fetches lyrics from api.lyrics.ovh; artist/title are passed as
+    // positional shell arguments ($1/$2) to avoid shell injection.
+    Process {
+        id: lyricsFetcher
+        property string pendingArtist: ""
+        property string pendingTitle:  ""
+        command: [
+            "sh", "-c",
+            `jq -rn --arg a "$1" --arg t "$2" '"https://api.lyrics.ovh/v1/\\($a | @uri)/\\($t | @uri)"' | xargs curl -sf --connect-timeout 6 --max-time 10 | jq -r '.lyrics // "Lyrics not found."' || echo "Lyrics not found."`,
+            "--", pendingArtist, pendingTitle
+        ]
+        stdout: SplitParser {
+            onRead: (line) => {
+                root.lyricsText += (root.lyricsText.length > 0 ? "\n" : "") + line;
+            }
+        }
+        onRunningChanged: {
+            if (!running) {
+                if (root.lyricsText.length === 0)
+                    root.lyricsText = "No lyrics found.";
+                root.lyricsLoading = false;
+            }
+        }
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────
     function fmtTime(seconds) {
         if (!seconds || seconds < 0 || !isFinite(seconds)) return "0:00";
@@ -41,90 +155,254 @@ Item {
         onTriggered: if (root.hasPlayer) root.player.positionChanged()
     }
 
-    // ── Layout ───────────────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════
+    // BACKGROUND: blurred album art
+    // ══════════════════════════════════════════════════════════════════════
+    Item {
+        anchors.fill: parent
+        clip: true
+
+        Image {
+            id: bgArtSrc
+            anchors.fill: parent
+            source: root.hasPlayer && root.player.trackArtUrl ? root.player.trackArtUrl : ""
+            fillMode: Image.PreserveAspectCrop
+            sourceSize.width: 512
+            sourceSize.height: 512
+            asynchronous: true
+            smooth: true
+            mipmap: true
+            visible: false
+        }
+
+        MultiEffect {
+            source: bgArtSrc
+            anchors.fill: parent
+            blurEnabled: true
+            blur: 1.0
+            blurMax: 64
+            saturation: -0.15
+            brightness: -0.40
+            opacity: bgArtSrc.status === Image.Ready ? 0.60 : 0.0
+            Behavior on opacity { NumberAnimation { duration: 900; easing.type: Easing.OutCubic } }
+        }
+    }
+
+    Rectangle { anchors.fill: parent; color: Theme.bgDeep; opacity: 0.68 }
+
+    Rectangle {
+        id: trackFlash
+        anchors.fill: parent
+        color: Theme.accentColor
+        opacity: 0.0
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // MAIN CONTENT
+    // ══════════════════════════════════════════════════════════════════════
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 12
         spacing: 16
 
-        // ── Album art card ───────────────────────────────────────────
+        // ── Vinyl disc ───────────────────────────────────────────────
         Item {
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: Math.min(parent.width - 24, 240)
+            Layout.preferredWidth: Math.min(parent.width - 16, 186)
             Layout.preferredHeight: width
 
-            // Soft glow underneath the art
+            // Outer counter-rotating ring
             Rectangle {
                 anchors.centerIn: parent
-                width: parent.width * 0.95
-                height: parent.height * 0.95
-                radius: 18
-                color: Theme.accentColor
-                opacity: root.isPlaying ? 0.18 : 0.08
-                Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+                width: parent.width + 22; height: parent.height + 22; radius: width / 2
+                color: "transparent"
+                border.width: 1; border.color: Theme.accentColor
+                opacity: root.isPlaying ? 0.45 : 0.0
+                Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
 
-                SequentialAnimation on scale {
+                RotationAnimator on rotation {
                     running: root.isPlaying
-                    loops: Animation.Infinite
-                    NumberAnimation { from: 1.0; to: 1.04; duration: 1800; easing.type: Easing.InOutQuad }
-                    NumberAnimation { from: 1.04; to: 1.0; duration: 1800; easing.type: Easing.InOutQuad }
+                    from: 0; to: -360; duration: 14000; loops: Animation.Infinite
                 }
             }
 
+            // Inner pulsing ring
             Rectangle {
-                id: artCard
-                anchors.fill: parent
-                radius: 14
-                color: Theme.bgElevated
-                clip: true
-                border.width: 1
-                border.color: Theme.dividerColor
+                anchors.centerIn: parent
+                width: parent.width + 8; height: parent.height + 8; radius: width / 2
+                color: "transparent"
+                border.width: 2; border.color: Theme.accentColor
+                opacity: root.isPlaying ? 0.30 : 0.0
+                Behavior on opacity { NumberAnimation { duration: 400 } }
 
-                // Placeholder gradient when no art available
+                SequentialAnimation on scale {
+                    running: root.isPlaying; loops: Animation.Infinite
+                    NumberAnimation { from: 1.0; to: 1.04; duration: 860; easing.type: Easing.InOutSine }
+                    NumberAnimation { from: 1.04; to: 1.0; duration: 860; easing.type: Easing.InOutSine }
+                }
+            }
+
+            // Disc body (rotates with the art)
+            Item {
+                id: vinylDisc
+                anchors.fill: parent
+                rotation: root.vinylRotation
+
+                // Black circular base (vinyl)
                 Rectangle {
                     anchors.fill: parent
-                    radius: parent.radius
-                    visible: !art.visible
-                    gradient: Gradient {
-                        GradientStop { position: 0.0; color: Theme.accentDark }
-                        GradientStop { position: 1.0; color: Theme.bgDeep }
-                    }
+                    radius: width / 2
+                    color: Theme.bgDeep
+                }
 
-                    Text {
+                // Decorative groove rings (no-art state)
+                Repeater {
+                    model: 5
+                    Rectangle {
+                        required property int index
                         anchors.centerIn: parent
-                        text: "♪"
-                        font.pixelSize: 64
-                        color: Theme.iconColor
-                        opacity: 0.35
+                        width: parent.width * (0.28 + index * 0.14); height: width; radius: width / 2
+                        color: "transparent"
+                        border.width: 0.5
+                        border.color: Qt.rgba(1, 1, 1, 0.04 + index * 0.025)
+                        visible: discArt.status !== Image.Ready
                     }
                 }
 
+                // High-resolution album art (rendered offscreen, then masked)
                 Image {
-                    id: art
+                    id: discArt
                     anchors.fill: parent
                     source: root.hasPlayer && root.player.trackArtUrl ? root.player.trackArtUrl : ""
+                    sourceSize.width: 512
+                    sourceSize.height: 512
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                     smooth: true
+                    mipmap: true
                     cache: true
-                    visible: status === Image.Ready
+                    visible: false   // hidden source, MultiEffect renders the masked copy
+                    layer.enabled: true
+                    layer.smooth: true
 
-                    // Fade + zoom in on metadata change
-                    opacity: visible ? 1.0 : 0.0
-                    Behavior on opacity { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+                    onSourceChanged: { artScale.scale = 1.07; artScaleAnim.restart(); }
+                }
 
-                    onSourceChanged: {
-                        scale = 1.06;
-                        scaleAnim.restart();
+                // Circular mask source
+                Item {
+                    id: discMask
+                    anchors.fill: parent
+                    visible: false
+                    layer.enabled: true
+                    layer.smooth: true
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: width / 2
+                        color: "white"
+                        antialiasing: true
+                    }
+                }
+
+                // Wrapper providing the entrance scale animation
+                Item {
+                    id: artScale
+                    anchors.fill: parent
+
+                    MultiEffect {
+                        anchors.fill: parent
+                        source: discArt
+                        maskEnabled: true
+                        maskSource: discMask
+                        maskThresholdMin: 0.5
+                        maskSpreadAtMin: 1.0
+                        visible: discArt.status === Image.Ready
+                        opacity: visible ? 1.0 : 0.0
+                        Behavior on opacity { NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
                     }
 
                     NumberAnimation on scale {
-                        id: scaleAnim
-                        from: 1.06
-                        to: 1.0
-                        duration: 320
-                        easing.type: Easing.OutCubic
+                        id: artScaleAnim
+                        from: 1.07; to: 1.0
+                        duration: 380; easing.type: Easing.OutCubic
                         running: false
+                    }
+                }
+
+                // Radial vignette over art (clipped to circle naturally)
+                Rectangle {
+                    anchors.fill: parent
+                    radius: width / 2
+                    visible: discArt.status === Image.Ready
+                    color: "transparent"
+                    gradient: Gradient {
+                        orientation: Gradient.Vertical
+                        GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, 0.06) }
+                        GradientStop { position: 0.6; color: "transparent"          }
+                        GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.45) }
+                    }
+                }
+
+                // Placeholder note icon (no art)
+                Text {
+                    anchors.centerIn: parent
+                    visible: discArt.status !== Image.Ready
+                    text: "♪"; font.pixelSize: parent.width * 0.35
+                    color: Theme.iconColor; opacity: 0.22
+                }
+
+                // Center spindle hole
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: parent.width * 0.10; height: width; radius: width / 2
+                    color: Theme.bgDeep
+                    border.width: 2
+                    border.color: Qt.rgba(Theme.accentColor.r, Theme.accentColor.g, Theme.accentColor.b, 0.80)
+                    z: 10
+                }
+            }
+
+            // Pause indicator overlay (fades in when halted)
+            Rectangle {
+                anchors.centerIn: parent
+                width: 52; height: 52; radius: 26
+                color: Qt.rgba(0, 0, 0, 0.58)
+                opacity: root.hasPlayer && !root.isPlaying ? 0.92 : 0.0
+                Behavior on opacity { NumberAnimation { duration: 260 } }
+
+                Text {
+                    anchors.centerIn: parent
+                    text: root.hasPlayer ? "⏸" : "♪"
+                    font.pixelSize: 20; color: "white"
+                }
+            }
+        }
+
+        // ── Animated EQ bars ─────────────────────────────────────────
+        Row {
+            Layout.alignment: Qt.AlignHCenter
+            height: 36
+            spacing: 4
+
+            Repeater {
+                model: 9
+                delegate: Item {
+                    required property int index
+                    width: 6; height: 36
+
+                    // 0..1 normalized level for this bar from cava
+                    readonly property real level: Math.max(0, Math.min(1,
+                        (root.eqLevels[index] || 0) / 100))
+
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        width: parent.width
+                        // 3 px floor + audio-driven amplitude up to bar height
+                        height: 3 + parent.level * (parent.height - 3)
+                        radius: 3
+                        color: Theme.accentColor
+                        opacity: root.isPlaying ? (0.55 + parent.level * 0.45) : 0.22
+                        Behavior on height { NumberAnimation { duration: 80; easing.type: Easing.OutCubic } }
+                        Behavior on opacity { NumberAnimation { duration: 220 } }
                     }
                 }
             }
@@ -304,6 +582,63 @@ Item {
                 accent: false
                 enabled: root.hasPlayer && root.player.canGoNext
                 onActivated: if (root.hasPlayer) root.player.next()
+            }
+
+            // Lyrics toggle
+            TransportButton {
+                glyph: "♪"
+                size: 30
+                accent: root.showLyrics
+                enabled: root.hasPlayer
+                onActivated: root.showLyrics = !root.showLyrics
+            }
+        }
+
+        // ── Lyrics panel ─────────────────────────────────────────────────
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: root.lyricsH
+            visible: root.lyricsH > 0
+            clip: true
+            color: Theme.bgElevated
+            radius: 8
+            border.width: 1
+            border.color: Theme.dividerColor
+
+            // Pulsing "fetching" label
+            Text {
+                anchors.centerIn: parent
+                visible: root.lyricsLoading
+                text: "Fetching lyrics…"
+                font.family: "JetBrains Mono"
+                font.pixelSize: 11
+                color: Theme.textDim
+                SequentialAnimation on opacity {
+                    running: root.lyricsLoading
+                    loops: Animation.Infinite
+                    NumberAnimation { from: 0.3; to: 1.0; duration: 700; easing.type: Easing.InOutQuad }
+                    NumberAnimation { from: 1.0; to: 0.3; duration: 700; easing.type: Easing.InOutQuad }
+                }
+            }
+
+            // Scrollable lyrics text
+            ScrollView {
+                anchors.fill: parent
+                anchors.margins: 8
+                visible: !root.lyricsLoading && root.lyricsText.length > 0
+                clip: true
+                ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+
+                Text {
+                    width: parent.width - 16
+                    text: root.lyricsText
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 10
+                    color: Theme.textSecondary
+                    wrapMode: Text.WordWrap
+                    lineHeight: 1.5
+                }
             }
         }
 

@@ -11,6 +11,7 @@
   # QuickShell configured without interface
   home.packages = with pkgs; [
     inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default
+    cava # audio-spectrum source for the music widget EQ bars
   ];
 
   # Minimal QuickShell config (bottom bar)
