@@ -12,6 +12,8 @@
   home.packages = with pkgs; [
     inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default
     cava # audio-spectrum source for the music widget EQ bars
+    pulseaudio # provides parec/pactl used by chroma-analyzer.sh
+    (python3.withPackages (ps: [ ps.numpy ])) # used by chroma-analyzer.py
   ];
 
   # Minimal QuickShell config (bottom bar)
@@ -30,8 +32,30 @@
   };
   xdg.configFile."quickshell/PitchAnalyzer.qml".source = ./PitchAnalyzer.qml;
   xdg.configFile."quickshell/MusicPlayerWidget.qml".source = ./MusicPlayerWidget.qml;
+  xdg.configFile."quickshell/ChromaGraph.qml".source = ./ChromaGraph.qml;
   xdg.configFile."quickshell/pitch-analyzer.sh" = {
     source = ./pitch-analyzer.sh;
+    executable = true;
+  };
+  xdg.configFile."quickshell/chroma-analyzer.py".source = ./chroma-analyzer.py;
+  xdg.configFile."quickshell/chroma-analyzer.sh" = {
+    text = ''
+      #!/usr/bin/env bash
+      # Capture the default sink monitor (what the system is playing) and
+      # stream raw mono PCM into the python chroma analyzer.
+      set -u
+      SINK="$(${pkgs.pulseaudio}/bin/pactl get-default-sink 2>/dev/null)"
+      if [ -z "$SINK" ]; then
+        echo "STATUS:READY"
+        exec sleep infinity
+      fi
+      exec ${pkgs.pulseaudio}/bin/parec \
+            --device="''${SINK}.monitor" \
+            --rate=22050 --channels=1 --format=s16le --raw \
+            2>/dev/null \
+        | ${pkgs.python3.withPackages (ps: [ ps.numpy ])}/bin/python3 \
+            "$HOME/.config/quickshell/chroma-analyzer.py"
+    '';
     executable = true;
   };
   xdg.configFile."quickshell/nixos.svg".source =

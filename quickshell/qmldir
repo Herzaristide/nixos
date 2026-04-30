@@ -9,3 +9,4 @@ MiniGraph 1.0 MiniGraph.qml
 PitchAnalyzer 1.0 PitchAnalyzer.qml
 QuickControls 1.0 QuickControls.qml
 MusicPlayerWidget 1.0 MusicPlayerWidget.qml
+ChromaGraph 1.0 ChromaGraph.qml
