@@ -170,6 +170,11 @@ in
           install_url = "https://addons.mozilla.org/firefox/downloads/latest/react-devtools/latest.xpi";
           installation_mode = "force_installed";
         };
+        # uBlock Origin : ad/content blocker
+        "uBlock0@raymondhill.net" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
+          installation_mode = "force_installed";
+        };
       };
     };
 
