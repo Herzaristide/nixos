@@ -408,6 +408,13 @@ Item {
             }
         }
 
+        // ── Chromagram (12 pitch classes of currently playing audio) ──
+        ChromaGraph {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 70
+            active: root.isPlaying
+        }
+
         // ── Title + Artist ───────────────────────────────────────────
         ColumnLayout {
             Layout.fillWidth: true
