@@ -132,6 +132,39 @@ PanelWindow {
             }
         }
 
+        Item { Layout.preferredHeight: 8 }
+
+        // ── Music Player button ──────────────────────────────────────
+        Item {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: 36
+            Layout.preferredHeight: 36
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 8
+                color: window.panelOpen && window.activeWidget === 4
+                       ? Theme.accentColor : (musicMa.containsMouse ? Theme.accentDark : "transparent")
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "\u266A"
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 18
+                    color: Theme.iconColor
+                    opacity: window.panelOpen && window.activeWidget === 4 ? 1.0 : 0.55
+                }
+
+                MouseArea {
+                    id: musicMa
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: window.selectWidget(4)
+                }
+            }
+        }
+
         // ── Top spacer ───────────────────────────────────────────
         Item { Layout.fillHeight: true }
 
@@ -179,39 +212,6 @@ PanelWindow {
 
         // ── Bottom spacer ────────────────────────────────────────
         Item { Layout.fillHeight: true }
-
-        // ── Settings button ──────────────────────────────────────
-        Item {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 36
-            Layout.preferredHeight: 36
-
-            Rectangle {
-                anchors.fill: parent
-                radius: 8
-                color: window.panelOpen && window.activeWidget === 4
-                       ? Theme.accentColor : (settingsMa.containsMouse ? Theme.accentDark : "transparent")
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "⚙"
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 14
-                    color: Theme.iconColor
-                    opacity: window.panelOpen && window.activeWidget === 4 ? 1.0 : 0.55
-                }
-
-                MouseArea {
-                    id: settingsMa
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: window.selectWidget(4)
-                }
-            }
-        }
-
-        Item { Layout.preferredHeight: 8 }
 
         // ── NixOS button (HardwareStats) ─────────────────────────
         Item {

@@ -91,7 +91,7 @@ PanelWindow {
             OllamaChat {}
             NotesWidget {}
             PitchAnalyzer {}
-            Settings {}
+            MusicPlayerWidget {}
         }
     }
 }

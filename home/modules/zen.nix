@@ -1,7 +1,7 @@
 {
   inputs,
   pkgs,
-  palettes,
+  palette,
   lib,
   ...
 }:
@@ -41,33 +41,98 @@ let
       toString (byte (builtins.substring 4 2 hex))
     }";
 
-  # Build the palette CSS variables for one mode
+  # Build the palette CSS variables for one mode.
+  # Zen uses its own theming system based on CSS custom properties and
+  # light-dark(). We override the key Zen variables to match our palette.
   mkZenCSS = p: ''
     :root {
-      --toolbar-bgcolor:                #${p.base01} !important;
-      --toolbar-color:                  #${p.base05} !important;
+      /* ── Zen native theme variables ── */
+      --zen-primary-color: #${p.base0D} !important;
+      --zen-branding-dark: #${p.base00} !important;
+      --zen-main-browser-background: #${p.base00} !important;
+      --zen-main-browser-background-toolbar: #${p.base00} !important;
+      --zen-themed-toolbar-bg-transparent: #${p.base00} !important;
+      --zen-colors-border: #${p.base00} !important;
+      --zen-colors-border-contrast: rgba(${hexToRgb p.base03}, 0.15) !important;
+
+      /* ── Toolbar / tab bar (the vertical sidebar in Zen) ── */
+      --toolbar-bgcolor: #${p.base00} !important;
+      --toolbar-color: #${p.base05} !important;
+      --toolbox-textcolor: #${p.base05} !important;
       --toolbarbutton-hover-background: rgba(${hexToRgb p.base05}, 0.08) !important;
-      --tab-selected-bgcolor:           #${p.base02} !important;
-      --focus-outline-color:            #${p.base0D} !important;
-      --link-color:                     #${p.base0D} !important;
-      --accent-color:                   #${p.base0D} !important;
-      --accent-color-a30:               rgba(${hexToRgb p.base0D}, 0.3) !important;
+      --zen-toolbar-element-bg: rgba(${hexToRgb p.base05}, 0.08) !important;
+
+      /* ── Tab backgrounds ── */
+      --tab-selected-bgcolor: #${p.base02} !important;
+      --tab-hover-background-color: rgba(${hexToRgb p.base05}, 0.08) !important;
+
+      /* ── Panels / popups ── */
+      --arrowpanel-background: #${p.base01} !important;
+      --arrowpanel-color: #${p.base05} !important;
+      --arrowpanel-border-color: #${p.base03} !important;
+      --panel-background: #${p.base01} !important;
+      --panel-color: #${p.base05} !important;
+      --panel-border-color: #${p.base03} !important;
+      --popup-background-color: #${p.base01} !important;
+      --popup-color: #${p.base05} !important;
+      --menuitem-hover-background-color: rgba(${hexToRgb p.base0D}, 0.15) !important;
+
+      /* ── Accent / focus ── */
+      --focus-outline-color: #${p.base0D} !important;
+      --zen-appcontent-border: none !important;
     }
 
+    /* Force the navigator-toolbox (vertical tab sidebar) background */
     #navigator-toolbox {
-      background-color: #${p.base01} !important;
+      --zen-navigator-toolbox-background: #${p.base00} !important;
+      background: #${p.base00} !important;
     }
 
-    #sidebar-box,
-    .sidebar-panel,
-    #sidebar-header {
-      background-color: #${p.base00} !important;
+    /* Main app wrapper — this is the outermost colored shell */
+    #zen-main-app-wrapper {
+      background: #${p.base00} !important;
+    }
+
+    /* Generic background pseudo-element that Zen uses for the main bg */
+    .zen-browser-generic-background::after {
+      background: #${p.base00} !important;
+    }
+
+    /* Content area border (the border between sidebar and page) */
+    #tabbrowser-tabbox #tabbrowser-tabpanels .browserSidebarContainer {
+      box-shadow: none !important;
+    }
+
+    /* Sidebar splitter (thin resize handle) */
+    #zen-sidebar-splitter {
+      background: transparent !important;
+    }
+    #zen-sidebar-splitter:hover::before {
+      background: #${p.base0D} !important;
+    }
+
+    /* URL bar */
+    #urlbar-background {
+      background-color: #${p.base02} !important;
+      border-color: #${p.base03} !important;
+    }
+
+    /* Dropdown panels and context menus */
+    panel,
+    menupopup,
+    .autocomplete-richlistbox {
+      --panel-background: #${p.base01} !important;
+      --panel-color: #${p.base05} !important;
+      --arrowpanel-background: #${p.base01} !important;
+      --arrowpanel-color: #${p.base05} !important;
+      background-color: #${p.base01} !important;
       color: #${p.base05} !important;
     }
 
-    #urlbar-background {
-      background-color: #${p.base02} !important;
-      border-color: #${p.base0D} !important;
+    menuitem:hover,
+    .urlbarView-row[selected],
+    .urlbarView-row:hover {
+      background-color: rgba(${hexToRgb p.base0D}, 0.15) !important;
     }
   '';
 in
@@ -116,6 +181,14 @@ in
         "zen.view.compact.toolbar-flash-popup" = false;
         # Required for userChrome.css to be loaded
         "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+        # Force Zen's own dark mode (0=dark, 1=light, 2=system).
+        # This controls color-scheme in zen-browser-container.css and
+        # makes light-dark() resolve to the dark variant everywhere.
+        "zen.view.window.scheme" = 0;
+        # 0 = dark preference for web content (prefers-color-scheme: dark).
+        "layout.css.prefers-color-scheme.content-override" = 0;
+        "browser.theme.content-theme" = 1;
+        "browser.theme.toolbar-theme" = 1;
       };
 
       # Mods from https://zen-browser.app/mods
@@ -124,20 +197,9 @@ in
         "4ab93b88-151c-451b-a1b7-a1e0e28fa7f8" # No Sidebar Scrollbar
       ];
 
-      # Both palette modes embedded at build time. Zen switches instantly when the
-      # Quickshell toggle fires gsettings color-scheme, because Firefox/Zen honours
-      # prefers-color-scheme from the system setting — no rebuild required.
-      userChrome = ''
-        /* ── NixOS palette — dark/light via prefers-color-scheme ───────── */
-
-        @media (prefers-color-scheme: dark) {
-          ${mkZenCSS palettes.dark}
-        }
-
-        @media (prefers-color-scheme: light) {
-          ${mkZenCSS palettes.light}
-        }
-      '';
+      # Palette colors from the active mode (darkMode flag at build time — no media query
+      # needed, avoids relying on portal color-scheme which Zen doesn't always pick up).
+      userChrome = mkZenCSS palette;
 
       # ⚠ Ferme Zen avant d'exécuter nixos-rebuild quand keyboardShortcuts est déclaré.
       # Pour trouver les IDs : jq -c '.shortcuts[] | {id, key}' ~/.config/zen/default/zen-keyboard-shortcuts.json | fzf

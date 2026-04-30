@@ -28,11 +28,11 @@
     executable = true;
   };
   xdg.configFile."quickshell/PitchAnalyzer.qml".source = ./PitchAnalyzer.qml;
+  xdg.configFile."quickshell/MusicPlayerWidget.qml".source = ./MusicPlayerWidget.qml;
   xdg.configFile."quickshell/pitch-analyzer.sh" = {
     source = ./pitch-analyzer.sh;
     executable = true;
   };
-  xdg.configFile."quickshell/Settings.qml".source = ./Settings.qml;
   xdg.configFile."quickshell/nixos.svg".source =
     "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake-white.svg";
 
