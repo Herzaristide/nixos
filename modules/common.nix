@@ -35,8 +35,11 @@
     nix.gc = {
       automatic = true;
       dates = "weekly";
-      options = "--delete-older-than 7d";
+      options = "--delete-older-than 30d";
     };
+
+    # Keep only the last 10 boot entries in systemd-boot
+    boot.loader.systemd-boot.configurationLimit = 10;
 
     # Virtual console (TTY) — French AZERTY for all hosts
     console = {
