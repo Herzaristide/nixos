@@ -8,6 +8,8 @@ Item {
     id: root
 
     property string modelName: "qwen3:latest"
+    property bool modelReady: false
+    property var availableModels: []
     property bool isStreaming: false
     property bool voiceEnabled: false
     property string voiceStatus: "OFF"
@@ -20,6 +22,8 @@ Item {
         onToolResult: (toolName, assistantIdx, result) => handleToolResult(toolName, assistantIdx, result)
     }
 
+    Component.onCompleted: checkAndPullModel()
+
 
     ListModel { id: messages }
 
@@ -31,6 +35,78 @@ Item {
         command: ["wl-copy"]
         stdinEnabled: true
         onExited: running = false
+    }
+
+    // ── Ollama model pull process ────────────────────────────────────────────
+    Process {
+        id: pullProcess
+        property int pullMsgIdx: -1
+
+        stdout: SplitParser {
+            onRead: (data) => {
+                if (pullProcess.pullMsgIdx >= 0)
+                    messages.setProperty(pullProcess.pullMsgIdx, "content",
+                        "\u2B07 T\u00E9l\u00E9chargement de " + root.modelName + "...\n" + data);
+            }
+        }
+        stderr: SplitParser { onRead: (data) => {} }
+
+        onExited: (code, status) => {
+            if (code === 0) {
+                root.modelReady = true;
+                if (pullProcess.pullMsgIdx >= 0)
+                    messages.setProperty(pullProcess.pullMsgIdx, "content",
+                        "\u2705 " + root.modelName + " t\u00E9l\u00E9charg\u00E9, pr\u00EAt !");
+            } else {
+                if (pullProcess.pullMsgIdx >= 0)
+                    messages.setProperty(pullProcess.pullMsgIdx, "content",
+                        "\u26A0 \u00C9chec du t\u00E9l\u00E9chargement de " + root.modelName +
+                        ". V\u00E9rifie qu'Ollama est bien d\u00E9marr\u00E9.");
+            }
+        }
+    }
+
+    function checkAndPullModel() {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://localhost:11434/api/tags");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState !== 4) return;
+            if (xhr.status === 200) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    var models = data.models || [];
+                    var names = [];
+                    for (var i = 0; i < models.length; i++)
+                        names.push(models[i].name);
+                    if (names.length > 0)
+                        root.availableModels = names;
+                    var found = false;
+                    for (var i = 0; i < models.length; i++) {
+                        if (models[i].name === root.modelName ||
+                            models[i].name.split(":")[0] === root.modelName.split(":")[0]) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        root.modelReady = true;
+                    } else {
+                        messages.append({ role: "assistant",
+                            content: "\u2B07 Mod\u00E8le " + root.modelName + " non trouv\u00E9, t\u00E9l\u00E9chargement en cours...",
+                            msgType: "text" });
+                        pullProcess.pullMsgIdx = messages.count - 1;
+                        pullProcess.command = ["ollama", "pull", root.modelName];
+                        pullProcess.running = true;
+                    }
+                } catch (e) {
+                    root.modelReady = true; // impossible de v\u00E9rifier, on tente quand m\u00EAme
+                }
+            } else {
+                // Ollama injoignable — on laisse passer, l'erreur sera affich\u00E9e \u00E0 l'envoi
+                root.modelReady = true;
+            }
+        };
+        xhr.send();
     }
 
     // ── Voice assistant process ────────────────────────────────
@@ -138,6 +214,12 @@ Item {
     function sendMessage() {
         var text = inputField.text.trim();
         if (text === "" || root.isStreaming) return;
+        if (!root.modelReady) {
+            messages.append({ role: "assistant",
+                content: "\u23F3 Le mod\u00E8le est encore en cours de t\u00E9l\u00E9chargement, patiente un instant...",
+                msgType: "text" });
+            return;
+        }
 
         inputField.text = "";
         // Prefix voice-initiated messages with a mic icon
@@ -507,112 +589,89 @@ Item {
             Layout.fillWidth: true
             spacing: 8
 
-            // Model selector styled as "// model"
-            Text {
-                text: "// "
-                color: Theme.accentColor
-                opacity: 0.4
-                font.family: "JetBrains Mono"
-                font.pixelSize: 10
-                verticalAlignment: Text.AlignVCenter
-                height: modelCombo.height
-            }
-
-            ComboBox {
-                id: modelCombo
-                editable: true
-                model: [
-                    "qwen3:latest",
-                    "qwen3:8b",
-                    "llama3.2:latest",
-                    "llama3.1:latest",
-                    "mistral:latest",
-                    "gemma3:latest",
-                    "deepseek-r1:latest",
-                    "phi4:latest"
-                ]
-                currentIndex: 0
-                implicitWidth: 130
+            // Model selector: click on the text to open model list
+            Item {
+                id: modelSelector
                 implicitHeight: 18
+                implicitWidth: modelLabel.implicitWidth
 
-                onAccepted: {
-                    var v = editText.trim();
-                    if (v !== "") root.modelName = v;
-                }
-                onActivated: (idx) => {
-                    root.modelName = model[idx];
-                }
-
-                Component.onCompleted: {
-                    var idx = find(root.modelName);
-                    currentIndex = idx >= 0 ? idx : 0;
-                    editText = root.modelName;
-                }
-
-                contentItem: TextInput {
-                    text: modelCombo.editText
+                Text {
+                    id: modelLabel
+                    text: "// " + root.modelName
+                    color: Theme.accentColor
+                    opacity: modelMa.containsMouse ? 0.8 : 0.4
                     font.family: "JetBrains Mono"
                     font.pixelSize: 10
-                    color: Theme.accentColor
-                    opacity: 0.4
-                    verticalAlignment: TextInput.AlignVCenter
-                    leftPadding: 0
-                    rightPadding: modelCombo.indicator.width + 2
-                    selectByMouse: true
-                    onTextEdited: modelCombo.editText = text
+                    verticalAlignment: Text.AlignVCenter
+                    height: parent.height
                 }
 
-                indicator: Text {
-                    x: modelCombo.width - width
-                    y: (modelCombo.height - height) / 2
-                    text: "\u25BE"
-                    color: Theme.accentColor
-                    opacity: modelCombo.hovered ? 0.7 : 0.3
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 10
+                MouseArea {
+                    id: modelMa
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: modelPopup.open()
                 }
 
-                background: Item {}
-
-                popup: Popup {
-                    y: modelCombo.height - height
-                    width: modelCombo.width + 40
+                Popup {
+                    id: modelPopup
+                    y: -implicitHeight - 2
+                    x: 0
                     padding: 1
+                    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
                     background: Rectangle {
                         color: "#0d0d0d"
                         border.color: Theme.accentColor
                         border.width: 1
-                        opacity: 0.97
                     }
 
                     contentItem: ListView {
+                        id: modelListView
                         clip: true
-                        implicitHeight: contentHeight
-                        model: modelCombo.popup.visible ? modelCombo.delegateModel : null
+                        implicitWidth: 180
+                        implicitHeight: Math.min(contentHeight, 200)
+                        model: root.availableModels.length > 0
+                            ? root.availableModels
+                            : [root.modelName]
                         ScrollIndicator.vertical: ScrollIndicator {}
-                    }
-                }
 
-                delegate: ItemDelegate {
-                    required property string modelData
-                    required property int index
-                    width: modelCombo.popup.width - 2
-                    height: 20
-                    padding: 0
-                    leftPadding: 6
+                        delegate: Item {
+                            required property string modelData
+                            required property int index
+                            width: modelListView.width
+                            height: 20
 
-                    contentItem: Text {
-                        text: modelData
-                        font.family: "JetBrains Mono"
-                        font.pixelSize: 10
-                        color: modelCombo.highlightedIndex === index ? Theme.selectedTextColor : Theme.accentColor
-                        opacity: modelCombo.highlightedIndex === index ? 1.0 : 0.6
-                        verticalAlignment: Text.AlignVCenter
-                    }
+                            Text {
+                                anchors.fill: parent
+                                leftPadding: 6
+                                text: modelData
+                                font.family: "JetBrains Mono"
+                                font.pixelSize: 10
+                                color: delegateMa.containsMouse ? Theme.selectedTextColor : Theme.accentColor
+                                opacity: delegateMa.containsMouse ? 1.0 : 0.6
+                                verticalAlignment: Text.AlignVCenter
+                            }
 
-                    background: Rectangle {
-                        color: modelCombo.highlightedIndex === index ? Theme.accentColor : "transparent"
+                            Rectangle {
+                                anchors.fill: parent
+                                color: delegateMa.containsMouse ? Theme.accentColor : "transparent"
+                                z: -1
+                            }
+
+                            MouseArea {
+                                id: delegateMa
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: {
+                                    root.modelName = modelData;
+                                    root.modelReady = false;
+                                    root.checkAndPullModel();
+                                    modelPopup.close();
+                                }
+                            }
+                        }
                     }
                 }
             }
