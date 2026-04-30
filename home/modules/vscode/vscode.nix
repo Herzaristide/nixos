@@ -116,8 +116,8 @@ let
     "terminal.integrated.fontFamily" = "JetBrains Mono";
     "editor.mouseWheelZoom" = true;
     "editor.fontSize" = lib.mkForce 12;
-    "editor.fontFamily" = "Monocraft";
-    "editor.fontLigatures" = false;
+    "editor.fontFamily" = "'JetBrains Mono', monospace";
+    "editor.fontLigatures" = true;
   };
 
   # MCP servers (dedicated config, not user settings)

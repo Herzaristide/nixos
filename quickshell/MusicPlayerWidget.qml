@@ -79,21 +79,38 @@ Item {
 
     // ── Lyrics ───────────────────────────────────────────────────────────
     property bool   showLyrics:    false
-    property string lyricsText:    ""
+    property string lyricsText:    ""    // plain-text fallback
     property bool   lyricsLoading: false
+    property bool   isSynced:      false  // true when LRC timestamps available
+    property var    lyricLines:    []     // [{t: seconds, text: string}] sorted
 
-    // Animated height for the collapsible lyrics panel
-    property real lyricsH: 0
-    Behavior on lyricsH { NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
+    // Active line index — re-evaluates on every position tick
+    readonly property int currentLyricIndex: {
+        if (!isSynced || !hasPlayer || lyricLines.length === 0) return -1;
+        var pos = player.position;
+        var idx = 0;
+        for (var i = 0; i < lyricLines.length; i++) {
+            if (lyricLines[i].t <= pos) idx = i; else break;
+        }
+        return idx;
+    }
+
+    // Resets state and fires a fresh LRCLIB fetch
+    function startLyricsFetch() {
+        lyricsText    = "";
+        lyricLines    = [];
+        isSynced      = false;
+        lyricsLoading = true;
+        lyricsFetcher.pendingArtist = player.trackArtist;
+        lyricsFetcher.pendingTitle  = player.trackTitle;
+        Qt.callLater(function() { lyricsFetcher.running = true; });
+    }
 
     onShowLyricsChanged: {
-        lyricsH = showLyrics ? 200 : 0;
-        if (showLyrics && lyricsText.length === 0 && !lyricsLoading
-                && hasPlayer && player.trackTitle && player.trackArtist) {
-            lyricsLoading = true;
-            lyricsFetcher.pendingArtist = player.trackArtist;
-            lyricsFetcher.pendingTitle  = player.trackTitle;
-            Qt.callLater(function() { lyricsFetcher.running = true; });
+        if (showLyrics && !lyricsLoading
+                && hasPlayer && player.trackTitle && player.trackArtist
+                && lyricsText.length === 0 && lyricLines.length === 0) {
+            startLyricsFetch();
         }
     }
 
@@ -102,38 +119,65 @@ Item {
                              ? (player.trackArtist + "|||" + player.trackTitle) : ""
     onTrackIdChanged: {
         lyricsText    = "";
+        lyricLines    = [];
+        isSynced      = false;
         lyricsLoading = false;
         lyricsFetcher.running = false;
-        if (showLyrics && hasPlayer && player.trackTitle && player.trackArtist) {
-            lyricsLoading = true;
-            lyricsFetcher.pendingArtist = player.trackArtist;
-            lyricsFetcher.pendingTitle  = player.trackTitle;
-            Qt.callLater(function() { lyricsFetcher.running = true; });
-        }
+        if (showLyrics && hasPlayer && player.trackTitle && player.trackArtist)
+            startLyricsFetch();
     }
 
-    // Fetches lyrics from api.lyrics.ovh; artist/title are passed as
-    // positional shell arguments ($1/$2) to avoid shell injection.
+    // Parses LRC lines into [{t: seconds, text}] sorted by time
+    function parseLrc(lines) {
+        var result = [];
+        for (var i = 0; i < lines.length; i++) {
+            var m = lines[i].match(/^\[(\d{2}):(\d{2}[.,]\d{2,3})\]\s*(.*)/);
+            if (m) {
+                var secs = parseInt(m[1]) * 60 + parseFloat(m[2].replace(',', '.'));
+                result.push({ t: secs, text: m[3] });
+            }
+        }
+        result.sort(function(a, b) { return a.t - b.t; });
+        return result;
+    }
+
+    // Fetches from LRCLIB (synced LRC preferred, plain fallback).
+    // First stdout line is a mode tag: "SYNCED", "PLAIN", or "NOTFOUND".
     Process {
         id: lyricsFetcher
         property string pendingArtist: ""
         property string pendingTitle:  ""
+        property string rawOutput:     ""
         command: [
             "sh", "-c",
-            `jq -rn --arg a "$1" --arg t "$2" '"https://api.lyrics.ovh/v1/\\($a | @uri)/\\($t | @uri)"' | xargs curl -sf --connect-timeout 6 --max-time 10 | jq -r '.lyrics // "Lyrics not found."' || echo "Lyrics not found."`,
+            `jq -rn --arg a "$1" --arg t "$2" '"https://lrclib.net/api/get?artist_name=\\($a | @uri)&track_name=\\($t | @uri)"' | xargs curl -sf --connect-timeout 6 --max-time 10 | jq -r 'if ((.syncedLyrics // "") | length) > 0 then "SYNCED\\n" + .syncedLyrics elif ((.plainLyrics // "") | length) > 0 then "PLAIN\\n" + .plainLyrics else "NOTFOUND" end' || echo "NOTFOUND"`,
             "--", pendingArtist, pendingTitle
         ]
         stdout: SplitParser {
             onRead: (line) => {
-                root.lyricsText += (root.lyricsText.length > 0 ? "\n" : "") + line;
+                lyricsFetcher.rawOutput += (lyricsFetcher.rawOutput.length > 0 ? "\n" : "") + line;
             }
         }
         onRunningChanged: {
-            if (!running) {
-                if (root.lyricsText.length === 0)
-                    root.lyricsText = "No lyrics found.";
-                root.lyricsLoading = false;
+            if (running) { rawOutput = ""; return; }
+            var lines = rawOutput.length > 0 ? rawOutput.split("\n") : [];
+            rawOutput = "";
+            if (lines.length === 0 || lines[0] === "NOTFOUND") {
+                root.lyricsText = "No lyrics found.";
+            } else if (lines[0] === "SYNCED") {
+                var parsed = root.parseLrc(lines.slice(1));
+                if (parsed.length > 0) {
+                    root.lyricLines = parsed;
+                    root.isSynced   = true;
+                } else {
+                    root.lyricsText = lines.slice(1).join("\n") || "No lyrics found.";
+                }
+            } else if (lines[0] === "PLAIN") {
+                root.lyricsText = lines.slice(1).join("\n") || "No lyrics found.";
+            } else {
+                root.lyricsText = lines.join("\n") || "No lyrics found.";
             }
+            root.lyricsLoading = false;
         }
     }
 
@@ -155,40 +199,7 @@ Item {
         onTriggered: if (root.hasPlayer) root.player.positionChanged()
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    // BACKGROUND: blurred album art
-    // ══════════════════════════════════════════════════════════════════════
-    Item {
-        anchors.fill: parent
-        clip: true
 
-        Image {
-            id: bgArtSrc
-            anchors.fill: parent
-            source: root.hasPlayer && root.player.trackArtUrl ? root.player.trackArtUrl : ""
-            fillMode: Image.PreserveAspectCrop
-            sourceSize.width: 512
-            sourceSize.height: 512
-            asynchronous: true
-            smooth: true
-            mipmap: true
-            visible: false
-        }
-
-        MultiEffect {
-            source: bgArtSrc
-            anchors.fill: parent
-            blurEnabled: true
-            blur: 1.0
-            blurMax: 64
-            saturation: -0.15
-            brightness: -0.40
-            opacity: bgArtSrc.status === Image.Ready ? 0.60 : 0.0
-            Behavior on opacity { NumberAnimation { duration: 900; easing.type: Easing.OutCubic } }
-        }
-    }
-
-    Rectangle { anchors.fill: parent; color: Theme.bgDeep; opacity: 0.68 }
 
     Rectangle {
         id: trackFlash
@@ -205,48 +216,127 @@ Item {
         anchors.margins: 12
         spacing: 16
 
+        // Top spacer — keeps the widget vertically centered in the panel
+        Item { Layout.fillHeight: true }
+
         // ── Vinyl disc ───────────────────────────────────────────────
         Item {
+            id: vinylContainer
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: Math.min(parent.width - 16, 186)
             Layout.preferredHeight: width
 
-            // Outer counter-rotating ring
-            Rectangle {
-                anchors.centerIn: parent
-                width: parent.width + 22; height: parent.height + 22; radius: width / 2
-                color: "transparent"
-                border.width: 1; border.color: Theme.accentColor
-                opacity: root.isPlaying ? 0.45 : 0.0
-                Behavior on opacity { NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
+            // Gesture state for click/drag interactions on the disc
+            property real pressX: 0
+            property real dragDx: 0
+            property bool dragging: false
+            readonly property real dragThreshold: 12
+            // Animated horizontal offset applied to the vinyl disc via Translate
+            property real discOffset: 0
 
-                RotationAnimator on rotation {
-                    running: root.isPlaying
-                    from: 0; to: -360; duration: 14000; loops: Animation.Infinite
-                }
-            }
-
-            // Inner pulsing ring
-            Rectangle {
-                anchors.centerIn: parent
-                width: parent.width + 8; height: parent.height + 8; radius: width / 2
-                color: "transparent"
-                border.width: 2; border.color: Theme.accentColor
-                opacity: root.isPlaying ? 0.30 : 0.0
-                Behavior on opacity { NumberAnimation { duration: 400 } }
-
-                SequentialAnimation on scale {
-                    running: root.isPlaying; loops: Animation.Infinite
-                    NumberAnimation { from: 1.0; to: 1.04; duration: 860; easing.type: Easing.InOutSine }
-                    NumberAnimation { from: 1.04; to: 1.0; duration: 860; easing.type: Easing.InOutSine }
-                }
-            }
-
-            // Disc body (rotates with the art)
+            // Single wrapper so rings + disc all move with one Translate
             Item {
-                id: vinylDisc
+                id: vinylCarousel
                 anchors.fill: parent
-                rotation: root.vinylRotation
+                transform: Translate { x: vinylContainer.discOffset }
+                opacity: root.showLyrics ? 0 : 1
+                visible: opacity > 0.001
+                scale: vinylContainer.dragging ? 0.94 : 1.0
+                Behavior on opacity { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
+                Behavior on scale   { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+
+                // Outer counter-rotating ring
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: parent.width + 22; height: parent.height + 22; radius: width / 2
+                    color: "transparent"
+                    border.width: 1; border.color: Theme.accentColor
+                    opacity: root.isPlaying ? 0.45 : 0.0
+                    Behavior on opacity { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
+
+                    RotationAnimator on rotation {
+                        running: root.isPlaying && !root.showLyrics
+                        from: 0; to: -360; duration: 14000; loops: Animation.Infinite
+                    }
+                }
+
+                // Inner pulsing ring
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: parent.width + 8; height: parent.height + 8; radius: width / 2
+                    color: "transparent"
+                    border.width: 2; border.color: Theme.accentColor
+                    opacity: root.isPlaying ? 0.30 : 0.0
+                    Behavior on opacity { NumberAnimation { duration: 320 } }
+
+                    SequentialAnimation on scale {
+                        running: root.isPlaying && !root.showLyrics; loops: Animation.Infinite
+                        NumberAnimation { from: 1.0; to: 1.04; duration: 860; easing.type: Easing.InOutSine }
+                        NumberAnimation { from: 1.04; to: 1.0; duration: 860; easing.type: Easing.InOutSine }
+                    }
+                }
+
+                // Disc body (rotates with the art)
+                Item {
+                    id: vinylDisc
+                    anchors.fill: parent
+                    rotation: root.vinylRotation
+                }
+            }
+
+            // Snap back to center after a short (non-skip) drag
+            NumberAnimation {
+                id: snapBackAnim
+                target: vinylContainer
+                property: "discOffset"
+                to: 0
+                duration: 220
+                easing.type: Easing.OutCubic
+            }
+
+            // Slide-out + slide-in animation for track skips. Mirrors the swipe
+            // direction so the listener sees one record leaving and the next
+            // arriving from the opposite side.
+            SequentialAnimation {
+                id: skipAnim
+                property int direction: 1   // +1 = drag right, -1 = drag left
+                property bool isPrev: false
+
+                NumberAnimation {
+                    target: vinylContainer
+                    property: "discOffset"
+                    to: skipAnim.direction * vinylContainer.width
+                    duration: 220
+                    easing.type: Easing.InCubic
+                }
+                ScriptAction {
+                    script: {
+                        if (root.hasPlayer) {
+                            if (skipAnim.isPrev) {
+                                if (root.player.canGoPrevious) root.player.previous();
+                            } else {
+                                if (root.player.canGoNext) root.player.next();
+                            }
+                        }
+                        // Reposition off the opposite edge so the new disc can
+                        // glide in from the side the swipe came from.
+                        vinylContainer.discOffset = -skipAnim.direction * vinylContainer.width;
+                    }
+                }
+                NumberAnimation {
+                    target: vinylContainer
+                    property: "discOffset"
+                    to: 0
+                    duration: 320
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            // Original disc content lives inside vinylDisc — keep wrapping it.
+            Item {
+                id: vinylDiscContent
+                parent: vinylDisc
+                anchors.fill: parent
 
                 // Black circular base (vinyl)
                 Rectangle {
@@ -269,21 +359,26 @@ Item {
                     }
                 }
 
-                // High-resolution album art (rendered offscreen, then masked)
+                // High-resolution album art — source for the masked render.
+                // Use opacity:0 (not visible:false) so the scene graph keeps the
+                // layer texture alive; visible:false lets Qt cull the node and
+                // the cached layer texture gets dropped after a while.
                 Image {
                     id: discArt
                     anchors.fill: parent
                     source: root.hasPlayer && root.player.trackArtUrl ? root.player.trackArtUrl : ""
-                    sourceSize.width: 512
-                    sourceSize.height: 512
+                    sourceSize.width: 1024
+                    sourceSize.height: 1024
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                     smooth: true
                     mipmap: true
                     cache: true
-                    visible: false   // hidden source, MultiEffect renders the masked copy
+                    opacity: 0
                     layer.enabled: true
                     layer.smooth: true
+                    layer.mipmap: true
+                    layer.textureSize: Qt.size(1024, 1024)
 
                     onSourceChanged: { artScale.scale = 1.07; artScaleAnim.restart(); }
                 }
@@ -292,9 +387,10 @@ Item {
                 Item {
                     id: discMask
                     anchors.fill: parent
-                    visible: false
+                    opacity: 0
                     layer.enabled: true
                     layer.smooth: true
+                    layer.textureSize: Qt.size(1024, 1024)
                     Rectangle {
                         anchors.fill: parent
                         radius: width / 2
@@ -315,8 +411,7 @@ Item {
                         maskSource: discMask
                         maskThresholdMin: 0.5
                         maskSpreadAtMin: 1.0
-                        visible: discArt.status === Image.Ready
-                        opacity: visible ? 1.0 : 0.0
+                        opacity: discArt.status === Image.Ready ? 1.0 : 0.0
                         Behavior on opacity { NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
                     }
 
@@ -366,13 +461,164 @@ Item {
                 anchors.centerIn: parent
                 width: 52; height: 52; radius: 26
                 color: Qt.rgba(0, 0, 0, 0.58)
-                opacity: root.hasPlayer && !root.isPlaying ? 0.92 : 0.0
+                opacity: !root.showLyrics && root.hasPlayer && !root.isPlaying && !vinylContainer.dragging ? 0.92 : 0.0
                 Behavior on opacity { NumberAnimation { duration: 260 } }
 
                 Text {
                     anchors.centerIn: parent
                     text: root.hasPlayer ? "⏸" : "♪"
                     font.pixelSize: 20; color: "white"
+                }
+            }
+
+            // ── Lyrics-mode view: replaces the vinyl in-place ─────────
+            // Shows the active sentence centered, plus 1–2 sibling lines
+            // fading out above and below. No scrolling — lines just rotate
+            // through this fixed 5-slot column as the position advances.
+            Item {
+                id: lyricsModeView
+                anchors.fill: parent
+                opacity: root.showLyrics ? 1 : 0
+                visible: opacity > 0.001
+                Behavior on opacity { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
+
+                // Loading state
+                Text {
+                    anchors.centerIn: parent
+                    visible: root.lyricsLoading
+                    text: "Fetching lyrics…"
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 11
+                    color: Theme.textDim
+                    SequentialAnimation on opacity {
+                        running: root.lyricsLoading && root.showLyrics
+                        loops: Animation.Infinite
+                        NumberAnimation { from: 0.3; to: 1.0; duration: 700; easing.type: Easing.InOutQuad }
+                        NumberAnimation { from: 1.0; to: 0.3; duration: 700; easing.type: Easing.InOutQuad }
+                    }
+                }
+
+                // Empty / not-found / not-synced states
+                Text {
+                    anchors.centerIn: parent
+                    visible: !root.lyricsLoading && (!root.isSynced || root.lyricLines.length === 0)
+                    text: root.lyricsText && root.lyricsText.length > 0 && !root.isSynced
+                          ? "Synced lyrics unavailable"
+                          : "No lyrics found"
+                    horizontalAlignment: Text.AlignHCenter
+                    width: parent.width - 24
+                    wrapMode: Text.WordWrap
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 11
+                    color: Theme.textDim
+                }
+
+                // Synced lyrics: 5 fixed slots (−2 −1 0 +1 +2)
+                Column {
+                    anchors.centerIn: parent
+                    width: parent.width - 12
+                    spacing: 6
+                    visible: !root.lyricsLoading && root.isSynced && root.lyricLines.length > 0
+
+                    Repeater {
+                        model: 5  // offsets: -2, -1, 0, +1, +2
+                        delegate: Text {
+                            required property int index
+                            readonly property int offset: index - 2
+                            readonly property int targetIdx: root.currentLyricIndex + offset
+                            readonly property bool isCurrent: offset === 0
+                            readonly property bool inRange:
+                                targetIdx >= 0 && targetIdx < root.lyricLines.length
+
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                            elide: Text.ElideRight
+                            maximumLineCount: isCurrent ? 3 : 2
+
+                            text: inRange
+                                  ? (root.lyricLines[targetIdx].text === ""
+                                     ? "·" : root.lyricLines[targetIdx].text)
+                                  : ""
+                            font.family: "JetBrains Mono"
+                            font.pixelSize: isCurrent ? 14 : 11
+                            font.weight: isCurrent ? Font.SemiBold : Font.Normal
+                            color: isCurrent ? Theme.accentColor : Theme.textSecondary
+                            opacity: !inRange ? 0
+                                     : isCurrent ? 1.0
+                                     : Math.abs(offset) === 1 ? 0.55
+                                     : 0.28
+                            Behavior on opacity { NumberAnimation { duration: 280 } }
+                            Behavior on color   { ColorAnimation  { duration: 280 } }
+                        }
+                    }
+                }
+            }
+
+            // Drag direction hint (◮ previous / ◭ next — swipe right pulls in
+            // the previous track from the left, swipe left brings the next one)
+            Rectangle {
+                anchors.centerIn: parent
+                width: 52; height: 52; radius: 26
+                color: Qt.rgba(0, 0, 0, 0.58)
+                readonly property bool show:
+                    vinylContainer.dragging
+                    && Math.abs(vinylContainer.dragDx) > vinylContainer.dragThreshold
+                opacity: show ? 0.92 : 0.0
+                Behavior on opacity { NumberAnimation { duration: 160 } }
+
+                Text {
+                    anchors.centerIn: parent
+                    text: vinylContainer.dragDx > 0 ? "⏮" : "⏭"
+                    font.pixelSize: 22; color: "white"
+                }
+            }
+
+            // Gesture surface: click toggles play/pause, horizontal drag skips
+            // tracks (drag right → previous, drag left → next).
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                enabled: root.hasPlayer && !skipAnim.running
+                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                preventStealing: true
+
+                onPressed: (mouse) => {
+                    snapBackAnim.stop();
+                    vinylContainer.discOffset = 0;
+                    vinylContainer.pressX = mouse.x;
+                    vinylContainer.dragDx = 0;
+                    vinylContainer.dragging = true;
+                }
+                onPositionChanged: (mouse) => {
+                    if (vinylContainer.dragging) {
+                        vinylContainer.dragDx = mouse.x - vinylContainer.pressX;
+                        vinylContainer.discOffset = vinylContainer.dragDx * 0.6;
+                    }
+                }
+                onReleased: (mouse) => {
+                    var dx = vinylContainer.dragDx;
+                    var t = vinylContainer.dragThreshold;
+                    vinylContainer.dragging = false;
+                    vinylContainer.dragDx = 0;
+                    if (!root.hasPlayer) {
+                        snapBackAnim.restart();
+                        return;
+                    }
+                    if (Math.abs(dx) < t) {
+                        snapBackAnim.restart();
+                        root.player.togglePlaying();
+                    } else {
+                        // dx > 0 (swipe right) → previous, dx < 0 → next
+                        skipAnim.direction = dx > 0 ? 1 : -1;
+                        skipAnim.isPrev = dx > 0;
+                        skipAnim.start();
+                    }
+                }
+                onCanceled: {
+                    vinylContainer.dragging = false;
+                    vinylContainer.dragDx = 0;
+                    snapBackAnim.restart();
                 }
             }
         }
@@ -559,39 +805,11 @@ Item {
             }
         }
 
-        // ── Transport controls ───────────────────────────────────────
+        // ── Lyrics toggle (transport controls live on the vinyl itself) ──
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
             spacing: 14
 
-            // Previous
-            TransportButton {
-                glyph: "⏮"
-                size: 36
-                accent: false
-                enabled: root.hasPlayer && root.player.canGoPrevious
-                onActivated: if (root.hasPlayer) root.player.previous()
-            }
-
-            // Play / Pause (accented)
-            TransportButton {
-                glyph: root.isPlaying ? "⏸" : "▶"
-                size: 48
-                accent: true
-                enabled: root.hasPlayer && (root.isPlaying ? root.player.canPause : root.player.canPlay)
-                onActivated: if (root.hasPlayer) root.player.togglePlaying()
-            }
-
-            // Next
-            TransportButton {
-                glyph: "⏭"
-                size: 36
-                accent: false
-                enabled: root.hasPlayer && root.player.canGoNext
-                onActivated: if (root.hasPlayer) root.player.next()
-            }
-
-            // Lyrics toggle
             TransportButton {
                 glyph: "♪"
                 size: 30
@@ -601,55 +819,7 @@ Item {
             }
         }
 
-        // ── Lyrics panel ─────────────────────────────────────────────────
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: root.lyricsH
-            visible: root.lyricsH > 0
-            clip: true
-            color: Theme.bgElevated
-            radius: 8
-            border.width: 1
-            border.color: Theme.dividerColor
-
-            // Pulsing "fetching" label
-            Text {
-                anchors.centerIn: parent
-                visible: root.lyricsLoading
-                text: "Fetching lyrics…"
-                font.family: "JetBrains Mono"
-                font.pixelSize: 11
-                color: Theme.textDim
-                SequentialAnimation on opacity {
-                    running: root.lyricsLoading
-                    loops: Animation.Infinite
-                    NumberAnimation { from: 0.3; to: 1.0; duration: 700; easing.type: Easing.InOutQuad }
-                    NumberAnimation { from: 1.0; to: 0.3; duration: 700; easing.type: Easing.InOutQuad }
-                }
-            }
-
-            // Scrollable lyrics text
-            ScrollView {
-                anchors.fill: parent
-                anchors.margins: 8
-                visible: !root.lyricsLoading && root.lyricsText.length > 0
-                clip: true
-                ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-
-                Text {
-                    width: parent.width - 16
-                    text: root.lyricsText
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 10
-                    color: Theme.textSecondary
-                    wrapMode: Text.WordWrap
-                    lineHeight: 1.5
-                }
-            }
-        }
-
-        // Bottom spacer pushes everything up
+        // Bottom spacer — paired with the top spacer to vertically center content
         Item { Layout.fillHeight: true }
     }
 

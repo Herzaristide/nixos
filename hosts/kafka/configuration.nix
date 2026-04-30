@@ -26,6 +26,7 @@
     device = "/dev/sda";
     efiSupport = false;
     useOSProber = false;
+    configurationLimit = 10;
   };
 
   # Static IP (systemd-networkd; disable NetworkManager for declarative config)
