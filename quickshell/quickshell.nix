@@ -4,6 +4,7 @@
   lib,
   inputs,
   palette,
+  primaryMonitor ? "HDMI-A-1",
   ...
 }:
 
@@ -17,7 +18,9 @@
   ];
 
   # Minimal QuickShell config (bottom bar)
-  xdg.configFile."quickshell/shell.qml".source = ./shell.qml;
+  xdg.configFile."quickshell/shell.qml".text =
+    builtins.replaceStrings [ "@PRIMARY_MONITOR@" ] [ primaryMonitor ]
+      (builtins.readFile ./shell.qml);
   xdg.configFile."quickshell/BottomBar.qml".source = ./BottomBar.qml;
   xdg.configFile."quickshell/SidePanel.qml".source = ./SidePanel.qml;
   xdg.configFile."quickshell/OllamaChat.qml".source = ./OllamaChat.qml;

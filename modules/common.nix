@@ -14,6 +14,13 @@
     description = "Enable head (GUI) configuration";
   };
 
+  # Monitor to use as primary (receives workspaces 1-5, Quickshell bar)
+  options.primaryMonitor = lib.mkOption {
+    type = lib.types.str;
+    default = "HDMI-A-1";
+    description = "Hyprland monitor name to use as primary (e.g. eDP-1, HDMI-A-1).";
+  };
+
   # Option for dark/light color scheme
   options.darkMode = lib.mkOption {
     type = lib.types.bool;
@@ -216,6 +223,7 @@
         inherit inputs;
         head = config.head;
         darkMode = config.darkMode;
+        primaryMonitor = config.primaryMonitor;
       };
       users.aristide = import ../home/home.nix;
     };

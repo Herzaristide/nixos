@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  primaryMonitor ? "HDMI-A-1",
   ...
 }:
 
@@ -140,11 +141,11 @@ in
 
       # Workspaces: HDMI-A-1 gets ws 1–5, DP-3 gets named workspace "0" (Super+²).
       workspace = [
-        "1, monitor:HDMI-A-1, default:true"
-        "2, monitor:HDMI-A-1"
-        "3, monitor:HDMI-A-1"
-        "4, monitor:HDMI-A-1"
-        "5, monitor:HDMI-A-1"
+        "1, monitor:${primaryMonitor}, default:true"
+        "2, monitor:${primaryMonitor}"
+        "3, monitor:${primaryMonitor}"
+        "4, monitor:${primaryMonitor}"
+        "5, monitor:${primaryMonitor}"
         "9, monitor:DP-3, default:true"
         "special:claude, on-created-empty:hypr-claude-launch, gapsout:60 300 60"
         "special:gemini, on-created-empty:hypr-gemini-launch, gapsout:60 300 60"

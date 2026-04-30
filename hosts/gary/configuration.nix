@@ -19,6 +19,9 @@
   # Enable GUI (Hyprland/DMS)
   head = true;
 
+  # Primary monitor: external display
+  primaryMonitor = "HDMI-A-1";
+
   # Bootloader (systemd-boot for UEFI; GRUB disabled)
   boot.loader.grub.enable = false;
   boot.loader.systemd-boot.enable = true;
