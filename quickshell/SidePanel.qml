@@ -90,7 +90,7 @@ PanelWindow {
             HardwareStats {}
             OllamaChat {}
             NotesWidget {}
-            PitchAnalyzer {}
+            Metronome {}
             MusicPlayerWidget {}
         }
     }

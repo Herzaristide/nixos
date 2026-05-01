@@ -14,7 +14,10 @@
     inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default
     cava # audio-spectrum source for the music widget EQ bars
     pulseaudio # provides parec/pactl used by chroma-analyzer.sh
-    (python3.withPackages (ps: [ ps.numpy ])) # used by chroma-analyzer.py
+    sox # used by metronome.sh to pre-render click samples
+    (python3.withPackages (ps: [
+      ps.numpy # chroma-analyzer.py
+    ]))
   ];
 
   # Minimal QuickShell config (bottom bar)
@@ -33,11 +36,22 @@
     source = ./voice-assistant.sh;
     executable = true;
   };
-  xdg.configFile."quickshell/PitchAnalyzer.qml".source = ./PitchAnalyzer.qml;
+  xdg.configFile."quickshell/mic-level.sh" = {
+    text = ''
+      #!/usr/bin/env bash
+      # Wrapper that pins parec/python paths from the Nix store before
+      # delegating to the actual mic-level script.
+      export PAREC_BIN="${pkgs.pulseaudio}/bin/parec"
+      export PYTHON_BIN="${pkgs.python3.withPackages (_: [ ])}/bin/python3"
+      exec bash ${./mic-level.sh}
+    '';
+    executable = true;
+  };
+  xdg.configFile."quickshell/Metronome.qml".source = ./Metronome.qml;
   xdg.configFile."quickshell/MusicPlayerWidget.qml".source = ./MusicPlayerWidget.qml;
   xdg.configFile."quickshell/ChromaGraph.qml".source = ./ChromaGraph.qml;
-  xdg.configFile."quickshell/pitch-analyzer.sh" = {
-    source = ./pitch-analyzer.sh;
+  xdg.configFile."quickshell/metronome.sh" = {
+    source = ./metronome.sh;
     executable = true;
   };
   xdg.configFile."quickshell/chroma-analyzer.py".source = ./chroma-analyzer.py;

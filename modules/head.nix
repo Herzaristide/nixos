@@ -80,6 +80,42 @@
     alsa.support32Bit = true;
     pulse.enable = true;
     jack.enable = true;
+    # Echo cancellation: removes loopback of speaker output into the mic
+    # (fixes the voice-assistant feedback loop where piper TTS was being
+    # transcribed back by whisper). Creates virtual `echo-cancel-source` /
+    # `echo-cancel-sink` nodes; WirePlumber routes default mic through them.
+    extraConfig.pipewire."99-echo-cancel" = {
+      "context.modules" = [
+        {
+          name = "libpipewire-module-echo-cancel";
+          args = {
+            "library.name" = "aec/libspa-aec-webrtc";
+            "node.description" = "Echo Cancelled Source";
+            "capture.props" = {
+              "node.name" = "capture.echo-cancel";
+              "node.passive" = true;
+            };
+            "source.props" = {
+              "node.name" = "echo-cancel-source";
+              "node.description" = "Microphone (Echo Cancelled)";
+            };
+            "playback.props" = {
+              "node.name" = "playback.echo-cancel";
+              "node.passive" = true;
+            };
+            "sink.props" = {
+              "node.name" = "echo-cancel-sink";
+              "node.description" = "Speakers (Echo Cancel Loopback)";
+            };
+            "aec.args" = {
+              "webrtc.gain_control" = true;
+              "webrtc.extended_filter" = true;
+              "webrtc.noise_suppression" = true;
+            };
+          };
+        }
+      ];
+    };
     wireplumber.extraConfig = {
       # Allow Chrome/BandLab PWA to access microphone and audio
       "50-chrome-bandlab-access" = {
