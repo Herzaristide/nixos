@@ -29,7 +29,7 @@ Item {
             type: "function",
             "function": {
                 name: "open_application",
-                description: "Open/launch an application by its command name (e.g. firefox, nautilus, kitty)",
+                description: "Open/launch an application by its command name (e.g. firefox, nautilus, wezterm). The default terminal emulator on this system is wezterm — always use 'wezterm' when the user asks to open a terminal (never kitty, alacritty, gnome-terminal, etc.)",
                 parameters: {
                     type: "object",
                     properties: {
@@ -267,17 +267,38 @@ Item {
             type: "function",
             "function": {
                 name: "set_accent_color",
-                description: "Change the desktop accent color used by Hyprland window borders, the shell bar, and terminal colors. Accepts a hex color (#rrggbb) or a preset name: nixos (#5277c3), nixos-light (#7ebae4), teal (#44aa88), coral (#cc5544), amber (#ccaa44).",
+                description: "Change the desktop accent color used by Hyprland window borders, the shell bar, and terminal colors. Accepts a hex color (#rrggbb) or a preset name. Presets: nixos (#5277c3), nixos-light (#7ebae4), teal (#44aa88), coral (#cc5544), amber (#ccaa44), red (#e53935), orange (#fb8c00), yellow (#fdd835), green (#43a047), cyan (#00acc1), blue (#1e88e5), purple (#8e24aa), pink (#ec407a), magenta (#d81b60), lime (#c0ca33), mint (#26a69a), rose (#f06292), violet (#7e57c2), indigo (#3949ab), white (#eceff1), black (#212121). Special modes: 'rainbow' cycles through all hues continuously, 'stop' / 'static' stops the rainbow cycling.",
                 parameters: {
                     type: "object",
                     properties: {
-                        color: { type: "string", description: "Hex color (#rrggbb) or preset name: nixos, nixos-light, teal, coral, amber" }
+                        color: { type: "string", description: "Hex color (#rrggbb), preset name, or special mode (rainbow, stop)" }
                     },
                     required: ["color"]
                 }
             }
         }
     ]
+
+    // ── Rainbow accent cycler ────────────────────────────────────────────────
+    // When 'rainbow' mode is requested, this Timer cycles the accent hue
+    // through the full HSV wheel. Stops on any explicit color or 'stop'.
+    property real rainbowHue: 0.0
+    Timer {
+        id: rainbowTimer
+        interval: 200          // ms between hue steps (~5 fps, smooth + cheap)
+        repeat: true
+        running: false
+        onTriggered: {
+            root.rainbowHue = (root.rainbowHue + 0.02) % 1.0;  // step ~7°/tick
+            // Saturated, mid-bright color — readable on both dark/light themes.
+            var c = Qt.hsva(root.rainbowHue, 0.75, 0.85, 1.0);
+            var hex = "#"
+                + Math.round(c.r * 255).toString(16).padStart(2, "0")
+                + Math.round(c.g * 255).toString(16).padStart(2, "0")
+                + Math.round(c.b * 255).toString(16).padStart(2, "0");
+            Theme.setAccentColor(hex);
+        }
+    }
 
     // ── Process for shell-based tools ────────────────────────────────────────
     Process {
@@ -574,11 +595,47 @@ Item {
                     "nixos-light": "#7ebae4",
                     "teal":        "#44aa88",
                     "coral":       "#cc5544",
-                    "amber":       "#ccaa44"
+                    "amber":       "#ccaa44",
+                    "red":         "#e53935",
+                    "orange":      "#fb8c00",
+                    "yellow":      "#fdd835",
+                    "green":       "#43a047",
+                    "cyan":        "#00acc1",
+                    "blue":        "#1e88e5",
+                    "purple":      "#8e24aa",
+                    "pink":        "#ec407a",
+                    "magenta":     "#d81b60",
+                    "lime":        "#c0ca33",
+                    "mint":        "#26a69a",
+                    "rose":        "#f06292",
+                    "violet":      "#7e57c2",
+                    "indigo":      "#3949ab",
+                    "white":       "#eceff1",
+                    "black":       "#212121"
                 };
+
+                // Special: rainbow mode cycles hues continuously.
+                if (colorInput === "rainbow" || colorInput === "arc-en-ciel" || colorInput === "arcenciel") {
+                    rainbowTimer.start();
+                    root.toolResult(name, assistantIdx, "Mode arc-en-ciel activ\u00E9 \uD83C\uDF08 (dis 'stop' pour arr\u00EAter)");
+                    break;
+                }
+                if (colorInput === "stop" || colorInput === "static" || colorInput === "arr\u00EAt" || colorInput === "arret") {
+                    if (rainbowTimer.running) {
+                        rainbowTimer.stop();
+                        root.toolResult(name, assistantIdx, "Mode arc-en-ciel arr\u00EAt\u00E9.");
+                    } else {
+                        root.toolResult(name, assistantIdx, "Aucun cycle de couleur en cours.");
+                    }
+                    break;
+                }
+
+                // Any explicit color request stops rainbow mode.
+                if (rainbowTimer.running) rainbowTimer.stop();
+
                 var hexColor = presetMap[colorInput] || colorInput;
                 if (!/^#[0-9a-f]{6}$/.test(hexColor)) {
-                    root.toolResult(name, assistantIdx, "Couleur invalide : '" + args.color + "'. Utilise #rrggbb ou un nom : nixos, nixos-light, teal, coral, amber.");
+                    root.toolResult(name, assistantIdx, "Couleur invalide : '" + args.color + "'. Utilise #rrggbb, un nom (nixos, red, blue, green, purple, pink, cyan, orange, yellow, mint, ...) ou 'rainbow' / 'stop'.");
                     break;
                 }
                 Theme.setAccentColor(hexColor);

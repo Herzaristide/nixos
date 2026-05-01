@@ -200,7 +200,7 @@ in
         "$mod, G, togglespecialworkspace, gemini"
 
         # Quickshell panel widgets (Super+F1…F5)
-        # 0=Stats  1=IA  2=Notes  3=PitchAnalyzer  4=Settings
+        # 0=Stats  1=IA  2=Notes  3=Metronome  4=Settings
         "$mod, F1, exec, echo widget:0 > /tmp/qs-panel.fifo"
         "$mod, F2, exec, echo widget:1 > /tmp/qs-panel.fifo"
         "$mod, F3, exec, echo widget:2 > /tmp/qs-panel.fifo"

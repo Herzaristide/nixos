@@ -6,7 +6,7 @@ OllamaChat 1.0 OllamaChat.qml
 OllamaTools 1.0 OllamaTools.qml
 NotesWidget 1.0 NotesWidget.qml
 MiniGraph 1.0 MiniGraph.qml
-PitchAnalyzer 1.0 PitchAnalyzer.qml
+Metronome 1.0 Metronome.qml
 QuickControls 1.0 QuickControls.qml
 MusicPlayerWidget 1.0 MusicPlayerWidget.qml
 ChromaGraph 1.0 ChromaGraph.qml

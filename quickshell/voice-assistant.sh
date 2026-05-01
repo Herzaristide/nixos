@@ -1,54 +1,69 @@
 #!/usr/bin/env bash
-# Voice assistant daemon for QuickShell OllamaChat
-# Uses whisper-stream for continuous wake word detection ("Nix"),
-# then sox + whisper-cli for command capture and transcription.
+# Voice assistant daemon for QuickShell OllamaChat (no wake word).
+# Continuously listens via sox VAD: each utterance is transcribed with
+# whisper-cli and sent to the LLM. Activation is controlled by toggling
+# the QuickShell voice button (the daemon runs only while enabled).
 #
 # Protocol (stdout lines):
-#   STATUS:LISTENING     - idle, waiting for wake word
-#   STATUS:TRIGGERED     - wake word detected, recording command
-#   STATUS:PROCESSING    - transcribing command
-#   TRANSCRIPT:<text>    - transcribed user command
+#   STATUS:READY         - daemon ready
+#   STATUS:LISTENING     - waiting for speech
+#   STATUS:RECORDING     - capturing user voice
+#   STATUS:PROCESSING    - transcribing
+#   TRANSCRIPT:<text>    - transcribed user command (sent to LLM)
 #   STATUS:SPEAKING      - TTS playing response
 #   ERROR:<message>      - something went wrong
+#
+# Stdin commands:
+#   SPEAK:<text>         - speak text via piper TTS
 
 set -uo pipefail
 
-WHISPER_MODEL="${WHISPER_MODEL:-$HOME/.local/share/whisper/ggml-base.bin}"
+# Whisper model. `base` is fast but transcribes French poorly; `small` is the
+# sweet spot (~470 MB, decent on CPU, very good FR). Use `medium` if you have
+# a GPU and want near-flawless French.
+# Override via WHISPER_MODEL_SIZE=tiny|base|small|medium|large-v3
+WHISPER_MODEL_SIZE="${WHISPER_MODEL_SIZE:-small}"
+WHISPER_MODEL="${WHISPER_MODEL:-$HOME/.local/share/whisper/ggml-${WHISPER_MODEL_SIZE}.bin}"
 PIPER_MODEL="${PIPER_MODEL:-$HOME/.local/share/piper/fr_FR-siwis-medium.onnx}"
 WORK_DIR="/tmp/voice-assistant-$$"
 SAMPLE_RATE=16000
-# Whisper language for wake-word stream. Use 'en' for an English wake word
-# pronounced in French (much more reliable than '-l fr').
-WHISPER_LANG="${WHISPER_LANG:-en}"
-# Wake word: defaults to the machine's hostname (e.g. "gary", "zola").
-# Whisper handles common English names very reliably in -l en mode.
-# Override via env var if needed: WAKE_WORD=ordi
-WAKE_WORD="${WAKE_WORD:-$(hostname)}"
-# Build a simple case-insensitive ERE: match the wake word as a whole word.
-# Word-boundary at start only so "gary.", "gary!", "gary's" all match too.
-# Override WAKE_WORD_REGEX entirely if you need finer control.
-_ww_esc=$(printf '%s' "$WAKE_WORD" | tr '[:upper:]' '[:lower:]' | sed 's/[.[\*^$]/\\&/g')
-WAKE_WORD_REGEX="${WAKE_WORD_REGEX:-\\b${_ww_esc}}"
-unset _ww_esc
+WHISPER_LANG="${WHISPER_LANG:-fr}"
+WHISPER_THREADS="${WHISPER_THREADS:-$(nproc 2>/dev/null || echo 4)}"
+
+# Bias whisper toward French desktop-assistant vocabulary. The --prompt flag
+# seeds the decoder with context so it stops emitting English tokens or
+# common hallucinations when the audio is short/noisy.
+WHISPER_PROMPT="${WHISPER_PROMPT:-Bonjour, ouvre le terminal, change la couleur, mets le volume, prends une capture decran, lance Firefox, ferme la fenetre, workspace, luminosite, NixOS, Hyprland.}"
+
+# VAD tuning (sox silence params)
+VAD_START_DUR="${VAD_START_DUR:-0.15}"
+VAD_START_THOLD="${VAD_START_THOLD:-1.5%}"
+VAD_STOP_DUR="${VAD_STOP_DUR:-1.8}"
+VAD_STOP_THOLD="${VAD_STOP_THOLD:-1.5%}"
+MAX_UTTERANCE="${MAX_UTTERANCE:-20}"   # seconds
+MIN_BYTES="${MIN_BYTES:-5000}"         # ignore captures smaller than this
+
+# Anti-feedback: pause the mic while TTS is playing (+ tail for echo/reverb).
+POST_SPEAK_GRACE="${POST_SPEAK_GRACE:-0.4}"  # seconds of silence after TTS
 
 mkdir -p "$WORK_DIR"
+SPEAK_LOCK="$WORK_DIR/speaking.lock"
 
-WHISPER_PID=""
 STDIN_PID=""
+SOX_PID=""
 
 cleanup() {
-    [ -n "$WHISPER_PID" ] && kill "$WHISPER_PID" 2>/dev/null
     [ -n "$STDIN_PID" ] && kill "$STDIN_PID" 2>/dev/null
+    [ -n "$SOX_PID" ]   && kill "$SOX_PID" 2>/dev/null
     rm -rf "$WORK_DIR"
 }
 trap cleanup EXIT
 
-# ── Model downloads ──────────────────────────────────────────
 ensure_whisper_model() {
     if [ ! -f "$WHISPER_MODEL" ]; then
         echo "STATUS:DOWNLOADING_MODEL"
         mkdir -p "$(dirname "$WHISPER_MODEL")"
-        whisper-cpp-download-ggml-model base "$(dirname "$WHISPER_MODEL")" 2>/dev/null
+        whisper-cpp-download-ggml-model "$WHISPER_MODEL_SIZE" "$(dirname "$WHISPER_MODEL")" 2>/dev/null
     fi
 }
 
@@ -62,17 +77,26 @@ ensure_piper_model() {
     fi
 }
 
-# ── TTS ──────────────────────────────────────────────────────
 speak() {
     local text="$1"
     if [ -f "$PIPER_MODEL" ] && command -v piper >/dev/null 2>&1; then
+        # Block mic capture for the whole duration of TTS playback,
+        # otherwise the speaker output is picked up by the microphone
+        # and looped back through whisper -> LLM.
+        : > "$SPEAK_LOCK"
+        # Kill any in-flight capture so sox stops listening immediately.
+        if [ -n "$SOX_PID" ] && kill -0 "$SOX_PID" 2>/dev/null; then
+            kill "$SOX_PID" 2>/dev/null
+        fi
         echo "STATUS:SPEAKING"
         echo "$text" | piper -m "$PIPER_MODEL" --output-raw 2>/dev/null | \
             aplay -r 22050 -f S16_LE -t raw -q 2>/dev/null || true
+        # Small tail to swallow speaker echo / room reverb before re-arming.
+        sleep "$POST_SPEAK_GRACE"
+        rm -f "$SPEAK_LOCK"
     fi
 }
 
-# ── Stdin handler (TTS from QuickShell) ──────────────────────
 handle_stdin() {
     while IFS= read -r line; do
         case "$line" in
@@ -81,115 +105,104 @@ handle_stdin() {
     done
 }
 
-# ── Wake word detection via whisper-stream ───────────────────
-#
-# whisper-stream in non-VAD (--step) mode writes to stdout using \r (carriage
-# returns) to overwrite the same terminal line — never issuing \n between
-# transcription updates. A raw FIFO + "while read" loop therefore blocks
-# forever waiting for a newline that never comes.
-#
-# Fix: pass -f FILE so whisper-stream writes clean newline-terminated
-# transcriptions to a file (std::endl → flush + \n after each 2-second
-# chunk). A tail -f on that file then streams the lines reliably.
-wait_for_wake_word() {
-    local wake_file="$WORK_DIR/wake_text"
-    local tail_fifo="$WORK_DIR/tail_fifo"
-    local tail_pid=""
-    > "$wake_file"
-    mkfifo "$tail_fifo"
+# Capture one utterance via sox VAD, transcribe, emit
+capture_one() {
+    local outfile="$WORK_DIR/utterance.wav"
+    local sox_err="$WORK_DIR/sox.err"
+    local whisper_err="$WORK_DIR/whisper-cli.err"
+    rm -f "$outfile" "$sox_err" "$whisper_err"
 
-    # -f writes transcriptions with std::endl (flush+newline) every ~2 s.
-    # Redirect stdout to /dev/null to suppress the ANSI terminal display.
-    whisper-stream \
-        -m "$WHISPER_MODEL" \
-        -l "$WHISPER_LANG" \
-        --step 2000 \
-        --length 5000 \
-        --keep 200 \
-        --vad-thold 0.6 \
-        -t 4 \
-        -f "$wake_file" \
-        >/dev/null 2>"$WORK_DIR/whisper-stream.err" &
-    WHISPER_PID=$!
-
-    # Stream new lines through a FIFO so we hold tail's PID for cleanup.
-    # Opening the write side blocks until we open the read side below.
-    stdbuf -oL tail -f "$wake_file" > "$tail_fifo" &
-    tail_pid=$!
-
-    local detected=false
-    exec 3< "$tail_fifo"   # unblocks tail's FIFO write open
-    while IFS= read -r line <&3; do
-        # Strip CR and surrounding whitespace; skip empty
-        line=$(printf '%s' "$line" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-        [ -z "$line" ] && continue
-        # Skip whisper's silence markers but keep them out of debug spam
-        case "$line" in
-            '[BLANK_AUDIO]'|'[Musique]'|'(musique)'|'...'|'.'|'[silence]') ;;
-            *)
-                # Surface to QuickShell so user can see what whisper hears
-                echo "DEBUG:$line"
-                local lower
-                lower=$(printf '%s' "$line" | tr '[:upper:]' '[:lower:]')
-                if printf '%s' "$lower" | grep -qiE "$WAKE_WORD_REGEX"; then
-                    detected=true
-                    break
-                fi
-                ;;
-        esac
-        # Exit loop if whisper-stream died unexpectedly
-        kill -0 "$WHISPER_PID" 2>/dev/null || break
+    # Wait until TTS playback (and grace period) is finished before listening.
+    while [ -f "$SPEAK_LOCK" ]; do
+        sleep 0.1
     done
-    exec 3<&-
 
-    kill "$tail_pid" 2>/dev/null
-    wait "$tail_pid" 2>/dev/null || true
-    kill "$WHISPER_PID" 2>/dev/null
-    wait "$WHISPER_PID" 2>/dev/null || true
-    WHISPER_PID=""
-    # Give SDL/PulseAudio time to release the capture device before sox grabs it.
-    # whisper-stream uses SDL2; after SIGKILL it can take ~500ms for PipeWire
-    # to re-route the source to the next client (sox via PulseAudio compat layer).
-    sleep 0.8
-    rm -f "$wake_file" "$tail_fifo"
+    echo "STATUS:LISTENING"
 
-    [ "$detected" = true ]
-}
+    # sox blocks until VAD triggers, records until silence, then exits.
+    sox -q -d -r "$SAMPLE_RATE" -c 1 -b 16 "$outfile" \
+        silence 1 "$VAD_START_DUR" "$VAD_START_THOLD" \
+                1 "$VAD_STOP_DUR"  "$VAD_STOP_THOLD" \
+        trim 0 "$MAX_UTTERANCE" 2>"$sox_err" &
+    SOX_PID=$!
+    wait "$SOX_PID" 2>/dev/null
+    SOX_PID=""
 
-# ── Command capture and transcription ────────────────────────
-capture_command() {
-    local outfile="$WORK_DIR/command.wav"
-    rm -f "$outfile"
-
-    # Record until silence (1.5s) or max 15s
-    # timeout prevents infinite hang if sox blocks
-    timeout 18 sox -d -r "$SAMPLE_RATE" -c 1 -b 16 "$outfile" \
-        silence 1 0.3 2% 1 1.5 2% \
-        trim 0 15 2>/dev/null || true
+    # If sox was killed because TTS started, drop this capture entirely
+    # (it almost certainly contains the assistant's own voice).
+    if [ -f "$SPEAK_LOCK" ]; then
+        rm -f "$outfile"
+        return 0
+    fi
 
     local filesize
     filesize=$(stat -c%s "$outfile" 2>/dev/null || echo 0)
 
-    if [ "$filesize" -lt 5000 ]; then
-        echo "ERROR:Pas de parole détectée"
-        return 1
+    if [ "$filesize" -lt "$MIN_BYTES" ]; then
+        if [ -s "$sox_err" ]; then
+            echo "ERROR:Capture audio échouée ($(tail -n1 "$sox_err" | tr -d '\n' | cut -c1-80))"
+            sleep 1
+        fi
+        return 0
     fi
 
     echo "STATUS:PROCESSING"
 
     local transcript
-    transcript=$(whisper-cli -m "$WHISPER_MODEL" -f "$outfile" -l fr -np -nt 2>/dev/null | \
+    # -np: no progress  -nt: no timestamps
+    # -bs/-bo: beam search + best-of for accuracy (FR benefits a lot)
+    # -tp 0: deterministic decoding (no temperature fallback)
+    # -t: use all CPU cores
+    # --prompt: bias decoder toward French desktop vocabulary
+    # Greedy decoding (-bs 1 -bo 1) is ~3-5x faster than beam search 5 and
+    # gives essentially the same quality on short utterances. -tp 0 keeps
+    # decoding deterministic. -nf disables temperature fallback (one pass).
+    transcript=$(whisper-cli -m "$WHISPER_MODEL" -f "$outfile" \
+            -l "$WHISPER_LANG" \
+            -t "$WHISPER_THREADS" \
+            -bs 1 -bo 1 -tp 0 -nf \
+            --prompt "$WHISPER_PROMPT" \
+            -np -nt 2>"$whisper_err" | \
         sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | \
-        grep -v '^\[' | grep -v '^$' || echo "")
+        grep -v '^\[' | grep -v '^$' | tr '\n' ' ' | sed 's/[[:space:]]*$//' || echo "")
 
-    if [ -n "$transcript" ]; then
-        echo "TRANSCRIPT:$transcript"
-    else
-        echo "ERROR:Transcription échouée"
+    # Drop bracketed/parenthesized stage directions ([Musique], (soupir), *rires*, etc.)
+    local cleaned
+    cleaned=$(printf '%s' "$transcript" \
+        | sed -E 's/\[[^]]*\]//g; s/\([^)]*\)//g; s/\*[^*]*\*//g' \
+        | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' \
+        | tr -s ' ')
+
+    # Normalize for hallucination matching: lowercase, strip punctuation/spaces/accents
+    local norm
+    norm=$(printf '%s' "$cleaned" \
+        | tr '[:upper:]' '[:lower:]' \
+        | sed 'y/àâäéèêëîïôöùûüÿç/aaaeeeeiioouuuyc/' \
+        | tr -d '[:punct:][:space:]')
+
+    # Length guard: under ~3 chars after cleaning, almost always noise
+    if [ "${#norm}" -lt 3 ]; then
+        return 0
     fi
+
+    # Common whisper hallucinations on silence/noise/music
+    case "$norm" in
+        merci|mercibeaucoup|mercidavoirregarde|mercidavoirregardecettevideo|\
+        sousttitrage*|sousttitres*|stitragesm|stitres*|\
+        thankyou|thanksforwatching|thankyouforwatching|\
+        bye|goodbye|byebye|\
+        musique|lamusique|musiqueclassique|musiquedouce|musiquerock|\
+        applaudissements|applaudissement|rire|rires|soupir|soupirs|\
+        toux|raclement|silence|bruit|bruitage|bruitages|\
+        vouspouvezvousabonner*|abonneztoi*|abonnezvous*|\
+        sousmarin|sousmarins)
+            return 0
+            ;;
+    esac
+
+    [ -n "$cleaned" ] && echo "TRANSCRIPT:$cleaned"
 }
 
-# ── Main loop ────────────────────────────────────────────────
 main() {
     ensure_whisper_model
     ensure_piper_model
@@ -197,20 +210,10 @@ main() {
     echo "STATUS:READY"
 
     while true; do
-        echo "STATUS:LISTENING"
-
-        if wait_for_wake_word; then
-            echo "STATUS:TRIGGERED"
-            # Audible cue so the user knows when to start speaking
-            (paplay /run/current-system/sw/share/sounds/freedesktop/stereo/message.oga 2>/dev/null \
-                || printf '\a') &
-            sleep 0.3
-            capture_command || true
-        fi
+        capture_one || true
     done
 }
 
-# Start stdin handler in background
 handle_stdin &
 STDIN_PID=$!
 
