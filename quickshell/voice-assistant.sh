@@ -139,8 +139,14 @@ capture_one() {
     filesize=$(stat -c%s "$outfile" 2>/dev/null || echo 0)
 
     if [ "$filesize" -lt "$MIN_BYTES" ]; then
-        if [ -s "$sox_err" ]; then
-            echo "ERROR:Capture audio échouée ($(tail -n1 "$sox_err" | tr -d '\n' | cut -c1-80))"
+        # "trim: Last N position(s) not reached" is a normal sox warning that
+        # appears whenever the utterance is shorter than MAX_UTTERANCE seconds
+        # (always). Filter it out so it doesn't surface as a UI error.
+        local real_err
+        real_err=$(grep -v 'WARN trim:' "$sox_err" 2>/dev/null \
+                    | tail -n1 | tr -d '\n' | cut -c1-80)
+        if [ -n "$real_err" ]; then
+            echo "ERROR:Capture audio échouée ($real_err)"
             sleep 1
         fi
         return 0

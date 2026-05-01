@@ -7,23 +7,12 @@
   ...
 }:
 
-let
-  allPalettes = import ./palette.nix;
-  palette = if darkMode then allPalettes.dark else allPalettes.light;
-in
 {
   imports = [
     ./modules/shell
     ./modules/vscode/vscode-server.nix
   ]
   ++ (if head then [ ./head.nix ] else [ ]);
-
-  # Make palette & palettes available to every sub-module (zen, accent, wezterm, …)
-  # without going through specialArgs — the home/ directory is self-contained.
-  _module.args = {
-    palettes = allPalettes;
-    inherit palette;
-  };
 
   nixpkgs.config.allowUnfree = true;
 

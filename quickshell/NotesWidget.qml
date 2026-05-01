@@ -143,7 +143,7 @@ Item {
                 text: "[clear all]"
                 font.family: "JetBrains Mono"
                 font.pixelSize: 11
-                color: clearHover.containsMouse ? "#FF4444" : Theme.textInactive
+                color: clearHover.containsMouse ? Theme.colorDanger : Theme.textInactive
 
                 MouseArea {
                     id: clearHover
@@ -328,7 +328,7 @@ Item {
                         text: "×"
                         font.family: "JetBrains Mono"
                         font.pixelSize: 14
-                        color: delHover.containsMouse ? "#FF4444" : Theme.textSubtle
+                        color: delHover.containsMouse ? Theme.colorDanger : Theme.textSubtle
 
                         MouseArea {
                             id: delHover

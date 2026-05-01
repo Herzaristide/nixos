@@ -224,6 +224,7 @@
         head = config.head;
         darkMode = config.darkMode;
         primaryMonitor = config.primaryMonitor;
+        accentDaemon = pkgs.callPackage ../accent-daemon/default.nix { };
       };
       users.aristide = import ../home/home.nix;
     };

@@ -428,22 +428,22 @@ Item {
             radius: 6
             color: {
                 switch (root.voiceStatus) {
-                    case "LISTENING":  return Qt.rgba(0.20, 0.85, 0.45, 0.10);
-                    case "RECORDING":  return Qt.rgba(0.95, 0.25, 0.25, 0.14);
-                    case "PROCESSING": return Qt.rgba(0.95, 0.75, 0.20, 0.14);
-                    case "SPEAKING":   return Qt.rgba(0.30, 0.65, 0.95, 0.14);
-                    case "ERROR":      return Qt.rgba(0.95, 0.25, 0.25, 0.18);
+                    case "LISTENING":  return Qt.rgba(Theme.colorSuccess.r, Theme.colorSuccess.g, Theme.colorSuccess.b, 0.10);
+                    case "RECORDING":  return Qt.rgba(Theme.colorDanger.r,  Theme.colorDanger.g,  Theme.colorDanger.b,  0.14);
+                    case "PROCESSING": return Qt.rgba(Theme.colorWarning.r, Theme.colorWarning.g, Theme.colorWarning.b, 0.14);
+                    case "SPEAKING":   return Qt.rgba(Theme.accentColor.r,  Theme.accentColor.g,  Theme.accentColor.b,  0.14);
+                    case "ERROR":      return Qt.rgba(Theme.colorDanger.r,  Theme.colorDanger.g,  Theme.colorDanger.b,  0.18);
                     default:           return Qt.rgba(1, 1, 1, 0.05);
                 }
             }
             border.width: 1
             border.color: {
                 switch (root.voiceStatus) {
-                    case "LISTENING":  return Qt.rgba(0.20, 0.85, 0.45, 0.55);
-                    case "RECORDING":  return Qt.rgba(0.95, 0.25, 0.25, 0.65);
-                    case "PROCESSING": return Qt.rgba(0.95, 0.75, 0.20, 0.65);
-                    case "SPEAKING":   return Qt.rgba(0.30, 0.65, 0.95, 0.65);
-                    case "ERROR":      return Qt.rgba(0.95, 0.25, 0.25, 0.75);
+                    case "LISTENING":  return Qt.rgba(Theme.colorSuccess.r, Theme.colorSuccess.g, Theme.colorSuccess.b, 0.55);
+                    case "RECORDING":  return Qt.rgba(Theme.colorDanger.r,  Theme.colorDanger.g,  Theme.colorDanger.b,  0.65);
+                    case "PROCESSING": return Qt.rgba(Theme.colorWarning.r, Theme.colorWarning.g, Theme.colorWarning.b, 0.65);
+                    case "SPEAKING":   return Qt.rgba(Theme.accentColor.r,  Theme.accentColor.g,  Theme.accentColor.b,  0.65);
+                    case "ERROR":      return Qt.rgba(Theme.colorDanger.r,  Theme.colorDanger.g,  Theme.colorDanger.b,  0.75);
                     default:           return Theme.textInactive;
                 }
             }
@@ -520,7 +520,7 @@ Item {
                     // Stop / mute button — instantly closes the voice loop
                     Text {
                         text: "[stop]"
-                        color: stopMa.containsMouse ? "#FF6666" : Theme.textInactive
+                        color: stopMa.containsMouse ? Theme.colorDanger : Theme.textInactive
                         font.family: "JetBrains Mono"
                         font.pixelSize: 10
                         MouseArea {
@@ -636,7 +636,7 @@ Item {
 
                     Text {
                         text: "\uD83D\uDCF7 " + content
-                        color: "#666666"
+                        color: Theme.textDim
                         font.family: "JetBrains Mono"
                         font.pixelSize: 10
                         wrapMode: Text.WrapAnywhere
@@ -664,7 +664,7 @@ Item {
                     Text {
                         id: prefixText
                         text: role === "user" ? "> " : (msgType === "action" ? "$ " : "  ")
-                        color: role === "user" ? Theme.accentColor : (msgType === "action" ? "#FFCC44" : Theme.textInactive)
+                        color: role === "user" ? Theme.accentColor : (msgType === "action" ? Theme.colorAmber : Theme.textInactive)
                         font.family: "JetBrains Mono"
                         font.pixelSize: 12
                     }
@@ -678,7 +678,7 @@ Item {
                               ? "\u258B" : content
                         color: {
                             if (role === "user") return Theme.accentColor;
-                            if (msgType === "action") return "#FFCC44";
+                            if (msgType === "action") return Theme.colorAmber;
                             return Theme.textBody;
                         }
                         selectionColor: Theme.accentColor
@@ -827,7 +827,7 @@ Item {
                     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
                     background: Rectangle {
-                        color: "#0d0d0d"
+                        color: Theme.bgDeep
                         border.color: Theme.accentColor
                         border.width: 1
                     }
@@ -897,8 +897,8 @@ Item {
                 }
                 color: {
                     if (!root.voiceEnabled) return Theme.textInactive;
-                    if (root.voiceStatus === "RECORDING") return "#FF6666";
-                    if (root.voiceStatus === "PROCESSING") return "#FFBB33";
+                    if (root.voiceStatus === "RECORDING") return Theme.colorDanger;
+                    if (root.voiceStatus === "PROCESSING") return Theme.colorWarning;
                     return Theme.accentColor;
                 }
                 font.family: "JetBrains Mono"
@@ -940,7 +940,7 @@ Item {
             // Clear
             Text {
                 text: "[clear]"
-                color: clearMa.containsMouse ? "#FF6666" : Theme.textInactive
+                color: clearMa.containsMouse ? Theme.colorDanger : Theme.textInactive
                 font.family: "JetBrains Mono"
                 font.pixelSize: 10
 

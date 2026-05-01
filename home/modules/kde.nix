@@ -37,7 +37,7 @@ in
     };
     iconTheme = {
       name = "Slot-Gray-Accent-Icons";
-      # Populated at activation time by accent-sync (places/ recolored with accent).
+      # Populated at activation time by paletted (places/ recolored with accent).
       # Falls back to Slot-Gray-Dark-Icons via Inherits.
     };
     font = {

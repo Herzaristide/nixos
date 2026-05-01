@@ -44,6 +44,8 @@
         config.allowUnfree = true;
       };
 
+      accent-daemon-pkg = import ./accent-daemon/default.nix { inherit pkgs; };
+
       install-nixos-pkg = pkgs.stdenvNoCC.mkDerivation {
         pname = "install-nixos";
         version = "0.1";
@@ -62,7 +64,10 @@
       };
     in
     {
-      packages.${system}.install-nixos = install-nixos-pkg;
+      packages.${system} = {
+        install-nixos = install-nixos-pkg;
+        paletted = accent-daemon-pkg;
+      };
 
       apps.${system}.install-nixos = {
         type = "app";

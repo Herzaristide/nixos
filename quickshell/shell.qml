@@ -83,4 +83,14 @@ ShellRoot {
             activeWidget: root.activeWidget
         }
     }
+
+    Variants {
+        model: Quickshell.screens
+
+        SettingsWindow {
+            property var modelData
+            screen: modelData
+            visible: modelData && modelData.name === root.primaryScreen && Theme.settingsOpen
+        }
+    }
 }
