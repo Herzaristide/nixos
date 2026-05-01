@@ -34,7 +34,7 @@ Item {
     // Disk grouping and per-disk history
     property var diskHistories: ({})
     property var diskGroups: []   // [{disk, usedPct, history}]
-    readonly property var diskColors: ["#4a6a8e", "#8e6a4a", "#4a8e6a", "#8e4a6a", "#6a8e4a", "#6a4a8e"]
+    readonly property var diskColors: Theme.diskSeriesColors
     property var diskTemps: ({})
 
     // Combined series for the merged CPU/RAM/GPU graph
@@ -43,9 +43,9 @@ Item {
         if (hwPanel.cpuHistory.length > 0)
             s.push({ values: hwPanel.cpuHistory, color: Theme.accentColor });
         if (hwPanel.ramHistory.length > 0)
-            s.push({ values: hwPanel.ramHistory, color: "#4a8e4a" });
+            s.push({ values: hwPanel.ramHistory, color: Theme.colorRam });
         if (hwPanel.gpuHistory.length > 0 && hwPanel.gpuUsage.length > 0)
-            s.push({ values: hwPanel.gpuHistory, color: "#9e4a9e" });
+            s.push({ values: hwPanel.gpuHistory, color: Theme.colorGpu });
         return s;
     }
 
@@ -406,7 +406,7 @@ Item {
                         font.pixelSize: 11
                         color: {
                             const v = parseInt(hwPanel.cpuTemp) || 0;
-                            return v > 90 ? "#cc4444" : v > 70 ? "#cc8844" : "#88ccaa";
+                            return v > 90 ? Theme.colorDanger : v > 70 ? Theme.colorWarning : Theme.colorSuccess;
                         }
                     }
                 }
@@ -433,8 +433,8 @@ Item {
                             width: parent.width * Math.min(hwPanel.cpuUsage / 100.0, 1.0)
                             height: parent.height
                             radius: parent.radius
-                            color: hwPanel.cpuUsage > 80 ? "#cc4444"
-                                 : hwPanel.cpuUsage > 60 ? "#cc8844"
+                            color: hwPanel.cpuUsage > 80 ? Theme.colorDanger
+                                 : hwPanel.cpuUsage > 60 ? Theme.colorWarning
                                  : Theme.accentColor
                             Behavior on width { NumberAnimation { duration: 400 } }
                         }
@@ -483,9 +483,9 @@ Item {
                             width: parent.width * Math.min(parent.ratio, 1.0)
                             height: parent.height
                             radius: parent.radius
-                            color: parent.ratio > 0.85 ? "#cc4444"
-                                 : parent.ratio > 0.65 ? "#cc8844"
-                                 : "#4a8e4a"
+                            color: parent.ratio > 0.85 ? Theme.colorDanger
+                                 : parent.ratio > 0.65 ? Theme.colorWarning
+                                 : Theme.colorRam
                             Behavior on width { NumberAnimation { duration: 400 } }
                         }
                     }
@@ -529,7 +529,7 @@ Item {
                         font.pixelSize: 11
                         color: {
                             const v = parseInt(hwPanel.gpuTemp) || 0;
-                            return v > 95 ? "#cc4444" : v > 75 ? "#cc8844" : "#88ccaa";
+                            return v > 95 ? Theme.colorDanger : v > 75 ? Theme.colorWarning : Theme.colorSuccess;
                         }
                     }
                 }
@@ -565,9 +565,9 @@ Item {
                             width: parent.width * Math.min(hwPanel.gpuUsagePercent / 100.0, 1.0)
                             height: parent.height
                             radius: parent.radius
-                            color: hwPanel.gpuUsagePercent > 80 ? "#cc4444"
-                                 : hwPanel.gpuUsagePercent > 60 ? "#cc8844"
-                                 : "#8e4a8e"
+                            color: hwPanel.gpuUsagePercent > 80 ? Theme.colorDanger
+                                 : hwPanel.gpuUsagePercent > 60 ? Theme.colorWarning
+                                 : Theme.colorGpu
                             Behavior on width { NumberAnimation { duration: 400 } }
                         }
                     }
@@ -606,10 +606,10 @@ Item {
                               color: Theme.accentColor },
                             { label: "RAM", value: hwPanel.ramTotalBytes > 0
                                 ? hwPanel.formatGiB(hwPanel.ramUsedBytes) : "...",
-                              color: "#4a8e4a" },
+                              color: Theme.colorRam },
                             { label: "GPU", value: hwPanel.gpuUsage.length > 0
                                 ? hwPanel.gpuUsagePercent + "%" : "—",
-                              color: "#9e4a9e" }
+                              color: Theme.colorGpu }
                         ]
                         delegate: RowLayout {
                             required property var modelData
@@ -691,7 +691,7 @@ Item {
                                 font.pixelSize: 11
                                 color: {
                                     const v = parseInt(hwPanel.diskTemps[diskTempKey] || "0") || 0;
-                                    return v > 60 ? "#cc4444" : v > 45 ? "#cc8844" : "#88ccaa";
+                                    return v > 60 ? Theme.colorDanger : v > 45 ? Theme.colorWarning : Theme.colorSuccess;
                                 }
                             }
 
@@ -707,7 +707,7 @@ Item {
                                 text: Math.round(ratio * 100) + "%"
                                 font.family: "JetBrains Mono"
                                 font.pixelSize: 11
-                                color: ratio > 0.85 ? "#cc4444" : ratio > 0.65 ? "#cc8844" : Theme.textPrimary
+                                color: ratio > 0.85 ? Theme.colorDanger : ratio > 0.65 ? Theme.colorWarning : Theme.textPrimary
                                 Layout.preferredWidth: 36
                                 horizontalAlignment: Text.AlignRight
                             }
@@ -751,9 +751,9 @@ Item {
                                 width: parent.width * Math.min(parent.ratio, 1.0)
                                 height: parent.height
                                 radius: parent.radius
-                                color: parent.ratio > 0.85 ? "#cc4444"
-                                     : parent.ratio > 0.65 ? "#cc8844"
-                                     : "#4a6a8e"
+                                color: parent.ratio > 0.85 ? Theme.colorDanger
+                                     : parent.ratio > 0.65 ? Theme.colorWarning
+                                     : Theme.colorAltBlue
                             }
                         }
 

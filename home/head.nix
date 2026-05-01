@@ -68,7 +68,7 @@
       # Set wallpaper using awww
       WALLPAPER="$HOME/.config/background"
       if [ -f "$WALLPAPER" ]; then
-        ${awww}/bin/awww img "$WALLPAPER" --transition-type wipe --transition-fps 60
+        ${awww}/bin/awww img "$WALLPAPER" --transition-type fade --transition-fps 60 --transition-duration 0.1
       fi
     '')
     (writeShellScriptBin "awww-init" ''
@@ -86,7 +86,7 @@
 
       # Set wallpaper if file exists
       if [ -f "$WALLPAPER" ]; then
-        ${awww}/bin/awww img "$WALLPAPER" --transition-type wipe --transition-fps 60
+        ${awww}/bin/awww img "$WALLPAPER" --transition-type fade --transition-fps 60 --transition-duration 0.1
       fi
     '')
   ];

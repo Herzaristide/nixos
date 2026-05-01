@@ -3,7 +3,6 @@
   pkgs,
   lib,
   inputs,
-  palette,
   primaryMonitor ? "HDMI-A-1",
   ...
 }:
@@ -26,6 +25,8 @@
       (builtins.readFile ./shell.qml);
   xdg.configFile."quickshell/BottomBar.qml".source = ./BottomBar.qml;
   xdg.configFile."quickshell/SidePanel.qml".source = ./SidePanel.qml;
+  xdg.configFile."quickshell/Settings.qml".source = ./Settings.qml;
+  xdg.configFile."quickshell/SettingsWindow.qml".source = ./SettingsWindow.qml;
   xdg.configFile."quickshell/OllamaChat.qml".source = ./OllamaChat.qml;
   xdg.configFile."quickshell/OllamaTools.qml".source = ./OllamaTools.qml;
   xdg.configFile."quickshell/QuickControls.qml".source = ./QuickControls.qml;
@@ -78,11 +79,11 @@
   xdg.configFile."quickshell/nixos.svg".source =
     "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake-white.svg";
 
-  # Theme.qml: the @PALETTE_ACCENT@ placeholder is replaced at build time with
-  # the base0D color from palette.nix, so the default accent color always matches
-  # the system palette. The user can still override it at runtime via Settings.
+  # Theme.qml: the @PALETTE_ACCENT@ placeholder is seeded with the daemon's
+  # default NixOS blue accent so the UI has a color before the daemon runs.
+  # The user can still override it at runtime via Settings.
   xdg.configFile."quickshell/Theme.qml".text =
-    builtins.replaceStrings [ "@PALETTE_ACCENT@" ] [ "#${palette.base0D}" ]
+    builtins.replaceStrings [ "@PALETTE_ACCENT@" ] [ "#5277c3" ]
       (builtins.readFile ./Theme.qml);
 
   xdg.configFile."quickshell/qmldir".source = ./qmldir;

@@ -14,7 +14,7 @@
 
     # ========= Border Active =========
     # "4" = ANSI blue, "12" = ANSI bright-blue — both remapped to the accent
-    # color by WezTerm, so the theme follows accent-sync automatically.
+    # color by WezTerm, so the theme follows paletted automatically.
     file_panel_border_active = "4"
     sidebar_border_active    = "12"
     footer_border_active     = "12"

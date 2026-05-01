@@ -241,7 +241,7 @@ Item {
                     width: 10; height: 10; radius: 5
                     anchors.verticalCenter: parent.verticalCenter
                     x: Theme.darkMode ? 18 : 4
-                    color: "#FFFFFF"
+                    color: Theme.iconColor
                     Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
                 }
                 MouseArea {
@@ -257,7 +257,8 @@ Item {
                 width: 16; height: 16; radius: 3
                 color: Theme.accentColor
                 border.color: accentSquareHover.containsMouse
-                              ? Qt.rgba(1, 1, 1, 0.6) : Qt.rgba(1, 1, 1, 0.25)
+                              ? Qt.rgba(Theme.iconColor.r, Theme.iconColor.g, Theme.iconColor.b, 0.6)
+                              : Qt.rgba(Theme.iconColor.r, Theme.iconColor.g, Theme.iconColor.b, 0.25)
                 border.width: 1
                 Behavior on border.color { ColorAnimation { duration: 100 } }
                 MouseArea {
@@ -295,6 +296,24 @@ Item {
                         cursorShape:  Qt.PointingHandCursor
                         onClicked:    modelData.action()
                     }
+                }
+            }
+
+            // Settings button
+            Text {
+                text:        "[⚙]"
+                font.family: "JetBrains Mono"
+                font.pixelSize: 11
+                color: Theme.settingsOpen
+                       ? Theme.accentColor
+                       : (settingsBtnHover.containsMouse ? Theme.accentColor : Theme.textInactive)
+                Behavior on color { ColorAnimation { duration: 100 } }
+                MouseArea {
+                    id:           settingsBtnHover
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape:  Qt.PointingHandCursor
+                    onClicked:    Theme.settingsOpen = !Theme.settingsOpen
                 }
             }
         }
@@ -387,7 +406,7 @@ Item {
                         x: accentPicker.pickerS * accentFieldCanvas.width  - width/2
                         y: (1-accentPicker.pickerV) * accentFieldCanvas.height - height/2
                         width:14; height:14; radius:7; color:"transparent"
-                        border.color:"#FFFFFF"; border.width:2; antialiasing:true
+                        border.color:Theme.iconColor; border.width:2; antialiasing:true
                         Rectangle { anchors.centerIn:parent; width:6; height:6; radius:3
                             color:"transparent"; border.color:Qt.rgba(0,0,0,0.55); border.width:1 }
                     }
@@ -437,7 +456,7 @@ Item {
                     Rectangle {
                         x: accentPicker.pickerH * accentHueRow.width - width/2; y: -2
                         width:5; height:accentHueRow.height+4; radius:2.5
-                        color:"#FFFFFF"; border.color:Qt.rgba(0,0,0,0.45); border.width:1; antialiasing:true
+                        color:Theme.iconColor; border.color:Qt.rgba(0,0,0,0.45); border.width:1; antialiasing:true
                     }
                 }
 
@@ -495,13 +514,13 @@ Item {
                             }
                         }
                         Rectangle {
-                            anchors.fill: parent; radius: 5; color: "#000000"
+                            anchors.fill: parent; radius: 5; color: Theme.bgDeep
                             opacity: root.rainbowActive ? 0.10 : 0.45
                             Behavior on opacity { NumberAnimation { duration: 200 } }
                         }
                         Rectangle {
                             anchors.fill: parent; radius: 5; color: "transparent"
-                            border.color: "#FFFFFF"; border.width: 1
+                            border.color: Theme.iconColor; border.width: 1
                             opacity: root.rainbowActive ? 0.8 : 0.0
                             Behavior on opacity { NumberAnimation { duration: 200 } }
                         }
@@ -509,7 +528,7 @@ Item {
                             anchors.centerIn: parent
                             text: root.rainbowActive ? "stop" : "rainbow"
                             font.family: "JetBrains Mono"; font.pixelSize: 10
-                            color: "#FFFFFF"
+                            color: Theme.iconColor
                         }
                         MouseArea {
                             anchors.fill: parent; cursorShape: Qt.PointingHandCursor
@@ -541,7 +560,7 @@ Item {
                 if (!root.batteryPresent) return Theme.textInactive;
                 if (root.batteryStatus === "Charging" || root.batteryStatus === "Full")
                     return Theme.accentColor;
-                if (root.batteryPercent <= 15) return "#ff5555";
+                if (root.batteryPercent <= 15) return Theme.colorDanger;
                 if (root.batteryPercent <= 30) return Theme.textDim;
                 return Theme.textInactive;
             }

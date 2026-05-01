@@ -11,7 +11,7 @@
     # ~/.config/micro/settings.json
     # Options : https://github.com/zyedidia/micro/blob/master/runtime/help/options.md
     settings = {
-      # Colorscheme generated at runtime by accent-sync (see home/modules/accent/accent.nix).
+      # Colorscheme generated at runtime by paletted (see home/modules/accent/accent.nix).
       # File: ~/.config/micro/colorschemes/accent.micro
       colorscheme = "accent";
       autoindent = true;

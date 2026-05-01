@@ -191,10 +191,10 @@ Item {
                     radius: 9
                     property bool isActive: metroPanel.metroRunning && metroPanel.beatIndex === index
                     color: isActive
-                           ? (index === 0 ? "#00FF88" : Theme.accentColor)
+                           ? (index === 0 ? Theme.colorSuccess : Theme.accentColor)
                            : Theme.bgDeep
                     border.width: index === 0 ? 1 : 0
-                    border.color: Qt.rgba(1, 1, 1, 0.15)
+                    border.color: Qt.rgba(Theme.iconColor.r, Theme.iconColor.g, Theme.iconColor.b, 0.15)
                     Behavior on color { ColorAnimation { duration: 60 } }
                     SequentialAnimation on scale {
                         running: isActive

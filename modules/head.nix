@@ -94,10 +94,29 @@
             "capture.props" = {
               "node.name" = "capture.echo-cancel";
               "node.passive" = true;
+              # Force stereo capture so the WebRTC AEC works even when the
+              # physical source exposes more channels (e.g. Steinberg UR242
+              # presents as analog-surround-40 / 4ch). Channels 1-2 (FL/FR)
+              # are the actual mic preamp inputs on the UR242.
+              "audio.channels" = 2;
+              "audio.position" = [
+                "FL"
+                "FR"
+              ];
             };
             "source.props" = {
               "node.name" = "echo-cancel-source";
               "node.description" = "Microphone (Echo Cancelled)";
+              # Higher priority than hardware sources (default ~1000) so that
+              # WirePlumber automatically selects this as the default capture
+              # device. Without this, the raw UR242 4-channel source wins and
+              # the voice assistant in QuickShell gets no usable mic signal.
+              "priority.session" = 1500;
+              "audio.channels" = 2;
+              "audio.position" = [
+                "FL"
+                "FR"
+              ];
             };
             "playback.props" = {
               "node.name" = "playback.echo-cancel";
