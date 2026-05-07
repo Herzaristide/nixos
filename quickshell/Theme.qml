@@ -131,8 +131,7 @@ QtObject {
     property Process wallpaperProcess: Process {
         property string pendingVariant: "dark"
         command: ["sh", "-c",
-                  "awww img \"$HOME/.config/wallpaper-" + pendingVariant
-                  + "\" --transition-type fade --transition-fps 60 --transition-duration 0.1"]
+                  "awww img $HOME/.config/wallpaper-" + pendingVariant + " --transition-type=fade --transition-duration 0.1 --transition-fps 255"]
     }
 
     function toggleTheme() {
