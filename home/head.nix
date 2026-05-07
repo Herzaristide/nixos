@@ -57,38 +57,12 @@
     spacedrive
     figma-linux
     teams-for-linux
-    awww # Wallpaper daemon for Wayland
+    awww # Wallpaper daemon — caches GPU textures for instant zero-flash switching
     (writeShellScriptBin "hypr-claude-launch" "claude-pwa")
     (writeShellScriptBin "hypr-gemini-launch" "gemini-pwa")
     (writeShellScriptBin "gemini-pwa" "chromium --app=https://gemini.google.com --user-data-dir=$HOME/.config/chromium-$(hostname) --enable-features=WebUIDarkMode --force-dark-mode")
     (writeShellScriptBin "claude-pwa" "chromium --app=https://claude.ai --user-data-dir=$HOME/.config/chromium-$(hostname) --enable-features=WebUIDarkMode --force-dark-mode")
     (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium-$(hostname) --enable-features=WebUIDarkMode --force-dark-mode")
-    (writeShellScriptBin "set-wallpaper" ''
-      #!/bin/sh
-      # Set wallpaper using awww
-      WALLPAPER="$HOME/.config/background"
-      if [ -f "$WALLPAPER" ]; then
-        ${awww}/bin/awww img "$WALLPAPER" --transition-type fade --transition-fps 60 --transition-duration 0.1
-      fi
-    '')
-    (writeShellScriptBin "awww-init" ''
-      #!/bin/sh
-      # Wait for awww daemon to be ready and set wallpaper
-      WALLPAPER="$HOME/.config/background"
-
-      # Wait up to 10 seconds for awww daemon to be ready
-      for i in $(seq 1 20); do
-        if ${awww}/bin/awww query &>/dev/null; then
-          break
-        fi
-        sleep 0.5
-      done
-
-      # Set wallpaper if file exists
-      if [ -f "$WALLPAPER" ]; then
-        ${awww}/bin/awww img "$WALLPAPER" --transition-type fade --transition-fps 60 --transition-duration 0.1
-      fi
-    '')
   ];
 
   # Default applications (force overwrites existing mimeapps.list files)
@@ -137,9 +111,16 @@
     startupNotify = true;
   };
 
-  # Wallpaper configuration — default startup wallpaper and mode-specific variants
-  xdg.configFile."background".source = ../src/nix-wallpaper-binary-black_8k.png;
-  xdg.configFile."wallpaper-dark".source = ../src/nix-wallpaper-binary-black_8k.png;
-  xdg.configFile."wallpaper-light".source = ../src/nix-wallpaper-binary-white_8k.png;
+  # Wallpaper configuration — reduced to 2K for fast GPU upload (originals are 8K)
+  xdg.configFile."wallpaper-dark".source =
+    pkgs.runCommand "wallpaper-dark.png" { nativeBuildInputs = [ pkgs.imagemagick ]; }
+      ''
+        magick ${../src/nix-wallpaper-binary-black_8k.png} -resize 2560x1440 $out
+      '';
+  xdg.configFile."wallpaper-light".source =
+    pkgs.runCommand "wallpaper-light.png" { nativeBuildInputs = [ pkgs.imagemagick ]; }
+      ''
+        magick ${../src/nix-wallpaper-binary-white_8k.png} -resize 2560x1440 $out
+      '';
 
 }

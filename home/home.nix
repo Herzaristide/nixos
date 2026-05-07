@@ -113,6 +113,7 @@
     sox # Audio recording (required for Claude Code voice mode)
     gemini-cli
     github-copilot-cli
+    python3Packages.huggingface-hub # hf CLI
     mistral-vibe # Mistral Vibe CLI (`vibe`)
     git-credential-manager
     cmatrix # Matrix-style falling characters

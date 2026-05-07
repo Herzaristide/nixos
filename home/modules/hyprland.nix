@@ -131,9 +131,9 @@ in
         # Walker launcher daemon (instant startup)
         "walker --gapplication-service"
 
-        # awww wallpaper daemon and initialization
+        # awww wallpaper daemon — start daemon then wait for socket before setting wallpaper
         "awww-daemon"
-        "awww-init"
+        "sh -c 'until [ -S /run/user/$(id -u)/wayland-1-awww-daemon.sock ]; do sleep 0.1; done; awww img $HOME/.config/wallpaper-dark --transition-type=fade --transition-duration 0.3 --transition-fps 255"
       ];
 
       # Workspaces: HDMI-A-1 gets ws 1–5, DP-3 gets named workspace "0" (Super+²).
@@ -239,6 +239,9 @@ in
         "match:class ^(org.kde.dolphin)$, float on"
         "match:class ^(org.kde.dolphin)$, size 600 400"
         "match:class ^(org.kde.dolphin)$, center 1"
+
+        # VSCode: higher opacity so text stays sharp with blur enabled
+        "match:class ^(code-url-handler|code|Code)$, opacity 0.92 0.82"
 
         "match:class ^(file_progress)$, float on"
         "match:class ^(confirm)$, float on"
