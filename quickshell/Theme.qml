@@ -177,6 +177,28 @@ QtObject {
         command: ["palette", "palette-color", pendingKey, pendingColor]
     }
 
+    property Process resetProcess: Process {
+        command: ["sh", "-c",
+            "palette set '#5277c3' && " +
+            "palette palette-color base00 '#0d0d0d' && " +
+            "palette palette-color base01 '#1a1a1a' && " +
+            "palette palette-color base02 '#2a2a2a' && " +
+            "palette palette-color base03 '#5a6080' && " +
+            "palette palette-color base04 '#8a90b0' && " +
+            "palette palette-color base05 '#e0e0ff' && " +
+            "palette palette-color base06 '#f0f0ff' && " +
+            "palette palette-color base07 '#ffffff' && " +
+            "palette palette-color base08 '#cc4444' && " +
+            "palette palette-color base09 '#cc8844' && " +
+            "palette palette-color base0a '#ccaa44' && " +
+            "palette palette-color base0b '#44aa88' && " +
+            "palette palette-color base0c '#7ebae4' && " +
+            "palette palette-color base0d '#5277c3' && " +
+            "palette palette-color base0e '#4488cc' && " +
+            "palette palette-color base0f '#cc5566'"
+        ]
+    }
+
     // ── Palette accessor ───────────────────────────────────────────────────
     /// Raw base16 palette for the active mode (reactive: updates when _state changes).
     readonly property var palette: _state.palette || {}
@@ -198,5 +220,21 @@ QtObject {
         paletteColorProcess.pendingKey   = key
         paletteColorProcess.pendingColor = colorStr
         paletteColorProcess.running = true
+    }
+
+    function resetToDefaults() {
+        var defaults = {
+            accent: "#5277c3", accent_dark: "#2d4370", accent_muted: "#6a87cc",
+            accent_rgb: "82,119,195", accent_ansi: "38;2;82;119;195",
+            mode: themeRoot._state.mode,
+            palette: {
+                base00: "#0d0d0d", base01: "#1a1a1a", base02: "#2a2a2a", base03: "#5a6080",
+                base04: "#8a90b0", base05: "#e0e0ff", base06: "#f0f0ff", base07: "#ffffff",
+                base08: "#cc4444", base09: "#cc8844", base0a: "#ccaa44", base0b: "#44aa88",
+                base0c: "#7ebae4", base0d: "#5277c3", base0e: "#4488cc", base0f: "#cc5566"
+            }
+        }
+        themeRoot._state = defaults
+        resetProcess.running = true
     }
 }

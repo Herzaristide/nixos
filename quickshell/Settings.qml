@@ -363,11 +363,16 @@ Item {
                 }
             }
 
+            // ── Rainbow + Reset row ───────────────────────────
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.bottomMargin: 16
+                spacing: 8
+
             // ── Rainbow cycling button ─────────────────────────
             Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 32
-                Layout.bottomMargin: 16
 
                 // Rainbow gradient background
                 Canvas {
@@ -442,6 +447,40 @@ Item {
                     }
                 }
             }
+
+            // ── Reset to default button ───────────────────────
+            Item {
+                Layout.preferredWidth: 110
+                Layout.preferredHeight: 32
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 8
+                    color: Theme.bgElevated
+                    border.color: Theme.dividerColor
+                    border.width: 1
+                }
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "↺ Défaut"
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 11
+                    font.weight: Font.Medium
+                    color: Theme.textSecondary
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        root.rainbowActive = false
+                        Theme.resetToDefaults()
+                    }
+                }
+            }
+
+            } // end RowLayout
 
             Item { Layout.preferredHeight: 8 }
 
