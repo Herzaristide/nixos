@@ -152,7 +152,7 @@ in
       bind = [
         "$mod, Return, exec, wezterm"
         "$mod, V, exec, code"
-        "$mod, F, exec, dolphin"
+        "$mod, F, exec, file-explorer"
         "$mod, D, exec, vesktop"
         "$mod, Z, exec, zen-twilight"
         "$mod, R, exec, walker"
@@ -235,10 +235,16 @@ in
 
         # Generic dialog windows
         "match:title ^(.*)(Open|Save|Select|Choose|Upload|Download)(.*), float on"
-        # Dolphin file manager
-        "match:class ^(org.kde.dolphin)$, float on"
-        "match:class ^(org.kde.dolphin)$, size 600 400"
-        "match:class ^(org.kde.dolphin)$, center 1"
+        # Custom file explorer (class peut varier selon la version d'Iced)
+        "match:class ^(file-explorer)$, float on"
+        "match:class ^(file-explorer)$, size 900 600"
+        "match:class ^(file-explorer)$, center 1"
+        "match:class ^(file_explorer)$, float on"
+        "match:class ^(file_explorer)$, size 900 600"
+        "match:class ^(file_explorer)$, center 1"
+        "match:title ^(File Explorer)(.*)$, float on"
+        "match:title ^(File Explorer)(.*)$, size 900 600"
+        "match:title ^(File Explorer)(.*)$, center 1"
 
         # VSCode: higher opacity so text stays sharp with blur enabled
         "match:class ^(code-url-handler|code|Code)$, opacity 0.92 0.82"
