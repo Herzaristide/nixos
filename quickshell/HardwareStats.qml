@@ -26,6 +26,10 @@ Item {
     property string cpuTemp: ""
     property string gpuTemp: ""
 
+    // RAM brand info (loaded once)
+    property string ramBrand: ""
+    property bool ramBrandLoaded: false
+
     // CPU delta state
     property real prevCpuTotal: 0
     property real prevCpuActive: 0
@@ -35,7 +39,6 @@ Item {
     property var diskHistories: ({})
     property var diskGroups: []   // [{disk, usedPct, history}]
     readonly property var diskColors: Theme.diskSeriesColors
-    property var diskTemps: ({})
 
     // Combined series for the merged CPU/RAM/GPU graph
     readonly property var combinedSeries: {
@@ -116,12 +119,13 @@ Item {
         onTriggered: {
             if (!hwPanel.cpuNameLoaded && !cpuNameProc.running)
                 cpuNameProc.running = true;
+            if (!hwPanel.ramBrandLoaded && !ramBrandProc.running)
+                ramBrandProc.running = true;
             if (!cpuStatProc.running) cpuStatProc.running = true;
             if (!ramProc.running) ramProc.running = true;
             if (!gpuProc.running) gpuProc.running = true;
             if (!diskProc.running) diskProc.running = true;
             if (!tempProc.running) tempProc.running = true;
-            if (!diskTempProc.running) diskTempProc.running = true;
         }
     }
 
@@ -143,6 +147,32 @@ Item {
                 if (n.length > 0) {
                     hwPanel.cpuName = n;
                     hwPanel.cpuNameLoaded = true;
+                }
+            }
+        }
+    }
+
+    // ── RAM brand (run once via dmidecode) ──────────────────────────────
+    Process {
+        id: ramBrandProc
+        command: [
+            "sh", "-c",
+            "sudo dmidecode -t memory 2>/dev/null | awk '"
+            + "/Memory Device/ {found=1; pn=\"\"; typ=\"\"; spd=\"\"; hasmod=0} "
+            + "found && /^\\s*Size:/ && !/No Module/ {hasmod=1} "
+            + "found && hasmod && /Part Number:/ && !/Not Specified/ {sub(/.*Part Number:[[:space:]]*/,\"\"); pn=$0} "
+            + "found && hasmod && /^[[:space:]]+Type:/ && !/Unknown/ {sub(/.*Type:[[:space:]]*/,\"\"); typ=$0} "
+            + "found && hasmod && /Configured.*Speed:/ && !/Unknown/ {sub(/.*Configured.*Speed:[[:space:]]*/,\"\"); spd=$0} "
+            + "found && /^$/ {if(hasmod && pn) {printf \"%s %s %s\\n\", pn, typ, spd; found=0; hasmod=0}} "
+            + "' | sort -u | head -1 | sed 's/[[:space:]]*$//'"
+        ]
+        stdout: StdioCollector { id: ramBrandOut }
+        onRunningChanged: {
+            if (!running) {
+                const n = ramBrandOut.text.trim();
+                if (n.length > 0) {
+                    hwPanel.ramBrand = n;
+                    hwPanel.ramBrandLoaded = true;
                 }
             }
         }
@@ -289,47 +319,6 @@ Item {
         }
     }
 
-    // ── Températures disques (NVMe sysfs + SATA/HDD via smartctl) ─────────
-    Process {
-        id: diskTempProc
-        command: [
-            "sh", "-c",
-            // NVMe via sysfs (no sudo needed)
-            "for dev in /sys/class/nvme/nvme*; do " +
-            "  [ -d \"$dev\" ] || continue; " +
-            "  name=$(basename \"$dev\"); " +
-            "  for h in \"$dev\"/hwmon*/temp1_input; do " +
-            "    [ -f \"$h\" ] || continue; " +
-            "    t=$(cat \"$h\" 2>/dev/null); " +
-            "    [ -n \"$t\" ] && [ \"$t\" -gt 0 ] 2>/dev/null && echo \"${name}:$((t/1000))\" && break; " +
-            "  done; " +
-            "done; " +
-            // SATA/HDD via smartctl (NOPASSWD sudoers rule)
-            "for dev in /dev/sd?; do " +
-            "  [ -b \"$dev\" ] || continue; " +
-            "  name=$(basename \"$dev\"); " +
-            "  t=$(sudo smartctl -A \"$dev\" 2>/dev/null | awk '/^190 |^194 /{print $10; exit}'); " +
-            "  [ -n \"$t\" ] && [ \"$t\" -gt 0 ] 2>/dev/null && echo \"${name}:${t}\"; " +
-            "done"
-        ]
-        stdout: StdioCollector { id: diskTempOut }
-        onRunningChanged: {
-            if (!running) {
-                const lines = diskTempOut.text.trim().split('\n');
-                const temps = {};
-                for (const line of lines) {
-                    const idx = line.indexOf(':');
-                    if (idx > 0) {
-                        const dev = line.substring(0, idx).trim();
-                        const val = line.substring(idx + 1).trim();
-                        if (dev && val) temps[dev] = val;
-                    }
-                }
-                hwPanel.diskTemps = temps;
-            }
-        }
-    }
-
     // ── Disques ──────────────────────────────────────────────────────────
     Process {
         id: diskProc
@@ -466,6 +455,16 @@ Item {
                     font.weight: Font.Bold
                     font.letterSpacing: 1.5
                     color: Theme.accentMuted
+                }
+
+                Text {
+                    visible: hwPanel.ramBrand.length > 0
+                    text: hwPanel.ramBrand
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 11
+                    color: Theme.textSecondary
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
                 }
 
                 RowLayout {
@@ -673,26 +672,6 @@ Item {
                                 color: Theme.textPrimary
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
-                            }
-
-                            Text {
-                                // Resolve the physical device key in diskTemps:
-                                // /dev/nvme0n1p2 → "nvme0" ; /dev/sda1 or /dev/sda → "sda"
-                                property string diskTempKey: {
-                                    let m = modelData.source.match(/\/dev\/(nvme\d+)n\d+/);
-                                    if (m) return m[1];
-                                    m = modelData.source.match(/\/dev\/([shv]d[a-z]+)\d*$/);
-                                    if (m) return m[1];
-                                    return "";
-                                }
-                                visible: diskTempKey.length > 0 && hwPanel.diskTemps[diskTempKey] !== undefined
-                                text: (hwPanel.diskTemps[diskTempKey] || "") + "°C"
-                                font.family: "JetBrains Mono"
-                                font.pixelSize: 11
-                                color: {
-                                    const v = parseInt(hwPanel.diskTemps[diskTempKey] || "0") || 0;
-                                    return v > 60 ? Theme.colorDanger : v > 45 ? Theme.colorWarning : Theme.colorSuccess;
-                                }
                             }
 
                             Text {

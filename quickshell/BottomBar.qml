@@ -29,6 +29,54 @@ PanelWindow {
         return romanNumerals[num - 1] || "";
     }
 
+    // ── Workspace selector (centered to full screen) ────────────
+    Column {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 0
+        z: 1
+
+        Repeater {
+            model: 5
+
+            Item {
+                required property int index
+                width: 36
+                height: 28
+
+                Text {
+                    anchors.centerIn: parent
+                    text: window.toRoman(parent.index + 1)
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: 14
+                    font.weight: Font.Normal
+                    color: Theme.iconColor
+
+                    opacity: {
+                        const workspaceId = parent.index + 1;
+                        const isActive = Hyprland.focusedWorkspace?.id === workspaceId;
+
+                        if (isActive) return 1.0;
+
+                        if (Hyprland.workspaces && Hyprland.workspaces.values) {
+                            const workspace = Hyprland.workspaces.values.find(ws => ws.id === workspaceId);
+                            const hasWindows = workspace && workspace.windows && workspace.windows.values && workspace.windows.values.length > 0;
+                            return hasWindows ? 0.6 : 0.3;
+                        }
+
+                        return 0.3;
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: Hyprland.dispatch("workspace " + (parent.index + 1).toString())
+                }
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.topMargin: 12
@@ -165,52 +213,7 @@ PanelWindow {
             }
         }
 
-        // ── Top spacer ───────────────────────────────────────────
-        Item { Layout.fillHeight: true }
-
-        // ── Workspace selector (vertical, centered) ──────────────
-        Repeater {
-            model: 5
-
-            Item {
-                required property int index
-                Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: 36
-                Layout.preferredHeight: 28
-
-                Text {
-                    anchors.centerIn: parent
-                    text: window.toRoman(parent.index + 1)
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 14
-                    font.weight: Font.Normal
-                    color: Theme.iconColor
-
-                    opacity: {
-                        const workspaceId = parent.index + 1;
-                        const isActive = Hyprland.focusedWorkspace?.id === workspaceId;
-
-                        if (isActive) return 1.0;
-
-                        if (Hyprland.workspaces && Hyprland.workspaces.values) {
-                            const workspace = Hyprland.workspaces.values.find(ws => ws.id === workspaceId);
-                            const hasWindows = workspace && workspace.windows && workspace.windows.values && workspace.windows.values.length > 0;
-                            return hasWindows ? 0.6 : 0.3;
-                        }
-
-                        return 0.3;
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: Hyprland.dispatch("workspace " + (parent.index + 1).toString())
-                }
-            }
-        }
-
-        // ── Bottom spacer ────────────────────────────────────────
+        // ── Spacer ───────────────────────────────────────────────
         Item { Layout.fillHeight: true }
 
         // ── NixOS button (HardwareStats) ─────────────────────────
