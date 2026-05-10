@@ -50,13 +50,11 @@
   '';
 
   home.packages = with pkgs; [
+    inputs.explorer.packages.${pkgs.stdenv.hostPlatform.system}.file-explorer
     inputs.voicemode.packages.${pkgs.stdenv.hostPlatform.system}.default
     aubio
     vesktop
     dgop
-    spacedrive
-    figma-linux
-    teams-for-linux
     awww # Wallpaper daemon — caches GPU textures for instant zero-flash switching
     (writeShellScriptBin "hypr-claude-launch" "claude-pwa")
     (writeShellScriptBin "hypr-gemini-launch" "gemini-pwa")
@@ -77,15 +75,8 @@
       "x-scheme-handler/about" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/figma" = [ "figma.desktop" ];
       "x-terminal-emulator" = [ "org.wezfurlong.wezterm.desktop" ];
-      "inode/directory" = [ "org.kde.dolphin.desktop" ];
+      "inode/directory" = [ "file-explorer.desktop" ];
     };
-  };
-
-  # Figma redirect (figma:// URLs open in desktop app)
-  xdg.desktopEntries.figma = {
-    name = "Figma";
-    exec = "figma %U";
-    mimeType = [ "x-scheme-handler/figma" ];
   };
 
   # Claude PWA (Claude.ai in app window, per-host Chrome profile)
@@ -95,6 +86,20 @@
     exec = "claude-pwa";
     icon = "applications-internet";
     categories = [ "Chat" ];
+    startupNotify = true;
+  };
+
+  # Custom file explorer
+  xdg.desktopEntries.file-explorer = {
+    name = "File Explorer";
+    comment = "Explorateur de fichiers natif";
+    exec = "file-explorer %u";
+    icon = "system-file-manager";
+    categories = [
+      "System"
+      "FileManager"
+    ];
+    mimeType = [ "inode/directory" ];
     startupNotify = true;
   };
 

@@ -150,7 +150,6 @@
       gcc
 
       # Container tools
-      podman-compose
       ollama # CLI pour ollama pull/run
 
       # Development (SonarQube extension)
@@ -171,7 +170,6 @@
         "docker"
         "video"
         "render"
-        "podman"
         "audio"
         "storage"
         "greeter"
@@ -203,13 +201,6 @@
     services.ollama = {
       enable = true;
       openFirewall = true;
-    };
-
-    # Podman
-    virtualisation.podman = {
-      enable = true;
-      dockerCompat = false;
-      defaultNetwork.settings.dns_enabled = true;
     };
 
     # /records directory for voice memos (OllamaChat audio recording tool)

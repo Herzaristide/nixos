@@ -29,6 +29,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
+
+    explorer.url = "path:/home/aristide/explorer";
   };
 
   outputs =

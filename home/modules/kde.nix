@@ -1,6 +1,5 @@
 {
   pkgs,
-  lib,
   darkMode ? true,
   ...
 }:
@@ -66,20 +65,6 @@ in
     };
   };
 
-  # Dolphin declarative settings — uses kwriteconfig6 so Dolphin retains write access.
-  home.activation.configureDolphin = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 \
-      --file "$HOME/.config/dolphinrc" \
-      --group PlacesPanel \
-      --key HiddenEntries \
-      "recentlyused:/,timeline:/today,timeline:/yesterday,timeline:/thismonth,timeline:/lastmonth"
-    run ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 \
-      --file "$HOME/.config/dolphinrc" \
-      --group General \
-      --key ShowRecentFiles \
-      "false"
-  '';
-
   # Icon themes — symlinked into ~/.local/share/icons/ so both GTK and Qt/KDE
   # find them without any cache generation step.
   xdg.dataFile."icons/Slot-Gray-Dark-Icons" = {
@@ -88,10 +73,6 @@ in
   };
 
   home.packages = with pkgs; [
-    kdePackages.dolphin
-    kdePackages.kio-extras
     kdePackages.ark
-    kdePackages.ffmpegthumbs
-    kdePackages.kimageformats
   ];
 }
