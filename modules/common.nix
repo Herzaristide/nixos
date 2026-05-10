@@ -179,13 +179,17 @@
       ];
     };
 
-    # Allow aristide to query disk temperatures without password (read-only, safe)
+    # Allow aristide to query disk temperatures and RAM info without password (read-only, safe)
     security.sudo.extraRules = [
       {
         users = [ "aristide" ];
         commands = [
           {
             command = "${pkgs.smartmontools}/bin/smartctl";
+            options = [ "NOPASSWD" ];
+          }
+          {
+            command = "${pkgs.dmidecode}/bin/dmidecode";
             options = [ "NOPASSWD" ];
           }
         ];
