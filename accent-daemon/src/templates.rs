@@ -38,10 +38,6 @@ pub fn render_all(state: &AppState) -> io::Result<()> {
             "zen-userchrome.css.tmpl",
             home.join(".config/accent/zen-userchrome.css"),
         ),
-        (
-            "vscode-settings.json.tmpl",
-            home.join(".config/Code/User/settings.json"),
-        ),
     ];
 
     for (tmpl_name, out_path) in templates {
