@@ -133,7 +133,7 @@ in
 
         # awww wallpaper daemon — start daemon then wait for socket before setting wallpaper
         "awww-daemon"
-        "sh -c 'until [ -S /run/user/$(id -u)/wayland-1-awww-daemon.sock ]; do sleep 0.1; done; awww img $HOME/.config/wallpaper-dark --transition-type=fade --transition-duration 0.3 --transition-fps 255"
+        "sh -c 'until [ -S /run/user/$(id -u)/wayland-1-awww-daemon.sock ]; do sleep 0.1; done; awww img ${../../src/nix-wallpaper-binary-black_2k.png} --transition-type=fade --transition-duration 0.3 --transition-fps 255'"
       ];
 
       # Workspaces: HDMI-A-1 gets ws 1–5, DP-3 gets named workspace "0" (Super+²).

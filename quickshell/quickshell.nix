@@ -9,14 +9,13 @@
 
 {
   # QuickShell configured without interface
+  # NB: pas de `python3` ici — les scripts qui ont besoin de numpy
+  # (chroma-analyzer.sh, mic-level.sh) référencent leur propre env Python
+  # via chemin absolu du store (cf. plus bas), donc rien à exposer sur PATH.
   home.packages = with pkgs; [
     inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default
     cava # audio-spectrum source for the music widget EQ bars
     pulseaudio # provides parec/pactl used by chroma-analyzer.sh
-    sox # used by metronome.sh to pre-render click samples
-    (python3.withPackages (ps: [
-      ps.numpy # chroma-analyzer.py
-    ]))
   ];
 
   # Minimal QuickShell config (bottom bar)

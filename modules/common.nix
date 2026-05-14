@@ -31,8 +31,9 @@
   config = {
 
     # Virtual console (TTY) — French AZERTY for all hosts
+    # mkDefault on enable so WSL (which disables console) can override without mkForce
     console = {
-      enable = true;
+      enable = lib.mkDefault true;
       font = "ter-v32n";
       packages = [ pkgs.terminus_font ];
       keyMap = "fr";
@@ -57,10 +58,10 @@
     programs.fish.enable = true;
 
     # Enable automatic line wrapping in terminals
-    environment.interactiveShellInit = ''
-      # Enable automatic line wrapping (DECAWM - DEC Auto Wrap Mode)
-      printf '\033[?7h'
-    '';
+    # environment.interactiveShellInit = ''
+    #   # Enable automatic line wrapping (DECAWM - DEC Auto Wrap Mode)
+    #   printf '\033[?7h'
+    # '';
 
     # System-level packages
     environment.systemPackages = with pkgs; [
@@ -80,7 +81,6 @@
 
       # Networking
       curl
-      wget
       dig # DNS lookup
       nmap # port scanner
       tcpdump # packet capture
@@ -103,8 +103,9 @@
       yq-go # YAML processor
       openssl
       envsubst # env variable substitution
-      gnumake
-      gcc
+
+      cmatrix
+      glances
     ];
 
     users.users.aristide = {

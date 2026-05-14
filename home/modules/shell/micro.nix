@@ -45,7 +45,7 @@
       "comment.type" = "auto";
 
       # Plugin autofmt : format on save avec formateurs externes.
-      # Le plugin auto-détecte les formateurs installés (prettier, black, rustfmt, etc.)
+      # Le plugin auto-détecte les formateurs installés (prettier, ruff, rustfmt, gofumpt, etc.)
       "autofmt.fmtOnSave" = true;
 
       # Pas de dépôts de plugins supplémentaires
