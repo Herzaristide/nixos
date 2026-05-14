@@ -18,7 +18,7 @@
         command = "${pkgs.nodejs_22}/bin/npx";
         args = [
           "-y"
-          "@docker/mcp-server"
+          "mcp-server-docker"
         ];
         type = "stdio";
       };
@@ -32,18 +32,9 @@
         url = "https://mcp.linear.app/sse";
         type = "sse";
       };
-      # Figma: stdio via figma-developer-mcp (Linux has no Figma Desktop, so no
-      # official Dev Mode local server). Requires FIGMA_API_KEY in the env of
-      # whichever client spawns this command.
-      figma = {
-        command = "${pkgs.nodejs_22}/bin/npx";
-        args = [
-          "-y"
-          "figma-developer-mcp"
-          "--stdio"
-        ];
-        type = "stdio";
-      };
+      # Figma: remote MCP via claude.ai integration (https://mcp.figma.com/mcp).
+      # The local figma-developer-mcp required FIGMA_API_KEY which is not set.
+      # Using the remote server instead — authenticate once via Claude Code.
       # Filesystem: read/write under the listed root. Extend args with more
       # directories to widen access.
       filesystem = {
