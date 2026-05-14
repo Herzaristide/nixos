@@ -11,7 +11,6 @@ let
   # NixOS blue — used to seed accent.hex on first install only.
   defaultAccent = "#5277c3";
   defaultMode = if darkMode then "dark" else "light";
-  logoPath = ../../../src/nixos_logo.txt;
 
   # ── VSCode settings template ──────────────────────────────────────────
   # Generated at Nix evaluation time so store paths are resolved literally.
@@ -171,18 +170,18 @@ let
       "terminal.foreground" = "@BASE05@";
       "terminalCursor.foreground" = "@ACCENT@";
       "terminal.ansiBlack" = "@BASE00@";
-      "terminal.ansiRed" = "@BASE08@";
+      "terminal.ansiRed" = "@ACCENT@";
       "terminal.ansiGreen" = "@BASE0B@";
       "terminal.ansiYellow" = "@BASE0A@";
-      "terminal.ansiBlue" = "@ACCENT@";
+      "terminal.ansiBlue" = "@BASE0D@";
       "terminal.ansiMagenta" = "@BASE0F@";
       "terminal.ansiCyan" = "@BASE0C@";
       "terminal.ansiWhite" = "@BASE04@";
       "terminal.ansiBrightBlack" = "@BASE03@";
-      "terminal.ansiBrightRed" = "@BASE08@";
+      "terminal.ansiBrightRed" = "@ACCENT@";
       "terminal.ansiBrightGreen" = "@BASE0B@";
       "terminal.ansiBrightYellow" = "@BASE0A@";
-      "terminal.ansiBrightBlue" = "@ACCENT@";
+      "terminal.ansiBrightBlue" = "@BASE0D@";
       "terminal.ansiBrightMagenta" = "@BASE0F@";
       "terminal.ansiBrightCyan" = "@BASE0C@";
       "terminal.ansiBrightWhite" = "@BASE05@";
@@ -244,26 +243,18 @@ in
   ];
 
   # Templates installed read-only under ~/.config/accent/templates/
+  # (starship, micro et fastfetch ne sont PAS listés ici : leurs configs sont
+  # statiques et déclarées dans home/modules/shell/{starship,micro,fastfetch}.nix.
+  # Elles utilisent l'ANSI bleu, remappé par wezterm vers l'accent vif.)
   xdg.configFile."accent/templates/hyprland.conf.tmpl".source = ./templates/hyprland.conf.tmpl;
-  xdg.configFile."accent/templates/starship.toml.tmpl".source = ./templates/starship.toml.tmpl;
-  xdg.configFile."accent/templates/fastfetch-full.jsonc.tmpl".source =
-    ./templates/fastfetch-full.jsonc.tmpl;
-  xdg.configFile."accent/templates/fastfetch-logo.jsonc.tmpl".source =
-    ./templates/fastfetch-logo.jsonc.tmpl;
-  xdg.configFile."accent/templates/micro.tmpl".source = ./templates/micro.tmpl;
   xdg.configFile."accent/templates/wezterm-accent.lua.tmpl".source =
     ./templates/wezterm-accent.lua.tmpl;
   xdg.configFile."accent/templates/vesktop-quickcss.css.tmpl".source =
     ./templates/vesktop-quickcss.css.tmpl;
   xdg.configFile."accent/templates/gtk4.css.tmpl".source = ./templates/gtk4.css.tmpl;
   xdg.configFile."accent/templates/kdeglobals.tmpl".source = ./templates/kdeglobals.tmpl;
-  xdg.configFile."accent/templates/zen-userchrome.css.tmpl".source =
-    ./templates/zen-userchrome.css.tmpl;
   # Generated at Nix eval time so Nix store paths are literal strings in the template.
   xdg.configFile."accent/templates/vscode-settings.json.tmpl".text = vscodeSettingsTemplate;
-
-  # Make starship pick up the runtime-generated config (override programs.starship default).
-  home.sessionVariables.STARSHIP_CONFIG = lib.mkForce "${config.home.homeDirectory}/.config/accent/starship.toml";
 
   # Remove settings.json.bak BEFORE home-manager checks for link-target collisions.
   # paletted replaces the nix-store symlink with a real file on first run; on the
@@ -287,7 +278,7 @@ in
       ]
       ''
         accent_dir="$HOME/.config/accent"
-        mkdir -p "$accent_dir" "$HOME/.config/micro/colorschemes" "$HOME/.config/wezterm" "$HOME/.config/vesktop/settings"
+        mkdir -p "$accent_dir" "$HOME/.config/wezterm" "$HOME/.config/vesktop/settings"
 
         # Seed accent.hex with the current persisted color (or the palette default
         # on first install) so paletted --init has a source of truth to read.
@@ -301,8 +292,7 @@ in
         # One-shot render: re-generates all template outputs without starting
         # the socket server.  --no-hyprctl because Hyprland may not be running
         # during activation.
-        FASTFETCH_LOGO=${toString logoPath} \
-          ${accentDaemon}/bin/paletted --init --no-hyprctl 2>&1 || true
+        ${accentDaemon}/bin/paletted --init --no-hyprctl 2>&1 || true
       '';
 
   # ── systemd user service ──────────────────────────────────────────────────
@@ -319,9 +309,6 @@ in
       ExecStart = "${accentDaemon}/bin/paletted";
       Restart = "on-failure";
       RestartSec = "2s";
-      Environment = [
-        "FASTFETCH_LOGO=${toString logoPath}"
-      ];
     };
     Install.WantedBy = [ "graphical-session.target" ];
   };

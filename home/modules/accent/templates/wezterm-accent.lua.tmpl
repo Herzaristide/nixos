@@ -32,20 +32,20 @@ config.colors = {
   cursor_fg     = "@BASE00@",
   ansi = {
     "@BASE00@", -- black
-    "@BASE08@", -- red
+    accent,     -- red (slot 1 — remapped to accent, used by Claude Code dark-ansi)
     "@BASE0B@", -- green
     "@BASE0A@", -- yellow
-    accent,     -- blue  (slot 4 — remapped to accent by starship)
+    "@BASE0D@", -- blue
     "@BASE0F@", -- magenta / coral
     "@BASE0C@", -- cyan
     "@BASE04@", -- white (secondary fg)
   },
   brights = {
     "@BASE03@", -- bright black (muted)
-    "@BASE08@", -- bright red
+    accent,     -- bright red (slot 9)
     "@BASE0B@", -- bright green
     "@BASE0A@", -- bright yellow
-    accent,     -- bright blue  (slot 12)
+    "@BASE0D@", -- bright blue
     "@BASE0F@", -- bright magenta
     "@BASE0C@", -- bright cyan
     "@BASE05@", -- bright white (main fg)

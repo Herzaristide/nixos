@@ -59,8 +59,8 @@
   ];
 
   # Wallpaper files for awww (dark/light toggle via Theme.qml)
-  xdg.configFile."wallpaper-dark".source = ../src/nix-wallpaper-binary-black_2k.png;
-  xdg.configFile."wallpaper-light".source = ../src/nix-wallpaper-binary-white_2k.png;
+  xdg.configFile."wallpaper-dark".source = ../src/nix-wallpaper-binary-black_8k.png;
+  xdg.configFile."wallpaper-light".source = ../src/nix-wallpaper-binary-white_8k.png;
 
   # Default applications (force overwrites existing mimeapps.list files)
   xdg.configFile."mimeapps.list".force = true;

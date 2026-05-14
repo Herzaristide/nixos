@@ -108,6 +108,7 @@ let
       };
     };
     "extensions.ignoreRecommendations" = true;
+    "nixEnvSelector.suggestion" = false; # direnv handles nix envs, suppress nix-env-selector popup
     "editor.tabSize" = 4;
     "editor.insertSpaces" = false;
     "editor.tabSizeType" = "fixed";

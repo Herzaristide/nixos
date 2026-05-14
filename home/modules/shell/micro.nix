@@ -11,8 +11,8 @@
     # ~/.config/micro/settings.json
     # Options : https://github.com/zyedidia/micro/blob/master/runtime/help/options.md
     settings = {
-      # Colorscheme generated at runtime by paletted (see home/modules/accent/accent.nix).
-      # File: ~/.config/micro/colorschemes/accent.micro
+      # Colorscheme statique : n'utilise que des noms ANSI (`red`, `bright-red`…),
+      # remappés vers l'accent vif par wezterm. Aucun rendu dynamique nécessaire.
       colorscheme = "accent";
       autoindent = true;
       autosave = 0;
@@ -52,6 +52,44 @@
       pluginrepos = [ ];
     };
   };
+
+  # ~/.config/micro/colorschemes/accent.micro
+  xdg.configFile."micro/colorschemes/accent.micro".text = ''
+    color-link default                   "default,default"
+    color-link comment                   "bold black"
+    color-link identifier                "bright-red"
+    color-link constant                  "red"
+    color-link constant.string           "red"
+    color-link constant.number           "red"
+    color-link constant.bool             "red"
+    color-link statement                 "red"
+    color-link symbol.operator           "bright-red"
+    color-link preproc                   "red"
+    color-link type                      "bright-red"
+    color-link special                   "red"
+    color-link statusline                "white,color8"
+    color-link tabbar                    "white,color8"
+    color-link tabbar.active             "white,red"
+    color-link indent-char               "bold black"
+    color-link line-number               "bold black"
+    color-link current-line-number       "red"
+    color-link gutter-error              "red"
+    color-link gutter-warning            "red"
+    color-link cursor-line               "default"
+    color-link color-column              "default"
+    color-link match-brace               "red"
+    color-link diff-added                "green"
+    color-link diff-modified             "red"
+    color-link diff-deleted              "red"
+    color-link selection                 ",bold black"
+    color-link hlsearch                  "default,bright-red"
+    color-link message                   "red"
+    color-link error                     "white,red"
+    color-link info                      "red"
+    color-link warning                   "red"
+    color-link todo                      "bold red"
+    color-link divider                   "color8"
+  '';
 
   # ~/.config/micro/bindings.json
   xdg.configFile."micro/bindings.json".text = builtins.toJSON {
