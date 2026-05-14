@@ -75,6 +75,23 @@
         ];
         type = "stdio";
       };
+      # Oracle Cloud (OCI): Oracle Database access via mcp-server-oracle.
+      # Requires ORACLE_DSN, ORACLE_USER, ORACLE_PASSWORD in the client's env.
+      oracle = {
+        command = "${pkgs.uv}/bin/uvx";
+        args = [ "mcp-server-oracle" ];
+        type = "stdio";
+      };
+      # AWS: general-purpose AWS API access (awslabs official).
+      # Uses standard AWS credentials (~/.aws/credentials or env vars).
+      aws = {
+        command = "${pkgs.uv}/bin/uvx";
+        args = [ "awslabs.core-mcp-server@latest" ];
+        type = "stdio";
+        environment = {
+          FASTMCP_LOG_LEVEL = "ERROR";
+        };
+      };
     };
   };
 }

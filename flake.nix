@@ -19,12 +19,7 @@
       url = "git+https://git.outfoxxed.me/quickshell/quickshell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    voicemode = {
-      url = "github:mbailey/voicemode";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    explorer.url = "path:/home/aristide/explorer";
+    explorer.url = "github:Herzaristide/Explorer";
   };
 
   outputs =
@@ -60,44 +55,44 @@
       };
     in
     {
-      packages.${system} = {
+      packages.${pkgs.system} = {
         install-nixos = install-nixos-pkg;
         paletted = accent-daemon-pkg;
       };
 
-      apps.${system}.install-nixos = {
+      apps.${pkgs.system}.install-nixos = {
         type = "app";
         program = "${install-nixos-pkg}/bin/install-nixos";
       };
 
       nixosConfigurations = {
         zola = nixpkgs.lib.nixosSystem {
-          inherit system;
           modules = [
+            { nixpkgs.hostPlatform = system; }
             ./hosts/zola/configuration.nix
           ];
           specialArgs = { inherit inputs; };
         };
 
         gary = nixpkgs.lib.nixosSystem {
-          inherit system;
           modules = [
+            { nixpkgs.hostPlatform = system; }
             ./hosts/gary/configuration.nix
           ];
           specialArgs = { inherit inputs; };
         };
 
         exupery = nixpkgs.lib.nixosSystem {
-          inherit system;
           modules = [
+            { nixpkgs.hostPlatform = system; }
             ./hosts/exupery/configuration.nix
           ];
           specialArgs = { inherit inputs; };
         };
 
         kafka = nixpkgs.lib.nixosSystem {
-          inherit system;
           modules = [
+            { nixpkgs.hostPlatform = system; }
             ./hosts/kafka/configuration.nix
           ];
           specialArgs = { inherit inputs; };

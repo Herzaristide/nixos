@@ -51,7 +51,6 @@
 
   home.packages = with pkgs; [
     inputs.explorer.packages.${pkgs.stdenv.hostPlatform.system}.file-explorer
-    inputs.voicemode.packages.${pkgs.stdenv.hostPlatform.system}.default
     nautilus
     aubio
     vesktop
