@@ -9,7 +9,11 @@
   imports = [
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.default
+    ../../modules/nixos.nix
     ../../modules/common.nix
+    ../../modules/network.nix
+    ../../modules/power.nix
+    ../../modules/storage.nix
   ];
 
   # Hostname
@@ -27,20 +31,6 @@
     efiSupport = false;
     useOSProber = false;
     configurationLimit = 10;
-  };
-
-  # Static IP (systemd-networkd; disable NetworkManager for declarative config)
-  # FIXME: Adjust interface name and IP address for your network configuration
-  networking.networkmanager.enable = true;
-
-  # SSH - allow password authentication
-  services.openssh = {
-    enable = true;
-    settings = {
-      PasswordAuthentication = true;
-      KbdInteractiveAuthentication = true;
-      PermitRootLogin = "no";
-    };
   };
 
   # Firmware for hardware (network, etc.)
@@ -62,29 +52,4 @@
     "nomodeset" # Disable kernel mode setting — uses basic VESA framebuffer
   ];
 
-  # HDD mounts - Samsung HD161GJ (149GB) at /mnt/hdd1
-  fileSystems."/mnt/hdd1" = {
-    device = "/dev/disk/by-uuid/c2237143-9648-451c-a713-23368205effe";
-    fsType = "ext4";
-    options = [ "nofail" ];
-  };
-
-  # SSD maintenance — periodic TRIM
-  services.fstrim.enable = true;
-
-  # Nix experimental features
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
-
-  # K3s - lightweight Kubernetes cluster (single-node server)
-  services.k3s = {
-    enable = true;
-    role = "server";
-  };
-
-  # Firewall disabled for development server (allows access to all ports from other machines)
-  # WARNING: Only suitable for trusted local networks. Enable firewall and specify ports for production.
-  networking.firewall.enable = false;
 }

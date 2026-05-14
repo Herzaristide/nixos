@@ -2,6 +2,7 @@
   config,
   pkgs,
   inputs,
+  lib,
   ...
 }:
 
@@ -9,10 +10,50 @@
   imports = [
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.default
+    ../../modules/nixos.nix
     ../../modules/common.nix
+    ../../modules/network.nix
+    ../../modules/power.nix
+    ../../modules/storage.nix
     ../../modules/head.nix
-    ../../modules/battery-optimization.nix
+    ../../modules/audio.nix
   ];
+
+  # --- Battery / CPU power management (laptop, Intel) ---
+  # Disable power-profiles-daemon (conflicts with auto-cpufreq)
+  services.power-profiles-daemon.enable = lib.mkForce false;
+
+  # Auto-cpufreq: dynamic CPU frequency scaling based on AC/battery state
+  services.auto-cpufreq = {
+    enable = true;
+    settings = {
+      # Battery: aggressive power saving
+      battery = {
+        governor = "powersave";
+        turbo = "never"; # Disable turbo boost to reduce heat and power draw
+        scaling_min_freq = 800000; # 800 MHz
+        scaling_max_freq = 2400000; # Cap at 2.4 GHz
+        enable_thresholds = true;
+      };
+      # AC: balanced performance
+      charger = {
+        governor = "performance";
+        turbo = "auto";
+        scaling_min_freq = 1200000;
+        scaling_max_freq = 4000000;
+      };
+    };
+  };
+
+  # Thermald: Intel thermal management (prevents overheating, reduces fan noise)
+  services.thermald.enable = true;
+
+  # Powertop auto-tune on boot + powersave fallback governor
+  powerManagement = {
+    enable = true;
+    cpuFreqGovernor = lib.mkDefault "powersave";
+    powertop.enable = true;
+  };
 
   # Hostname
   networking.hostName = "zola";
@@ -27,27 +68,6 @@
   boot.loader.grub.enable = false;
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  # Networking
-  networking.networkmanager.enable = true;
-
-  # Lid close handling: don't suspend when docked with external monitors
-  # When lid is closed, systemd-logind will ignore it (Hyprland handles display disable)
-  services.logind.settings.Login = {
-    HandleLidSwitch = "ignore"; # Don't suspend on lid close (let Hyprland handle it)
-    HandleLidSwitchDocked = "ignore"; # Also ignore when docked
-    HandleLidSwitchExternalPower = "ignore"; # Ignore when on AC power
-  };
-
-  # SSH - allow password authentication
-  services.openssh = {
-    enable = true;
-    settings = {
-      PasswordAuthentication = true;
-      KbdInteractiveAuthentication = true;
-      PermitRootLogin = "no";
-    };
-  };
 
   # --- GPU (NVIDIA, Zola: Prime Intel+Nvidia, Wayland) ---
   boot.kernelParams = [

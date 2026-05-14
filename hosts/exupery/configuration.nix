@@ -11,7 +11,9 @@
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.default
     inputs.nixos-wsl.nixosModules.default
+    ../../modules/nixos.nix
     ../../modules/common.nix
+    ../../modules/network.nix
   ];
 
   # Enable WSL integration
@@ -44,33 +46,5 @@
     NIX_SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
     NODE_TLS_REJECT_UNAUTHORIZED = "0";
     GIT_SSL_NO_VERIFY = "true";
-  };
-
-  # SSH - allow connections without authentication (WSL only, local access)
-  services.openssh = {
-    enable = true;
-    settings = {
-      PasswordAuthentication = true;
-      PermitEmptyPasswords = true;
-      KbdInteractiveAuthentication = true;
-      PermitRootLogin = "no";
-    };
-  };
-
-  # Allow user to have empty password for passwordless SSH access
-  users.users.aristide = {
-    hashedPassword = null; # No password hash - allows empty password
-    initialHashedPassword = ""; # Set initial empty password
-  };
-
-  # Configure PAM to allow empty passwords for SSH
-  security.pam.services.sshd = {
-    # Allow empty passwords (nullok option)
-    text = ''
-      auth       required     pam_unix.so     nullok
-      account    required     pam_unix.so
-      password   required     pam_unix.so     nullok
-      session    required     pam_unix.so
-    '';
   };
 }

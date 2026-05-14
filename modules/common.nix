@@ -30,24 +30,6 @@
 
   config = {
 
-    nixpkgs.config.allowUnfree = true;
-
-    # Required by nixd (Nix IDE) when evaluating flake-based options/expressions.
-    nix.settings.experimental-features = [
-      "nix-command"
-      "flakes"
-    ];
-
-    # Automatic garbage collection: delete builds older than 7 days
-    nix.gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 30d";
-    };
-
-    # Keep only the last 10 boot entries in systemd-boot
-    boot.loader.systemd-boot.configurationLimit = 10;
-
     # Virtual console (TTY) — French AZERTY for all hosts
     console = {
       enable = true;
@@ -71,15 +53,6 @@
       LC_TIME = "fr_FR.UTF-8";
     };
 
-    # Site blocking (YouTube, Twitch)
-    networking.extraHosts = ''
-      0.0.0.0 youtube.com www.youtube.com m.youtube.com tv.youtube.com gaming.youtube.com youtu.be youtube-nocookie.com
-      0.0.0.0 youtubei.googleapis.com youtube.googleapis.com
-      0.0.0.0 ytimg.com www.ytimg.com i.ytimg.com s.ytimg.com
-      0.0.0.0 twitch.tv www.twitch.tv m.twitch.tv dashboard.twitch.tv passport.twitch.tv gql.twitch.tv
-      0.0.0.0 static.twitchcdn.net vod-secure.twitch.tv vod-metro.twitch.tv usher.ttvnw.net
-    '';
-
     # Fish as default shell
     programs.fish.enable = true;
 
@@ -89,25 +62,9 @@
       printf '\033[?7h'
     '';
 
-    # nix-ld for running unpatched dynamic executables on NixOS
-    programs.nix-ld.enable = true;
-    programs.nix-ld.libraries = with pkgs; [
-      # Add any missing dynamic libraries here if needed
-      stdenv.cc.cc
-      zlib
-      fuse3
-      icu
-      nss
-      openssl
-      curl
-      expat
-    ];
-
     # System-level packages
     environment.systemPackages = with pkgs; [
       # Monitoring & diagnostics
-      upower
-      htop
       btop
       iotop
       sysstat # iostat, mpstat, pidstat
@@ -148,16 +105,6 @@
       envsubst # env variable substitution
       gnumake
       gcc
-
-      # Container tools
-      ollama # CLI pour ollama pull/run
-
-      # Development (SonarQube extension)
-      jdk21 # Java 21 LTS
-      nodejs_22 # Node.js 22 LTS
-      terminus_font
-      powertop # Power consumption analyzer
-      acpi # Battery status CLI tool
     ];
 
     users.users.aristide = {
@@ -207,9 +154,6 @@
     systemd.tmpfiles.rules = [
       "d /records 0755 aristide users -"
     ];
-
-    # System state version
-    system.stateVersion = "25.11";
 
     # Home Manager
     home-manager = {

@@ -12,11 +12,11 @@
     ./modules/hyprland.nix
     ./modules/vscode/vscode.nix
     ./modules/wezterm.nix
-    ./modules/zen.nix
     ../quickshell/quickshell.nix
     ./modules/walker.nix
     ./modules/accent/accent.nix
     ./modules/kde.nix
+    ./modules/chromium.nix
   ];
 
   # dconf: required for portal-spawned dialogs (file picker, git popups) to pick up
@@ -52,6 +52,7 @@
   home.packages = with pkgs; [
     inputs.explorer.packages.${pkgs.stdenv.hostPlatform.system}.file-explorer
     inputs.voicemode.packages.${pkgs.stdenv.hostPlatform.system}.default
+    nautilus
     aubio
     vesktop
     dgop
@@ -73,6 +74,7 @@
       "x-scheme-handler/http" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/https" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/about" = [ "chromium-browser.desktop" ];
+      "x-scheme-handler/unknown" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/figma" = [ "figma.desktop" ];
       "x-terminal-emulator" = [ "org.wezfurlong.wezterm.desktop" ];
       "inode/directory" = [ "file-explorer.desktop" ];

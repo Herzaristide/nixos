@@ -1,0 +1,42 @@
+{ pkgs, ... }:
+
+{
+  nixpkgs.config.allowUnfree = true;
+
+  nix.settings = {
+    # Required by nixd (Nix IDE) when evaluating flake-based options/expressions.
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+    # Parallel builds — use all available cores
+    max-jobs = "auto";
+    cores = 0;
+  };
+
+  # Automatic garbage collection
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+
+  # Keep only the last 10 boot entries in systemd-boot
+  boot.loader.systemd-boot.configurationLimit = 10;
+
+  # nix-ld for running unpatched dynamic executables on NixOS
+  programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = with pkgs; [
+    stdenv.cc.cc
+    zlib
+    fuse3
+    icu
+    nss
+    openssl
+    curl
+    expat
+  ];
+
+  # System state version
+  system.stateVersion = "25.11";
+}
