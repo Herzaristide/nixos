@@ -75,6 +75,12 @@ fn reload_vscode(state: &AppState) {
             "activityBarBadge.foreground":          "#ffffff",
             "progressBar.background":               a,
             "editorCursor.foreground":              a,
+            "editor.selectionBackground":           a40,
+            "editor.selectionHighlightBackground":  a20,
+            "editor.wordHighlightBackground":       a20,
+            "editor.wordHighlightStrongBackground": a40,
+            "editor.findMatchBackground":           a40,
+            "editor.findMatchHighlightBackground":  a20,
             "tab.activeBorderTop":                  a,
             "panelTitle.activeBorder":              a,
             "list.activeSelectionBackground":       a20,
@@ -93,8 +99,8 @@ fn reload_vscode(state: &AppState) {
             "notificationToast.border":             a,
             "extensionButton.prominentBackground":  d,
             "extensionButton.prominentHoverBackground": a,
-            "terminal.ansiBlue":                    a,
-            "terminal.ansiBrightBlue":              m,
+            "terminal.ansiRed":                     a,
+            "terminal.ansiBrightRed":               m,
             "terminal.tab.activeBorder":            a,
             "terminalCursor.foreground":            a,
             "terminal.findMatchBorder":             a,
@@ -125,16 +131,18 @@ fn reload_vscode(state: &AppState) {
     }
 }
 
-/// Recursive JSON deep merge. `b` wins over `a` for scalar collisions.
+/// Recursive JSON deep merge. `b` wins over `a` for scalar collisions; when
+/// `b` is an object and `a` is not, `b` replaces `a` wholesale.
 fn json_merge(a: &mut serde_json::Value, b: serde_json::Value) {
-    if let (serde_json::Value::Object(a_map), serde_json::Value::Object(b_map)) = (a, &b) {
-        for (k, v) in b_map {
-            let entry = a_map.entry(k.clone()).or_insert(serde_json::Value::Null);
-            if v.is_object() {
-                json_merge(entry, v.clone());
-            } else {
-                *entry = v.clone();
+    match (a, b) {
+        (serde_json::Value::Object(a_map), serde_json::Value::Object(b_map)) => {
+            for (k, v) in b_map {
+                let entry = a_map.entry(k).or_insert(serde_json::Value::Null);
+                json_merge(entry, v);
             }
+        }
+        (a_slot, b_val) => {
+            *a_slot = b_val;
         }
     }
 }
