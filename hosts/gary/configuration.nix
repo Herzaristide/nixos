@@ -9,8 +9,13 @@
   imports = [
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.default
+    ../../modules/nixos.nix
     ../../modules/common.nix
+    ../../modules/network.nix
+    ../../modules/power.nix
+    ../../modules/storage.nix
     ../../modules/head.nix
+    ../../modules/audio.nix
   ];
 
   # Hostname
@@ -27,35 +32,22 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Static IP (systemd-networkd; disable NetworkManager for declarative config)
-  networking.networkmanager.enable = true;
-  networking.useDHCP = false;
-  networking.interfaces.wlp39s0 = {
-    ipv4.addresses = [
-      {
-        address = "192.168.1.100";
-        prefixLength = 24;
-      }
-    ];
-  };
-  networking.defaultGateway = "192.168.1.1";
-  networking.nameservers = [
-    "192.168.1.1"
-    "8.8.8.8"
-  ];
-
-  # SSH - allow password authentication
-  services.openssh = {
-    enable = true;
-    settings = {
-      PasswordAuthentication = true;
-      KbdInteractiveAuthentication = true;
-      PermitRootLogin = "no";
-    };
-  };
-
   # Firmware for hardware (network, etc.)
   hardware.enableRedistributableFirmware = true;
+
+  # CPU: AMD Ryzen 5 1600 (Zen 1 / Summit Ridge, 6c/12t, AM4)
+  # Microcode update is enabled via hardware-configuration.nix (cpu.amd.updateMicrocode)
+  boot.kernelModules = [ "kvm-amd" ]; # AMD-V virtualization (KVM, QEMU, libvirt)
+
+  # CPU governor is set to "performance" by DMS base.nix — appropriate for a plugged-in desktop.
+  # Note: amd-pstate is NOT used (requires Zen 2+ with CPPC); acpi-cpufreq remains the driver.
+
+  # zram swap — fast in-memory compressed swap (Zen 1 has plenty of cycles for zstd)
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 50;
+  };
 
   # GPU: AMD Radeon RX 6600 (RDNA 2 / Navi 23) — amdgpu driver
   services.xserver.videoDrivers = [ "amdgpu" ];
@@ -79,6 +71,7 @@
     rocmPackages.clr # HIP runtime + OpenCL (Compute Language Runtime)
     rocmPackages.rocm-runtime # HSA runtime (low-level ROCm layer)
     rocmPackages.hipcc # HIP compiler (GPU kernel compilation)
+    zenmonitor # CPU monitoring (per-CCX temps, P-states, boost)
   ];
 
   # /opt/rocm symlink — PyTorch/TensorFlow look for ROCm here by default
@@ -93,83 +86,4 @@
   services.ollama.package = pkgs.ollama-rocm;
   services.ollama.rocmOverrideGfx = "10.3.0"; # Navi 23 / gfx1032
 
-  # Blacklist NVIDIA drivers (not needed)
-  boot.blacklistedKernelModules = [
-    "nvidia"
-    "nvidia_drm"
-    "nvidia_modeset"
-    "nvidia_uvm"
-    "nouveau"
-  ];
-
-  # Enable NTFS3 kernel driver for Maxtor HDD
-  boot.supportedFilesystems = [ "ntfs" ];
-
-  # HDD mounts (optional - nofail allows boot without these disks)
-  fileSystems."/mnt/hdd1" = {
-    device = "/dev/disk/by-uuid/516f5bb5-72b9-47da-b6bb-7b193ac1cd86";
-    fsType = "ext4";
-    options = [ "nofail" ];
-  };
-  fileSystems."/mnt/hdd2" = {
-    device = "/dev/disk/by-uuid/c25498c3-b03c-43cc-8650-f8183873ceec";
-    fsType = "ext4";
-    options = [ "nofail" ];
-  };
-  # Maxtor 931.5G NTFS drive (/dev/sda1)
-  fileSystems."/mnt/hdd3" = {
-    device = "/dev/disk/by-uuid/FE6EC66C6EC61D71";
-    fsType = "ntfs3";
-    options = [
-      "nofail"
-      "uid=1000"
-      "gid=1000"
-      "umask=0022"
-    ];
-  };
-  fileSystems."/mnt/hdd4" = {
-    device = "/dev/disk/by-uuid/8f0502de-aeec-497c-a92a-76ce47fd26de";
-    fsType = "ext4";
-    options = [ "nofail" ];
-  };
-
-  # SSD maintenance — periodic TRIM
-  services.fstrim.enable = true;
-
-  # Sleep / power management — suspend on idle, wake on keyboard/mouse
-  services.logind = {
-    settings.Login = {
-      HandleLidSwitch = "ignore";
-      HandleLidSwitchExternalPower = "ignore";
-      IdleAction = "suspend";
-      IdleActionSec = "20min";
-      HandleSuspendKey = "suspend";
-      HandleHibernateKey = "hibernate";
-      HandlePowerKey = "poweroff";
-    };
-  };
-
-  # Nix experimental features
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
-
-  # Firewall configuration
-  networking.firewall = {
-    enable = true;
-
-    allowedTCPPorts = [
-      22 # SSH
-      80 # HTTP
-    ];
-
-    allowedUDPPorts = [
-      51820 # WireGuard
-      51821 # WireGuard IPv6
-    ];
-
-    # Allow trusted local network (adjust if needed)
-    trustedInterfaces = [ "lo" ]; # Loopback always trusted
-  };
 }
