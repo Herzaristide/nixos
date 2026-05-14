@@ -98,5 +98,6 @@
     whisper-cpp
     piper-tts
     alsa-utils
+    aubio
   ];
 }

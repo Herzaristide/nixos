@@ -8,17 +8,6 @@
 }:
 
 {
-  imports = [
-    ./modules/hyprland.nix
-    ./modules/code/vscode/vscode.nix
-    ./modules/wezterm.nix
-    ../quickshell/quickshell.nix
-    ./modules/walker.nix
-    ./modules/accent/accent.nix
-    ./modules/kde.nix
-    ./modules/chromium.nix
-  ];
-
   # dconf: required for portal-spawned dialogs (file picker, git popups) to pick up
   # GSettings values (gtk-theme, color-scheme, font settings).
   dconf.enable = true;
@@ -39,10 +28,6 @@
     gtk.enable = true;
   };
 
-  home.sessionVariables = {
-    BROWSER = "chromium";
-  };
-
   # NixOS font store paths change on rebuild; stale caches cause white squares in GTK popups.
   home.activation.refreshFontCache = lib.hm.dag.entryAfter [ "installPackages" ] ''
     run rm -rf "$HOME/.cache/fontconfig"
@@ -52,9 +37,7 @@
   home.packages = with pkgs; [
     inputs.explorer.packages.${pkgs.stdenv.hostPlatform.system}.file-explorer
     nautilus
-    aubio
     vesktop
-    dgop
     awww # Wallpaper daemon — caches GPU textures for instant zero-flash switching
   ];
 
