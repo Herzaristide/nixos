@@ -94,6 +94,7 @@
 
   # Voice assistant (whisper STT + piper TTS)
   environment.systemPackages = with pkgs; [
+    sox
     whisper-cpp
     piper-tts
     alsa-utils

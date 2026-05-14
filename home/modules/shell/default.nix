@@ -7,5 +7,6 @@
     ./starship.nix
     ./micro.nix
     ./superfile.nix
+    ./direnv.nix
   ];
 }

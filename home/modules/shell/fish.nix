@@ -63,8 +63,8 @@
       kl = "kubectl logs -f";
 
       # Nix
-      nb = "nixos-rebuild";
-      nbs = "sudo nixos-rebuild switch --flake /etc/nixos#(hostname)";
+      nr = "nixos-rebuild";
+      nrs = "sudo nixos-rebuild switch --flake /etc/nixos#(hostname)";
       nfu = "nix flake update";
       nfc = "nix flake check";
     };

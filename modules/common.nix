@@ -34,6 +34,7 @@
     # mkDefault on enable so WSL (which disables console) can override without mkForce
     console = {
       enable = lib.mkDefault true;
+      earlySetup = true; # Load font in initrd so systemd-vconsole-setup finds it
       font = "ter-v32n";
       packages = [ pkgs.terminus_font ];
       keyMap = "fr";
@@ -159,6 +160,8 @@
     # Home Manager
     home-manager = {
       backupFileExtension = "bak";
+      useUserPackages = true; # Install HM packages to /etc/profiles/per-user/$USER
+      useGlobalPkgs = true; # Reuse system nixpkgs instead of home-manager's own instance
       extraSpecialArgs = {
         inherit inputs;
         head = config.head;
