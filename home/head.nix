@@ -10,7 +10,7 @@
 {
   imports = [
     ./modules/hyprland.nix
-    ./modules/vscode/vscode.nix
+    ./modules/code/vscode/vscode.nix
     ./modules/wezterm.nix
     ../quickshell/quickshell.nix
     ./modules/walker.nix
@@ -57,12 +57,11 @@
     vesktop
     dgop
     awww # Wallpaper daemon — caches GPU textures for instant zero-flash switching
-    (writeShellScriptBin "hypr-claude-launch" "claude-pwa")
-    (writeShellScriptBin "hypr-gemini-launch" "gemini-pwa")
-    (writeShellScriptBin "gemini-pwa" "chromium --app=https://gemini.google.com --user-data-dir=$HOME/.config/chromium-$(hostname) --enable-features=WebUIDarkMode --force-dark-mode")
-    (writeShellScriptBin "claude-pwa" "chromium --app=https://claude.ai --user-data-dir=$HOME/.config/chromium-$(hostname) --enable-features=WebUIDarkMode --force-dark-mode")
-    (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium-$(hostname) --enable-features=WebUIDarkMode --force-dark-mode")
   ];
+
+  # Wallpaper files for awww (dark/light toggle via Theme.qml)
+  xdg.configFile."wallpaper-dark".source = ../src/nix-wallpaper-binary-black_2k.png;
+  xdg.configFile."wallpaper-light".source = ../src/nix-wallpaper-binary-white_2k.png;
 
   # Default applications (force overwrites existing mimeapps.list files)
   xdg.configFile."mimeapps.list".force = true;
@@ -81,16 +80,6 @@
     };
   };
 
-  # Claude PWA (Claude.ai in app window, per-host Chrome profile)
-  xdg.desktopEntries.claude-chrome = {
-    name = "Claude";
-    comment = "Anthropic Claude AI assistant";
-    exec = "claude-pwa";
-    icon = "applications-internet";
-    categories = [ "Chat" ];
-    startupNotify = true;
-  };
-
   # Custom file explorer
   xdg.desktopEntries.file-explorer = {
     name = "File Explorer";
@@ -104,30 +93,5 @@
     mimeType = [ "inode/directory" ];
     startupNotify = true;
   };
-
-  # BandLab PWA (music production web app)
-  xdg.desktopEntries.bandlab-chrome = {
-    name = "BandLab";
-    comment = "Music production studio in your browser";
-    exec = "bandlab-pwa";
-    icon = "multimedia-audio-editor";
-    categories = [
-      "Audio"
-      "AudioVideo"
-    ];
-    startupNotify = true;
-  };
-
-  # Wallpaper configuration — reduced to 2K for fast GPU upload (originals are 8K)
-  xdg.configFile."wallpaper-dark".source =
-    pkgs.runCommand "wallpaper-dark.png" { nativeBuildInputs = [ pkgs.imagemagick ]; }
-      ''
-        magick ${../src/nix-wallpaper-binary-black_8k.png} -resize 2560x1440 $out
-      '';
-  xdg.configFile."wallpaper-light".source =
-    pkgs.runCommand "wallpaper-light.png" { nativeBuildInputs = [ pkgs.imagemagick ]; }
-      ''
-        magick ${../src/nix-wallpaper-binary-white_8k.png} -resize 2560x1440 $out
-      '';
 
 }

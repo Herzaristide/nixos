@@ -1,4 +1,9 @@
-{ pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
   # VSCode desktop extensions (mirrors server extensions + desktop-specific ones)
@@ -120,32 +125,8 @@ let
     "editor.fontLigatures" = true;
   };
 
-  # MCP servers (dedicated config, not user settings)
-  mcp = {
-    servers = {
-      context7 = {
-        command = "${pkgs.nodejs_22}/bin/npx";
-        args = [
-          "-y"
-          "@upstash/context7-mcp@latest"
-        ];
-        type = "stdio";
-      };
-      playwright = {
-        command = "${pkgs.nodejs_22}/bin/npx";
-        args = [ "@playwright/mcp@latest" ];
-        type = "stdio";
-      };
-      docker = {
-        command = "${pkgs.nodejs_22}/bin/npx";
-        args = [
-          "-y"
-          "@docker/mcp-server"
-        ];
-        type = "stdio";
-      };
-    };
-  };
+  # MCP servers — single source of truth in modules/code/mcp.nix
+  mcp.servers = config.programs.mcp.servers;
 
   # Custom keybindings
   keybindings = [
