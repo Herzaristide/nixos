@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   darkMode ? true,
   ...
@@ -52,6 +53,11 @@ in
       extraConfig = {
         "gtk-application-prefer-dark-theme" = darkMode;
       };
+      # Pulls in the libadwaita color tokens fragment rewritten by paletted
+      # on every accent change. The rest of the GTK4 config stays declarative.
+      extraCss = ''
+        @import url("file://${config.home.homeDirectory}/.config/accent/fragments/gtk4-colors.css");
+      '';
     };
   };
 

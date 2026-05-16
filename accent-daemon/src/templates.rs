@@ -9,39 +9,33 @@ pub fn render_all(state: &AppState) -> io::Result<()> {
     let subs = build_substitutions(state);
     let home = home_dir();
 
+    // Fragment-only outputs under ~/.config/accent/fragments/ — referenced by
+    // declarative Nix configs via import / dofile / @import. The full app
+    // configs live in /nix/store (managed by home-manager) and only the
+    // colour layer is daemon-mutated.
+    //
+    // Exceptions written as full files (no native include mechanism):
+    //   - kdeglobals  : KDE/Qt has no include directive
+    //
+    // Live-reload triggers for the listed apps are handled either via file
+    // watch (Alacritty, WezTerm) or D-Bus signals (KDE).  Hyprland is reloaded
+    // via direct `hyprctl keyword` calls in `appctl.rs` — no fragment needed.
+    let fragments = state.accent_dir.join("fragments");
     let templates: &[(&str, PathBuf)] = &[
-        ("hyprland.conf.tmpl", state.accent_dir.join("hyprland.conf")),
-        ("starship.toml.tmpl", state.accent_dir.join("starship.toml")),
         (
-            "fastfetch-full.jsonc.tmpl",
-            state.accent_dir.join("fastfetch-full.jsonc"),
+            "alacritty-colors.toml.tmpl",
+            fragments.join("alacritty-colors.toml"),
         ),
         (
-            "fastfetch-logo.jsonc.tmpl",
-            state.accent_dir.join("fastfetch-logo.jsonc"),
+            "hyprland-colors.lua.tmpl",
+            fragments.join("hyprland-colors.lua"),
         ),
+        ("gtk4-colors.css.tmpl", fragments.join("gtk4-colors.css")),
         (
-            "micro.tmpl",
-            home.join(".config/micro/colorschemes/accent.micro"),
+            "vesktop-colors.css.tmpl",
+            fragments.join("vesktop-colors.css"),
         ),
-        (
-            "wezterm-accent.lua.tmpl",
-            home.join(".config/wezterm/wezterm.lua"),
-        ),
-        (
-            "alacritty.toml.tmpl",
-            home.join(".config/alacritty/alacritty.toml"),
-        ),
-        (
-            "vesktop-quickcss.css.tmpl",
-            home.join(".config/vesktop/settings/quickCss.css"),
-        ),
-        ("gtk4.css.tmpl", home.join(".config/gtk-4.0/gtk.css")),
         ("kdeglobals.tmpl", home.join(".config/kdeglobals")),
-        (
-            "zen-userchrome.css.tmpl",
-            home.join(".config/accent/zen-userchrome.css"),
-        ),
     ];
 
     for (tmpl_name, out_path) in templates {

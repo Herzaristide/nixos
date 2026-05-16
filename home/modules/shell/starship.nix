@@ -2,8 +2,8 @@
 
 {
   # Config statique : starship n'utilise que des noms ANSI (`red`, `bright-black`…).
-  # wezterm remappe le slot ANSI red (slot 1) vers la couleur d'accent vive
-  # (template wezterm-accent.lua.tmpl) — c'est aussi le slot que Claude Code
+  # alacritty remappe le slot ANSI red (slot 1) vers la couleur d'accent vive
+  # (template alacritty.toml.tmpl) — c'est aussi le slot que Claude Code
   # utilise en thème `dark-ansi`, donc l'accent reste cohérent partout.
   programs.starship = {
     enable = true;

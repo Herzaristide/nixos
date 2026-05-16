@@ -55,12 +55,12 @@
       };
     in
     {
-      packages.${pkgs.system} = {
+      packages.${system} = {
         install-nixos = install-nixos-pkg;
         paletted = accent-daemon-pkg;
       };
 
-      apps.${pkgs.system}.install-nixos = {
+      apps.${system}.install-nixos = {
         type = "app";
         program = "${install-nixos-pkg}/bin/install-nixos";
       };

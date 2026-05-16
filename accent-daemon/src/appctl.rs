@@ -25,19 +25,20 @@ pub fn reload_all(state: &AppState, opts: &AppCtlOptions) {
     reload_vscode(state);
     reload_kde(state);
     reload_icons(state);
-    // WezTerm: auto-reloads because it watches ~/.config/wezterm/ for changes.
+    // Alacritty: auto-reloads via `general.import` file watch.
     // Starship / fish: picks up on next prompt (STARSHIP_CONFIG env var).
     // GTK4 / Vesktop / Micro / Fastfetch: next launch.
 }
 
 // ── Hyprland ──────────────────────────────────────────────────────────────
 
-fn reload_hyprland(state: &AppState) {
-    let hex = state.accent.hex_no_hash();
-    let color_arg = format!("rgba({hex}ff)");
-    let _ = Command::new("hyprctl")
-        .args(["keyword", "general:col.active_border", &color_arg])
-        .output();
+fn reload_hyprland(_state: &AppState) {
+    // `hyprctl keyword general:col.active_border` does not work reliably in
+    // Hyprland's Lua config mode.  Instead, trigger a full config reload:
+    // the fragment at ~/.config/accent/fragments/hyprland-colors.lua has
+    // already been re-rendered by render_all() before this is called, so
+    // the top-level `hl.config()` in hyprland.lua will pick up the new color.
+    let _ = Command::new("hyprctl").arg("reload").output();
 }
 
 // ── VSCode settings.json ──────────────────────────────────────────────────
