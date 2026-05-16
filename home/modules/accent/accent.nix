@@ -17,18 +17,29 @@ in
     accentDaemon # provides both `paletted` and `palette` binaries
   ];
 
-  # Templates installed read-only under ~/.config/accent/templates/
-  # (starship, micro et fastfetch ne sont PAS listés ici : leurs configs sont
-  # statiques et déclarées dans home/modules/shell/{starship,micro,fastfetch}.nix.
-  # Elles utilisent l'ANSI bleu, remappé par wezterm vers l'accent vif.)
-  xdg.configFile."accent/templates/hyprland.conf.tmpl".source = ./templates/hyprland.conf.tmpl;
-  xdg.configFile."accent/templates/wezterm-accent.lua.tmpl".source =
-    ./templates/wezterm-accent.lua.tmpl;
-  xdg.configFile."accent/templates/alacritty.toml.tmpl".source = ./templates/alacritty.toml.tmpl;
-  xdg.configFile."accent/templates/vesktop-quickcss.css.tmpl".source =
-    ./templates/vesktop-quickcss.css.tmpl;
-  xdg.configFile."accent/templates/gtk4.css.tmpl".source = ./templates/gtk4.css.tmpl;
+  # Templates installed read-only under ~/.config/accent/templates/.
+  # paletted reads these and writes rendered output to
+  # ~/.config/accent/fragments/ (color-only snippets imported by the
+  # declarative Nix app configs) — except `kdeglobals.tmpl` which is
+  # rendered as a full file (KDE/Qt has no include directive).
+  #
+  # Starship, micro, fastfetch are NOT listed: their configs are static
+  # ANSI-only, declared in home/modules/shell/{starship,micro,fastfetch}.nix.
+  xdg.configFile."accent/templates/alacritty-colors.toml.tmpl".source =
+    ./templates/alacritty-colors.toml.tmpl;
+  xdg.configFile."accent/templates/hyprland-colors.lua.tmpl".source =
+    ./templates/hyprland-colors.lua.tmpl;
+  xdg.configFile."accent/templates/gtk4-colors.css.tmpl".source =
+    ./templates/gtk4-colors.css.tmpl;
+  xdg.configFile."accent/templates/vesktop-colors.css.tmpl".source =
+    ./templates/vesktop-colors.css.tmpl;
   xdg.configFile."accent/templates/kdeglobals.tmpl".source = ./templates/kdeglobals.tmpl;
+
+  # quickCss.css for Vesktop is a one-line stub that imports the fragment
+  # rewritten by paletted on every accent change.
+  xdg.configFile."vesktop/settings/quickCss.css".text = ''
+    @import url("file://${config.home.homeDirectory}/.config/accent/fragments/vesktop-colors.css");
+  '';
 
   # Remove settings.json.bak BEFORE home-manager checks for link-target collisions.
   # paletted replaces the nix-store symlink with a real file on first run; on the
@@ -52,7 +63,7 @@ in
       ]
       ''
         accent_dir="$HOME/.config/accent"
-        mkdir -p "$accent_dir" "$HOME/.config/wezterm" "$HOME/.config/alacritty" "$HOME/.config/vesktop/settings"
+        mkdir -p "$accent_dir/fragments"
 
         # Seed accent.hex with the current persisted color (or the palette default
         # on first install) so paletted --init has a source of truth to read.

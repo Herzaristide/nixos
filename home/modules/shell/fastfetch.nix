@@ -6,7 +6,7 @@ let
 
   fastfetchSchema = "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json";
 
-  # Code ANSI 31 = red ; remappé vers l'accent par wezterm (slot 1, partagé
+  # Code ANSI 31 = red ; remappé vers l'accent par alacritty (slot 1, partagé
   # avec Claude Code en thème `dark-ansi`).
   ansiAccent = "31";
 

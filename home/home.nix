@@ -19,7 +19,6 @@ let
     ./head.nix
     ./modules/hyprland.nix
     ./modules/code/vscode/vscode.nix
-    ./modules/wezterm.nix
     ./modules/alacritty.nix
     ../quickshell/quickshell.nix
     ./modules/walker.nix
