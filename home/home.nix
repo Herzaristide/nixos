@@ -20,6 +20,7 @@ let
     ./modules/hyprland.nix
     ./modules/code/vscode/vscode.nix
     ./modules/wezterm.nix
+    ./modules/alacritty.nix
     ../quickshell/quickshell.nix
     ./modules/walker.nix
     ./modules/accent/accent.nix
@@ -41,6 +42,6 @@ in
     PAGER = "less";
     MANPAGER = "less";
     BROWSER = "chromium";
-    TERMINAL = "wezterm";
+    TERMINAL = "alacritty";
   };
 }

@@ -29,7 +29,7 @@ Item {
             type: "function",
             "function": {
                 name: "open_application",
-                description: "Open/launch an application by its command name (e.g. firefox, nautilus, wezterm). The default terminal emulator on this system is wezterm — always use 'wezterm' when the user asks to open a terminal (never kitty, alacritty, gnome-terminal, etc.)",
+                description: "Open/launch an application by its command name (e.g. firefox, nautilus, alacritty). The default terminal emulator on this system is alacritty — always use 'alacritty' when the user asks to open a terminal (never kitty, wezterm, gnome-terminal, etc.)",
                 parameters: {
                     type: "object",
                     properties: {

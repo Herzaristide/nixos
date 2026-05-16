@@ -29,6 +29,10 @@ pub fn render_all(state: &AppState) -> io::Result<()> {
             home.join(".config/wezterm/wezterm.lua"),
         ),
         (
+            "alacritty.toml.tmpl",
+            home.join(".config/alacritty/alacritty.toml"),
+        ),
+        (
             "vesktop-quickcss.css.tmpl",
             home.join(".config/vesktop/settings/quickCss.css"),
         ),

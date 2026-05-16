@@ -28,13 +28,17 @@
         type = "stdio";
       };
       # Linear: remote MCP server, OAuth on first connection (browser flow).
+      # Migrated to Streamable HTTP transport (/mcp) — SSE endpoint deprecated.
       linear = {
-        url = "https://mcp.linear.app/sse";
-        type = "sse";
+        url = "https://mcp.linear.app/mcp";
+        type = "http";
       };
-      # Figma: remote MCP via claude.ai integration (https://mcp.figma.com/mcp).
-      # The local figma-developer-mcp required FIGMA_API_KEY which is not set.
-      # Using the remote server instead — authenticate once via Claude Code.
+      # Figma: remote MCP, authenticate once via OAuth in Claude Code.
+      # Uses Streamable HTTP transport (not SSE — SSE endpoint /sse is gone).
+      figma = {
+        url = "https://mcp.figma.com/mcp";
+        type = "http";
+      };
       # Filesystem: read/write under the listed root. Extend args with more
       # directories to widen access.
       filesystem = {
@@ -82,11 +86,13 @@
         args = [ "mcp-server-oracle" ];
         type = "stdio";
       };
-      # AWS: general-purpose AWS API access (awslabs official).
+      # AWS: general-purpose AWS API access via the AWS CLI (awslabs official).
       # Uses standard AWS credentials (~/.aws/credentials or env vars).
+      # NOTE: awslabs.core-mcp-server was yanked from PyPI ("load individual
+      # MCPs"); aws-api-mcp-server is the closest general-purpose replacement.
       aws = {
         command = "${pkgs.uv}/bin/uvx";
-        args = [ "awslabs.core-mcp-server@latest" ];
+        args = [ "awslabs.aws-api-mcp-server@latest" ];
         type = "stdio";
         environment = {
           FASTMCP_LOG_LEVEL = "ERROR";

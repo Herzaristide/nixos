@@ -24,6 +24,7 @@ in
   xdg.configFile."accent/templates/hyprland.conf.tmpl".source = ./templates/hyprland.conf.tmpl;
   xdg.configFile."accent/templates/wezterm-accent.lua.tmpl".source =
     ./templates/wezterm-accent.lua.tmpl;
+  xdg.configFile."accent/templates/alacritty.toml.tmpl".source = ./templates/alacritty.toml.tmpl;
   xdg.configFile."accent/templates/vesktop-quickcss.css.tmpl".source =
     ./templates/vesktop-quickcss.css.tmpl;
   xdg.configFile."accent/templates/gtk4.css.tmpl".source = ./templates/gtk4.css.tmpl;
@@ -51,7 +52,7 @@ in
       ]
       ''
         accent_dir="$HOME/.config/accent"
-        mkdir -p "$accent_dir" "$HOME/.config/wezterm" "$HOME/.config/vesktop/settings"
+        mkdir -p "$accent_dir" "$HOME/.config/wezterm" "$HOME/.config/alacritty" "$HOME/.config/vesktop/settings"
 
         # Seed accent.hex with the current persisted color (or the palette default
         # on first install) so paletted --init has a source of truth to read.
