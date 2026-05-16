@@ -150,7 +150,7 @@ in
 
       # Minimal binds - terminal, apps
       bind = [
-        "$mod, Return, exec, wezterm"
+        "$mod, Return, exec, alacritty"
         "$mod, V, exec, code"
         "$mod, F, exec, file-explorer"
         "$mod, D, exec, vesktop"

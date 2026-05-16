@@ -57,7 +57,7 @@
       "x-scheme-handler/about" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/unknown" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/figma" = [ "figma.desktop" ];
-      "x-terminal-emulator" = [ "org.wezfurlong.wezterm.desktop" ];
+      "x-terminal-emulator" = [ "Alacritty.desktop" ];
       "inode/directory" = [ "file-explorer.desktop" ];
     };
   };
