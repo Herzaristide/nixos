@@ -155,10 +155,6 @@
     # Docker
     virtualisation.docker.enable = true;
 
-    # Ollama — LLM local (ollama run llama3, etc.)
-    # Bound to loopback only: ollama has no auth, opening it on the LAN exposes
-    # model use, prompts and GPU to anyone on the network. For remote access,
-    # tunnel via SSH (`ssh -L 11434:127.0.0.1:11434 gary`).
     services.ollama = {
       enable = true;
       host = "127.0.0.1";
@@ -171,7 +167,6 @@
 
     # Home Manager
     home-manager = {
-      backupFileExtension = "bak";
       useUserPackages = true; # Install HM packages to /etc/profiles/per-user/$USER
       useGlobalPkgs = true; # Reuse system nixpkgs instead of home-manager's own instance
       extraSpecialArgs = {
