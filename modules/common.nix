@@ -115,13 +115,13 @@
     # `passwd` and `useradd` will not work; users are only created/modified via Nix.
     users.mutableUsers = false;
 
-    users.users.root.hashedPassword = "$6$GNdwcq8fsHblvwJ2$IVS1Xx/iPluv0BNJ1Sg7He78Lnq4SBf0bANn0wKbr3nGsgeWZ7rbLfBiPwvgNlHnkgM25Jy0zJq89Q6B8Jt39.";
+    users.users.root.hashedPasswordFile = "/etc/nixos/secrets/passwd-root";
 
     users.users.aristide = {
       isNormalUser = true;
       description = "aristide";
       shell = pkgs.fish;
-      hashedPassword = "$6$MI2sDc7kAJMcEpUb$AolzUNYrLQgrmFP893OErTdkMqqKz8dpL4TD6ZmUOYpG13oQQKd6/O.dIYHvGLRxONJBT/m4tc6DllBxybQI9/";
+      hashedPasswordFile = "/etc/nixos/secrets/passwd-aristide";
       extraGroups = [
         "networkmanager"
         "wheel"
