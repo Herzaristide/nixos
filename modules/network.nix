@@ -9,13 +9,20 @@
   # NetworkManager (overridden to false on exupery/WSL)
   networking.networkmanager.enable = lib.mkDefault true;
 
-  # SSH — password auth enabled for local development hosts
+  # SSH
+  # PasswordAuthentication is still on, awaiting `users.users.aristide.openssh.authorizedKeys.keys`
+  # to be populated; once keys are deployed, flip this to false.
   services.openssh = {
     enable = true;
     settings = {
       PasswordAuthentication = true;
-      KbdInteractiveAuthentication = true;
+      KbdInteractiveAuthentication = false; # 2FA not configured; this is just another password path
       PermitRootLogin = "no";
+      # Reasonable defaults; explicit for audit clarity
+      X11Forwarding = false;
+      AllowAgentForwarding = false;
+      MaxAuthTries = 3;
+      LoginGraceTime = 30;
     };
   };
 

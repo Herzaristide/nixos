@@ -17,6 +17,8 @@
     ../../modules/storage.nix
     ../../modules/head.nix
     ../../modules/audio.nix
+    ../../modules/impermanence.nix
+    ../../modules/security.nix
   ];
 
   # --- Battery / CPU power management (laptop, Intel) ---
@@ -57,6 +59,14 @@
 
   # Hostname
   networking.hostName = "zola";
+
+  # MAC randomization on Wi-Fi (laptop carried to untrusted networks).
+  # `stable` keeps a per-SSID MAC across associations (preserves DHCP reservations,
+  # captive-portal sessions) while still preventing cross-network tracking.
+  # `random` would generate a new MAC every connection — change to that if you
+  # prefer privacy over reliability of DHCP/captive portals.
+  networking.networkmanager.wifi.macAddress = "stable";
+  networking.networkmanager.ethernet.macAddress = "stable";
 
   # Head configuration
   head = true;

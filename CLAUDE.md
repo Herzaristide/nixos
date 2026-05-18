@@ -4,200 +4,215 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-Flake-based NixOS configuration managing three hosts:
-- **zola** (laptop): Intel + NVIDIA hybrid graphics with Prime sync, full GUI
-- **gary** (desktop): NVIDIA GT 630 using nouveau driver (open-source), full GUI
-- **exupery** (WSL2): Headless development environment
+Flake-based NixOS configuration managing four hosts:
+
+- **zola** (laptop): Intel + NVIDIA hybrid graphics, Prime **offload** mode, full GUI
+- **gary** (desktop): AMD Ryzen 5 1600 + Radeon RX 6600 (ROCm/HIP), full GUI, **impermanence enabled**
+- **kafka** (headless server): old AMD machine, BIOS + GRUB, no functional GPU
+- **exupery** (WSL2): headless development environment
 
 ## Build and Deployment
 
 ```bash
-# Rebuild current system (must run as root or with sudo)
+# Rebuild current system
 sudo nixos-rebuild switch --flake .#$(hostname)
 
 # Rebuild specific host
 sudo nixos-rebuild switch --flake .#zola
-sudo nixos-rebuild switch --flake .#gary
-sudo nixos-rebuild switch --flake .#exupery
 
-# Update flake inputs (nixpkgs, home-manager, DMS, etc.)
+# Update flake inputs
 nix flake update
 
-# Check flake configuration without building
-nix flake check
+# Evaluate without building (catches eval errors)
+nix flake check --no-build
 
 # Format Nix files
-nixfmt *.nix **/*.nix
+nixfmt **/*.nix
 ```
 
-Home-manager is integrated via NixOS modules, so `nixos-rebuild` updates both system and user configurations.
+Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both system and user configurations in one pass.
 
 ## Architecture
 
-### Module Organization
+### Flake Inputs (`flake.nix`)
 
-**System modules** (`/modules/`):
-- `common.nix` - Base system config for all hosts (locale, users, packages, docker, ollama, podman)
-- `head.nix` - GUI layer (Hyprland, DMS greeter, XDG portal, Steam, gamemode, pipewire audio)
-- `audio.nix` - musnix for low-latency audio production
-- `theme.nix` - Wallpaper theming options for DMS matugen integration
+- `nixpkgs` — nixos-unstable channel
+- `home-manager` — user environment, integrated as NixOS module
+- `nixos-wsl` — WSL2 support (exupery only)
+- `musnix` — low-latency audio (RT-friendly kernel tweaks, ALSA seq)
+- `quickshell` — Wayland shell / bar (replaces Waybar/DMS)
+- `explorer` — custom file manager (`github:Herzaristide/Explorer`)
+- `impermanence` — declarative state whitelist on top of an ephemeral root
 
-**Home-manager config** (`/home/`):
-- `home.nix` - Base user config (git, direnv, VSCode, fish shell)
-- `head.nix` - GUI user layer (DMS, Hyprland config, PWA apps via Chrome)
-- `dms-settings.nix` - Complete DMS preferences (exported declaratively from live config)
-- `modules/hyprland.nix` - Hyprland window manager configuration (monitor setup, keybinds, workspaces)
-- `modules/shell/` - Shell configurations (fish, zsh, starship prompt, yazi file manager, fastfetch)
+### System modules (`/modules/`)
 
-**Host configs** (`/hosts/<hostname>/`):
-- `configuration.nix` - Host-specific settings (GPU drivers, networking, bootloader)
-- `hardware-configuration.nix` - Auto-generated hardware detection (do not manually edit)
+- `nixos.nix` — Nix-level settings (flakes, GC, `nix-ld`, `system.stateVersion`, build parallelism cap)
+- `common.nix` — defines `head` / `primaryMonitor` / `darkMode` options; locale/keyboard FR; user `aristide` (immutable, hashed pwd); docker; ollama; wires home-manager into the system
+- `network.nix` — NetworkManager + SSH (password auth) + firewall
+- `power.nix` — UPower, logind suspend rules, USB wakeup
+- `storage.nix` — mdadm RAID, fstrim, NTFS support, and the cross-host whitelist of external/internal mounts (`/mnt/maxtor`, `/mnt/samsung`, `/mnt/raid` — all with `nofail` so disks remain portable between hosts)
+- `head.nix` — GUI layer: greetd autologin → Hyprland, XDG portal (hyprland + kde), fonts (JetBrains Mono only), printing
+- `audio.nix` — musnix, PipeWire (ALSA/JACK/Pulse), echo-cancel module, WirePlumber rule allowing chromium full audio permissions
+- `impermanence.nix` — imports `impermanence` flake module, defines the `/persist` whitelist, runs an initrd btrfs `wipe-root` service that recreates `@` on every boot
 
-### The "head" Pattern
+### Home-manager config (`/home/`)
 
-This config uses a boolean `head` option to conditionally enable GUI (Hyprland/DMS) vs headless:
+- `home.nix` — entry point. Imports headless modules (network/shell/code) unconditionally; adds the headful modules when `head = true`. Sets `EDITOR=micro`, `BROWSER=chromium`, `TERMINAL=alacritty`.
+- `head.nix` — GUI user layer: dconf (color-scheme), cursor theme, fontconfig cache refresh, default mime apps, custom `file-explorer` desktop entry
+- `modules/hyprland.nix` — Hyprland config in **Lua** mode (`configType = "lua"`), keybinds, monitor setup, special workspaces. Has a lid-closed-layout helper script for zola.
+- `modules/alacritty.nix` — terminal config
+- `modules/walker.nix` — application launcher
+- `modules/chromium.nix` — chromium package + PWA wrappers (`gemini-pwa`, `claude-pwa`, `bandlab-pwa`) sharing `~/.config/chromium-$(hostname)` profile
+- `modules/kde.nix` — minimal KDE/Qt theming (for xdg-portal-kde + appearance protocol)
+- `modules/accent/accent.nix` — installs the accent daemon and its templates (see "Theming" below)
+- `modules/shell/` — `fish`, `starship`, `fastfetch`, `micro`, `direnv`, `superfile`
+- `modules/network/` — `git`, `ssh`
+- `modules/code/` — VSCode (`vscode/vscode.nix` headful, `vscode/vscode-server.nix` headless) + AI assistants (`ia/claude.nix`, `ia/copilot.nix`, `ia/mcp.nix`) + language runtimes
 
-```nix
-# In host configuration.nix:
-head = true;  # Enables GUI modules (zola, gary)
-head = false; # Headless (exupery WSL)
-```
+### Quickshell (`/quickshell/`)
 
-When `head = true`:
-- System imports `/modules/head.nix` (Hyprland, DMS greeter, gaming, audio)
-- Home-manager imports `/home/head.nix` (DMS shell, GUI apps, Hyprland config)
+QuickShell is the Wayland shell (bottom bar + side panel + Ollama chat + notes + hardware stats). Configured from `/quickshell/quickshell.nix` (home-manager). All QML files live in this directory and are installed read-only under `~/.config/quickshell/`. `shell.qml` is templated: `@PRIMARY_MONITOR@` is replaced with the value of the `primaryMonitor` option.
 
-When `head = false`:
-- Only terminal/CLI tools are installed
-- No display server, window manager, or desktop environment
+### Host configs (`/hosts/<hostname>/`)
 
-### Home-Manager Integration
+- `configuration.nix` — host-specific imports, hostname, `head`, `primaryMonitor`, GPU/bootloader/power
+- `hardware-configuration.nix` — generated by `nixos-generate-config`. **Do not hand-edit** unless reformatting or adding hardware-only concerns
 
-Home-manager is integrated directly in NixOS configurations (not standalone). The `common.nix` module configures home-manager with:
-- User: `aristide`
-- Special args passed: `inputs`, `head`, `wallpaperPath`, `wallpaperFolder`
-- Backup extension: `.bak` (prevents conflicts when switching configs)
+## The `head` option
+
+`head` (bool, default false) is defined in `modules/common.nix`. Hosts set it explicitly:
+
+- `head = true` (gary, zola) — pulls in `modules/head.nix` and the headful home-manager modules (Hyprland, Quickshell, Walker, KDE/Qt theming, accent daemon, chromium, alacritty, etc.)
+- `head = false` (exupery, kafka) — only CLI/server modules
+
+`primaryMonitor` (string) is the Hyprland output that receives workspaces 1-5 and the Quickshell bar. Defaults to `HDMI-A-1`; zola overrides to `eDP-1`.
+
+`darkMode` (bool, default true) drives the color scheme broadcast to dconf, GTK, Qt, and the accent daemon's seed defaults.
+
+## Theming — accent daemon (`/accent-daemon/`)
+
+Custom Rust/Python daemon packaged as `accent-daemon` (also exposed as `packages.x86_64-linux.paletted`).
+
+- Provides two binaries: `paletted` (template renderer) and `palette` (CLI to set the current accent color)
+- Templates installed under `~/.config/accent/templates/`; rendered fragments under `~/.config/accent/fragments/`
+- Apps that support color includes (Hyprland, Alacritty, …) source the fragment directly from their declarative Nix config
+- `kdeglobals.tmpl` is rendered as a full file (KDE/Qt has no include directive)
+- Shell tools (starship/micro/fastfetch) are static ANSI-only and NOT templated
+
+To change the active accent at runtime: `palette set "#5277c3"`.
+
+## Impermanence (gary now, kafka + zola at next install)
+
+`modules/impermanence.nix` is the single source of truth. It:
+
+1. Imports the `impermanence` flake module
+2. Sets `boot.initrd.supportedFilesystems = [ "btrfs" ]`
+3. Defines an initrd systemd service `wipe-root` that mounts the btrfs root and deletes/recreates the `@` subvolume **before** `sysroot.mount`. The btrfs device is read from `config.fileSystems."/".device`, so the module is host-agnostic.
+4. Declares `environment.persistence."/persist"` with the whitelist of dirs/files that bind-mount from `/persist` back into the live FS
+
+Filesystem layout (gary, and what kafka/zola will become):
+
+- btrfs subvolumes: `@` (root, wiped), `@nix` (Nix store, persisted), `@persist` (whitelist, persisted), `@boot` on kafka (BIOS+GRUB)
+- ESP `/boot` is FAT32 on UEFI hosts (gary/zola)
+- Mount options: `compress=zstd:3 noatime space_cache=v2 discard=async` (+ `ssd` on SSD hosts)
+
+**What survives a reboot:** `/nix` (rebuilt from flake anyway), `/boot`, and the explicit `/persist` whitelist. Everything else is wiped. To keep new state across reboots, add it to the whitelist in `modules/impermanence.nix`.
 
 ## Host-Specific Details
 
-### zola (Laptop - NVIDIA Hybrid Graphics)
+### zola (laptop — Intel + NVIDIA hybrid)
 
-**GPU Setup**: Intel iGPU + NVIDIA dGPU with Prime sync (not offload) for Wayland compatibility
-- Uses proprietary NVIDIA drivers (`nvidia.open = false`)
-- Extensive kernel params for Wayland/Hyprland stability
-- Environment variables for NVIDIA + Wayland (`GBM_BACKEND=nvidia-drm`, `WLR_NO_HARDWARE_CURSORS=1`)
-- CUDA cache configured (cuda-maintainers.cachix.org)
+- NVIDIA proprietary driver (`open = false`), Prime **offload** (Intel iGPU default, NVIDIA on-demand via `nvidia-offload <cmd>`)
+- Heavy Wayland-friendly env vars: `GBM_BACKEND=nvidia-drm`, `WLR_NO_HARDWARE_CURSORS=1`, `LIBVA_DRIVER_NAME=iHD` (Chrome video decode on Intel iGPU to avoid nvidia-vaapi bugs)
+- `services.auto-cpufreq` + `thermald` + `powertop` for laptop power management
+- `services.ollama.package = pkgs.ollama-cuda` with explicit `__NV_PRIME_RENDER_OFFLOAD` env so ollama systemd service picks the dGPU
+- Cachix: `cuda-maintainers.cachix.org`
+- Primary monitor: `eDP-1` (built-in)
 
-**Monitor config**: Currently has HDMI-A-1 (portrait) + VGA-1 external monitors. Laptop built-in display (likely `eDP-1`) is not yet configured in `/home/modules/hyprland.nix`.
+### gary (desktop — AMD CPU + AMD GPU)
 
-### gary (Desktop - Old NVIDIA)
+- AMD Ryzen 5 1600 (Zen 1, no amd-pstate; acpi-cpufreq governor)
+- AMD Radeon RX 6600 (Navi 23 / gfx1032) via `amdgpu`, loaded in initrd for seamless KMS
+- ROCm stack for ML: `rocm-smi`, `rocminfo`, `clr`, `rocm-runtime`, `hipcc`
+- `/opt/rocm` tmpfiles symlink to `pkgs.rocmPackages.clr` (PyTorch/TF default lookup path)
+- **Critical perf overlay**: `nixpkgs.overlays` restricts ROCm component builds (`rocblas`, `rocsparse`, `rocfft`, `hipblaslt`, `rocrand`, `rocsolver`, `clr`) to `gfx1032` only. Without this, Tensile generates kernels for every supported arch (`gfx900..gfx1100`) and "Loading Logics... N/2043" crawls. Side effect: derivation hashes diverge from Hydra, no binary cache hit on those packages.
+- `services.ollama.package = pkgs.ollama-rocm` with `rocmOverrideGfx = "10.3.0"`
+- `zramSwap` enabled (zstd, 50%)
+- **Impermanence is live** (btrfs + `modules/impermanence.nix` imported)
+- Primary monitor: `HDMI-A-1`
 
-**GPU Setup**: NVIDIA GT 630 (Kepler/GK208) using nouveau open-source driver
-- Proprietary NVIDIA 470 driver crashes Hyprland (initDRMFormats issue)
-- Uses `nouveau.config=NvGrUseFW=0` kernel param (disables signed firmware loading for video engines)
-- Blacklists all NVIDIA proprietary kernel modules
-- Video driver: `modesetting` (uses nouveau DRM without legacy DDX driver)
+### kafka (headless server — BIOS + GRUB)
+
+- Old AMD platform (`pata_atiixp`, `floppy` in initrd — confirms its age)
+- Legacy BIOS boot via GRUB on `/dev/sda`, no ESP
+- GPU non-functional → `nomodeset` kernel param + all GPU kernel modules blacklisted
+- Configured for impermanence at next install: btrfs with `@boot` subvolume, GRUB `copyKernels = true`
 
 ### exupery (WSL2)
 
-**Headless config** (`head = false`):
-- Imports `nixos-wsl` module for WSL integration
-- No bootloader, no NetworkManager (uses Windows host networking)
-- SSH configured with empty password for local passwordless access (WSL-only, not for production)
-- PAM configured with `nullok` option
+- Imports `nixos-wsl.nixosModules.default`, `wsl.enable = true`
+- No bootloader, NetworkManager disabled (uses Windows host networking)
+- SSL env vars set globally (corporate cert situations); `GIT_SSL_NO_VERIFY=true` is intentional
 
-## DMS (Dank Material Shell) Integration
+## Hyprland configuration notes
 
-DMS is a modern desktop shell/bar for Hyprland (replaces Waybar). Configuration:
+- Config language: **Lua** (`wayland.windowManager.hyprland.configType = "lua"`) — settings are emitted via `lib.generators` helpers, allowing `mkLuaInline` for native Lua calls
+- Keyboard: French AZERTY (`kb_layout = "fr"`)
+- Input: flat acceleration + `force_no_accel = true` (1:1 mouse)
+- `cursor.no_hardware_cursors = 1` (required for NVIDIA + Wayland)
+- `decoration.active_opacity = 0.75 / inactive_opacity = 0.60`
+- Special workspace `gemini` (scratchpad) auto-launches `gemini-pwa` via `on_created_empty`
+- On zola, `hypr-closed-lid-layout` shell script moves workspaces 1-5 to `HDMI-A-1` and disables `eDP-1` when the lid is closed and the external monitor is present
 
-1. **System-level**: DMS greeter enabled in `/modules/head.nix` with autologin
-2. **User-level**: Full DMS config in `/home/head.nix` and `/home/dms-settings.nix`
-3. **Settings file**: `dms-settings.nix` is a declarative export of DMS preferences (matugen theming, bar layout, widgets, animations)
+## Audio (musnix + PipeWire)
 
-**Key DMS features enabled**:
-- Dynamic theming via matugen (generates colors from wallpaper)
-- System monitoring (dgop), audio wavelength visualizer (cava)
-- Calendar events (khal), clipboard paste (wtype)
-- Bar config: Main bar on VGA-1 monitor with workspaces, system tray, media controls
+- musnix with `alsaSeq.enable = true` (MIDI); `kernel.realtime = false` (RT kernel disabled by default, flip for ultra-low latency)
+- PipeWire with ALSA + Pulse + **JACK** support (for pro audio apps)
+- Echo cancellation module loaded (webrtc-aec) — exposes `echo-cancel-source` / `echo-cancel-sink` virtual nodes. Originally added to fix the voice-assistant feedback loop where piper TTS was being transcribed back by whisper.
+- WirePlumber rule: chromium gets `default_permissions = "all"` so BandLab PWA can record audio
+- Voice assistant tooling preinstalled: `whisper-cpp`, `piper-tts`, `sox`, `aubio`
 
-**DMS keybinds** (defined in `/home/modules/hyprland.nix`):
-- `Super+Space` - Spotlight launcher
-- `Super+V` - Clipboard manager
-- `Super+M` - Process list
-- `Super+Tab` - Overview mode
-- `Super+G` - Gemini special workspace (scratchpad with Chrome PWA + terminal)
+## Chromium PWAs (`home/modules/chromium.nix`)
 
-## Custom PWA Applications
+Three PWA wrappers, all sharing `~/.config/chromium-$(hostname)`:
 
-Chrome PWAs defined as desktop entries in `/home/head.nix`:
-- **Gemini** (`gemini-chrome`): Google AI assistant at gemini.google.com
-- **BandLab** (`bandlab-chrome`): Music production web app
-- **Eraser** (`eraser-chrome`): Technical diagramming tool at app.eraser.io
+- `gemini-pwa` → gemini.google.com (also has a desktop entry; Super+G special workspace auto-launches it)
+- `claude-pwa` → claude.ai
+- `bandlab-pwa` → bandlab.com
 
-All use `--user-data-dir=$HOME/.config/google-chrome-$(hostname)` for per-host profiles.
+All use `--enable-features=WebUIDarkMode --force-dark-mode`. The shared user-data-dir is **not** currently in the impermanence whitelist — logging in to these apps does not survive a reboot on impermanence hosts.
 
-## Hyprland Configuration
+## User and security
 
-**Monitor setup** (`/home/modules/hyprland.nix:68-72`):
-- HDMI-A-1: 1920x1080@60, portrait mode (transform,1), scale 1.33
-- VGA-1: 1920x1080@60, positioned right of HDMI, scale 1.33
-- Fallback: `preferred,auto,1.33`
+- `users.mutableUsers = false` — passwords are SHA-512 hashes baked into `modules/common.nix`. `passwd`/`useradd` do nothing; create/change users only via Nix.
+- `aristide` is in groups: `networkmanager wheel docker video render audio storage greeter gamemode`
+- Sudo NOPASSWD allowlist: `smartctl`, `dmidecode` (read-only hardware queries)
 
-**Workspace assignments**:
-- Workspace 0: HDMI-A-1 (left portrait monitor)
-- Workspaces 1-5: VGA-1 (main monitor)
-- Special workspace "gemini": Overlay scratchpad with custom gaps
+## Custom packages (`packages.x86_64-linux`)
 
-**Keyboard**: French AZERTY layout (kb_layout = "fr")
+- `install-nixos` — clones the flake to `/etc/nixos`, regenerates `hardware-configuration.nix`, runs `nixos-rebuild`. Entry point: `install.sh`. `nix run .#install-nixos -- <git-url> <hostname>`.
+- `paletted` — alias for `accent-daemon`
 
-**Input**: Flat acceleration profile with `force_no_accel = true` (1:1 mouse movement)
+## Important quirks
 
-## Audio Production
+1. **NVIDIA on zola**: `WLR_NO_HARDWARE_CURSORS=1` is mandatory — disabling it kills the cursor on Wayland.
+2. **ROCm gfx1032 overlay on gary** is what makes ML workloads usable; if you remove it, expect ~30 minutes of `rocblas` Tensile kernel generation on every rebuild touching ROCm.
+3. **Impermanence**: anything you want to persist must be in `modules/impermanence.nix`. The Nix store survives but the running `/` does not.
+4. **VSCode** on headless hosts uses `vscode-server.nix` (for SSH remote attach), on headful hosts uses `vscode/vscode.nix`. Both are wired automatically by `home/home.nix`.
+5. **Lua Hyprland config** — when editing `home/modules/hyprland.nix`, remember it generates Lua, not the classic `hypr.conf` format. Use `mkLuaInline` for raw Lua, attribute sets for the rest.
+6. **`primaryMonitor` is consumed by Quickshell**: changing the option value rewrites `~/.config/quickshell/shell.qml` via `builtins.replaceStrings`.
+7. **mdadm warning at eval time** (`Neither MAILADDR nor PROGRAM has been set`) is benign — set `boot.swraid.mdadmConf` to silence it.
 
-**musnix** module enabled (`/modules/audio.nix`) for low-latency audio:
-- ALSA sequencer enabled for MIDI
-- Real-time kernel: disabled (can be enabled for ultra-low latency)
-- No specific soundcard PCI ID pinned
+## Making changes
 
-**PipeWire config** (`/modules/head.nix`):
-- PipeWire with JACK support for pro audio apps
-- WirePlumber rule allows Chrome/Chromium full audio permissions (for BandLab PWA)
+1. Edit the appropriate module file. Don't touch `hardware-configuration.nix` unless reformatting.
+2. `nixfmt` the changed files.
+3. `nix flake check --no-build` first to catch eval errors cheaply.
+4. Then `sudo nixos-rebuild switch --flake .#$(hostname)`.
+5. Commit with a descriptive message (see `git log` for style — short imperative subjects).
 
-## Flake Inputs
+## Repo metadata
 
-- `nixpkgs`: nixos-unstable channel
-- `home-manager`: User environment management
-- `dms`: Dank Material Shell (stable branch)
-- `danksearch`: Search tool integration
-- `musnix`: Real-time audio optimization
-- `nixos-wsl`: WSL2 support (exupery only)
-- `synthwave84-yazi`: Yazi theme (non-flake input)
-
-All inputs follow nixpkgs for consistency.
-
-## Important Quirks
-
-1. **NVIDIA on zola**: Requires extensive environment variables and kernel params. Never disable `WLR_NO_HARDWARE_CURSORS` or cursor will disappear.
-
-2. **Nouveau on gary**: The `nouveau.config=NvGrUseFW=0` param is critical. Without it, firmware load failures cause stuck kworkers and phantom iowait.
-
-3. **DMS settings**: `dms-settings.nix` is imported in `head.nix` as `settings = (import ./dms-settings.nix) // {}`. To override specific DMS options, use merge syntax in `head.nix`.
-
-4. **Wallpaper theming**: DMS matugen generates system-wide color schemes from `/etc/nixos/src/wallpaper.jpg`. Changing this file requires rebuild.
-
-5. **VSCode**: Uses standard VSCode package with mutable extensions directory for easy extension installation. Remote server (SSH) extensions are pre-configured via vscode-server.nix.
-
-6. **Docker vs Podman**: Both enabled. Docker has `dockerCompat = false` for podman to avoid conflicts.
-
-7. **Git config**: Credential helper is `store` (plaintext). User is "Herzaristide" <aristide.pichereau@gmail.com>.
-
-## Making Changes
-
-When modifying this configuration:
-1. Edit appropriate module file (don't edit `hardware-configuration.nix`)
-2. Run `nixfmt` on changed files for consistent formatting
-3. Test with `sudo nixos-rebuild switch --flake .#$(hostname)`
-4. Commit changes with descriptive message (see git log for style)
-5. If changing DMS settings, consider exporting live config: backup `~/.config/DankMaterialShell/settings.json` and update `dms-settings.nix`
-
-For monitor configuration changes, edit `/home/modules/hyprland.nix` monitor array and workspace assignments together.
+- Git user: `Herzaristide` &lt;aristide.pichereau@gmail.com&gt;
+- Git credential helper: `store` (plaintext — fine on impermanence hosts where the file is in `/persist`)
+- All `system.stateVersion` and `home.stateVersion` pinned to **25.11**

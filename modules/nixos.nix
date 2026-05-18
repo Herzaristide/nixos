@@ -19,11 +19,8 @@
   nix.gc = {
     automatic = true;
     dates = "weekly";
-    options = "--delete-older-than 30d";
+    options = "--delete-older-than 7d";
   };
-
-  # Keep only the last 10 boot entries in systemd-boot
-  boot.loader.systemd-boot.configurationLimit = 10;
 
   # nix-ld for running unpatched dynamic executables on NixOS
   programs.nix-ld.enable = true;

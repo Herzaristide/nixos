@@ -107,12 +107,21 @@
 
       cmatrix
       glances
+      mdadm
     ];
+
+    # Fully declarative user/password management — no mutable /etc/shadow.
+    # All passwords live in this config as SHA-512 crypt hashes (mkpasswd -m sha-512).
+    # `passwd` and `useradd` will not work; users are only created/modified via Nix.
+    users.mutableUsers = false;
+
+    users.users.root.hashedPassword = "$6$GNdwcq8fsHblvwJ2$IVS1Xx/iPluv0BNJ1Sg7He78Lnq4SBf0bANn0wKbr3nGsgeWZ7rbLfBiPwvgNlHnkgM25Jy0zJq89Q6B8Jt39.";
 
     users.users.aristide = {
       isNormalUser = true;
       description = "aristide";
       shell = pkgs.fish;
+      hashedPassword = "$6$MI2sDc7kAJMcEpUb$AolzUNYrLQgrmFP893OErTdkMqqKz8dpL4TD6ZmUOYpG13oQQKd6/O.dIYHvGLRxONJBT/m4tc6DllBxybQI9/";
       extraGroups = [
         "networkmanager"
         "wheel"
@@ -147,9 +156,12 @@
     virtualisation.docker.enable = true;
 
     # Ollama — LLM local (ollama run llama3, etc.)
+    # Bound to loopback only: ollama has no auth, opening it on the LAN exposes
+    # model use, prompts and GPU to anyone on the network. For remote access,
+    # tunnel via SSH (`ssh -L 11434:127.0.0.1:11434 gary`).
     services.ollama = {
       enable = true;
-      openFirewall = true;
+      host = "127.0.0.1";
     };
 
     # /records directory for voice memos (OllamaChat audio recording tool)

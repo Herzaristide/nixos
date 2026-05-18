@@ -20,6 +20,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     explorer.url = "github:Herzaristide/Explorer";
+    impermanence.url = "github:nix-community/impermanence";
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
