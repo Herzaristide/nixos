@@ -16,6 +16,8 @@
     ../../modules/storage.nix
     ../../modules/head.nix
     ../../modules/audio.nix
+    ../../modules/impermanence.nix
+    ../../modules/security.nix
   ];
 
   # Hostname

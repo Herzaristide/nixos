@@ -1,5 +1,12 @@
-{ pkgs, ... }:
+{ pkgs, osConfig, ... }:
 
+let
+  isHead = osConfig.head or false;
+
+  # Head hosts (zola, gary) have GNOME Keyring as session daemon → secretservice.
+  # Headless hosts (kafka, exupery) fall back to in-memory cache (re-prompt after timeout).
+  credentialStore = if isHead then "secretservice" else "cache";
+in
 {
   programs.git = {
     enable = true;
@@ -12,9 +19,7 @@
       pull.rebase = false;
       # Git Credential Manager (HTTPS); SSH remotes still use ssh config above
       credential.helper = "${pkgs.git-credential-manager}/bin/git-credential-manager";
-      # GCM on Linux requires an explicit store; WSL has no Secret Service by default.
-      # plaintext: persistent (dev/WSL). Alternatives: cache, gpg (pass), secretservice (GUI).
-      credential.credentialStore = "plaintext";
+      credential.credentialStore = credentialStore;
       # Disable GCM's Avalonia GUI (broken on Wayland/Hyprland): use device code flow in terminal.
       credential.guiPrompt = "false";
     };

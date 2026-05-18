@@ -15,6 +15,11 @@
   # dconf: required for GTK app settings and GNOME applications
   programs.dconf.enable = true;
 
+  # GNOME Keyring (Secret Service daemon) for git-credential-manager `secretservice` store.
+  # PAM hook unlocks the keyring at login with the user's password.
+  services.gnome.gnome-keyring.enable = true;
+  security.pam.services.greetd.enableGnomeKeyring = true;
+
   # XDG Portal (for file picker, screen sharing in Hyprland)
   # xdg-desktop-portal-kde exposes color-scheme (dark mode) to Chrome/Gemini, etc.
   # via kdeglobals — no GNOME/GTK infrastructure required.

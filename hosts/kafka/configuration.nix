@@ -14,6 +14,8 @@
     ../../modules/network.nix
     ../../modules/power.nix
     ../../modules/storage.nix
+    ../../modules/impermanence.nix
+    ../../modules/security.nix
   ];
 
   # Hostname
@@ -31,6 +33,8 @@
     efiSupport = false;
     useOSProber = false;
     configurationLimit = 10;
+    # /boot is a btrfs subvolume; copyKernels avoids subvolume-relative path issues
+    copyKernels = true;
   };
 
   # Firmware for hardware (network, etc.)

@@ -4,6 +4,12 @@
   # Filesystem drivers
   boot.supportedFilesystems = [ "ntfs" ];
 
+  # mdadm software RAID — auto-assemble arrays from superblocks at boot.
+  # /dev/md/<name> symlinks created from the array name embedded in the superblock.
+  # mdmonitor.service est démarré automatiquement par boot.swraid.enable.
+  # Pour configurer l'email d'alerte: ajouter une ligne MAILADDR dans boot.swraid.mdadmConf.
+  boot.swraid.enable = true;
+
   # udisks2: hotplug auto-mount for removable media (USB sticks, etc.)
   services.udisks2.enable = true;
   services.fstrim.enable = true;
@@ -30,23 +36,18 @@
       fsType = "ext4";
       options = [ "nofail" ];
     };
-    # Seagate ST2000DM001 — 2T ext4
-    "/mnt/seagate-dm001" = {
-      device = "/dev/disk/by-uuid/516f5bb5-72b9-47da-b6bb-7b193ac1cd86";
-      fsType = "ext4";
-      options = [ "nofail" ];
-    };
-    # Seagate ST2000DM008 — 2T ext4
-    "/mnt/seagate-dm008" = {
-      device = "/dev/disk/by-uuid/c25498c3-b03c-43cc-8650-f8183873ceec";
-      fsType = "ext4";
-      options = [ "nofail" ];
-    };
-    # Seagate ST2000DX001 — 2T SSHD ext4 (hybrid SSD/HDD)
-    "/mnt/seagate-sshd" = {
-      device = "/dev/disk/by-uuid/8f0502de-aeec-497c-a92a-76ce47fd26de";
-      fsType = "ext4";
-      options = [ "nofail" ];
+    # 3x Seagate ST2000* assembled as mdadm RAID 5 (sda/sdc/sdd on gary),
+    # formatted btrfs. ~4 TB usable.
+    # mdadm array UUID: 679e04b9:3d7f7bdb:26e423a2:bbe98132 — name "gary:raid5".
+    "/mnt/raid" = {
+      device = "/dev/disk/by-uuid/513523d5-0b2b-4d07-917c-4a808ccf3c5c";
+      fsType = "btrfs";
+      options = [
+        "nofail"
+        "compress=zstd:3"
+        "noatime"
+        "space_cache=v2"
+      ];
     };
   };
 }

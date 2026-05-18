@@ -1,0 +1,77 @@
+{ pkgs, ... }:
+
+{
+  # --- Kernel hardening (sysctl) ---
+  boot.kernel.sysctl = {
+    # Hide kernel pointers from /proc — defeats kASLR leak via /proc/kallsyms
+    "kernel.kptr_restrict" = 2;
+    # Restrict dmesg to root — exfil source for kernel addresses, hardware info
+    "kernel.dmesg_restrict" = 1;
+    # ptrace_scope=1: a non-root process can only ptrace its descendants.
+    # Blocks an attacker who compromises one user-process from dumping memory
+    # of other user processes (e.g. ssh-agent, browser session keys).
+    "kernel.yama.ptrace_scope" = 1;
+
+    # TCP/IP hardening
+    "net.ipv4.tcp_syncookies" = 1; # SYN flood mitigation (default-on on recent kernels, declared for clarity)
+    "net.ipv4.conf.all.rp_filter" = 1; # Strict reverse-path (anti-spoofing)
+    "net.ipv4.conf.default.rp_filter" = 1;
+    "net.ipv4.conf.all.accept_redirects" = 0; # Ignore ICMP redirects
+    "net.ipv4.conf.default.accept_redirects" = 0;
+    "net.ipv4.conf.all.send_redirects" = 0;
+    "net.ipv6.conf.all.accept_redirects" = 0;
+    "net.ipv6.conf.default.accept_redirects" = 0;
+    "net.ipv4.conf.all.accept_source_route" = 0; # Drop source-routed packets
+    "net.ipv6.conf.all.accept_source_route" = 0;
+    "net.ipv4.conf.all.log_martians" = 1; # Log spoofed packets to dmesg
+  };
+
+  # --- AppArmor ---
+  # NixOS profiles cover firefox, chromium, evince, and a few system daemons.
+  # killUnconfinedConfinables = false to avoid breaking workflows on first activation;
+  # flip to true once you've confirmed nothing critical is unconfined.
+  security.apparmor = {
+    enable = true;
+    killUnconfinedConfinables = false;
+  };
+
+  # --- auditd: trace privilege escalations and config changes ---
+  security.auditd.enable = true;
+  security.audit = {
+    enable = true;
+    rules = [
+      # Watch authentication / authorization config
+      "-w /etc/sudoers -p wa -k sudoers"
+      "-w /etc/passwd -p wa -k passwd"
+      "-w /etc/shadow -p wa -k shadow"
+      "-w /etc/group -p wa -k group"
+      # Watch SSH server config
+      "-w /etc/ssh/sshd_config -p wa -k sshd_config"
+      # Watch NixOS declarative config
+      "-w /etc/nixos -p wa -k nixos_config"
+      # Log every sudo invocation
+      "-a always,exit -F arch=b64 -S execve -F path=/run/wrappers/bin/sudo -k sudo_exec"
+    ];
+  };
+
+  # --- fail2ban: SSH brute-force protection ---
+  # Still relevant even after disabling password auth: it deals with the constant
+  # noise of scanners hitting :22 and the few key-auth attempts they try.
+  services.fail2ban = {
+    enable = true;
+    maxretry = 5;
+    bantime = "1h";
+    bantime-increment = {
+      enable = true;
+      multipliers = "1 2 4 8 16 32 64";
+      maxtime = "168h"; # 1 week
+    };
+    # Pre-built jail for sshd, enabled by default in NixOS when fail2ban is enabled.
+  };
+
+  # --- Reduce boot-time attack surface ---
+  # Disable the systemd-boot kernel-parameter editor: prevents anyone with
+  # console access from booting with `init=/bin/sh` and dropping into a root shell.
+  # (No-op on hosts using GRUB; ignored harmlessly.)
+  boot.loader.systemd-boot.editor = false;
+}
