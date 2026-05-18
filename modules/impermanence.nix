@@ -54,10 +54,6 @@ in
     };
   };
 
-  # /home/aristide is wiped at every boot (it lives on the @ subvolume which
-  # gets recreated by the initrd wipe-root service). Home-manager recreates
-  # all declared dotfiles on activation. Only the explicit whitelist under
-  # `users.aristide` below survives reboots.
   environment.persistence."/persist" = {
     hideMounts = true;
     directories = [
@@ -93,10 +89,10 @@ in
     ];
     files = [
       "/etc/machine-id"
+      "/etc/passwd-root"
+      "/etc/passwd-aristide"
     ];
 
-    # Per-user whitelist — everything else in /home/aristide is wiped at boot.
-    # Add a path here only when its loss between reboots is genuinely painful.
     users.aristide = {
       directories = [
         ".ssh"

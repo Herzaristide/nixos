@@ -110,18 +110,26 @@
       mdadm
     ];
 
-    # Fully declarative user/password management — no mutable /etc/shadow.
-    # All passwords live in this config as SHA-512 crypt hashes (mkpasswd -m sha-512).
-    # `passwd` and `useradd` will not work; users are only created/modified via Nix.
     users.mutableUsers = false;
 
-    users.users.root.hashedPasswordFile = "/etc/nixos/secrets/passwd-root";
+    # To generate the password files on a new host (run as root):
+    #   mkpasswd -m sha-512 | sudo tee /etc/passwd-root   && sudo chmod 400 /etc/passwd-root
+    #   mkpasswd -m sha-512 | sudo tee /etc/passwd-aristide && sudo chmod 400 /etc/passwd-aristide
+    # On impermanence hosts, create them under /persist/etc/ instead:
+    #   mkpasswd -m sha-512 | sudo tee /persist/etc/passwd-root   && sudo chmod 400 /persist/etc/passwd-root
+    #   mkpasswd -m sha-512 | sudo tee /persist/etc/passwd-aristide && sudo chmod 400 /persist/etc/passwd-aristide
+
+    users.users.root = {
+      hashedPasswordFile = "/etc/passwd-root";
+      initialHashedPassword = "***REMOVED***";
+    };
 
     users.users.aristide = {
       isNormalUser = true;
       description = "aristide";
       shell = pkgs.fish;
-      hashedPasswordFile = "/etc/nixos/secrets/passwd-aristide";
+      hashedPasswordFile = "/etc/passwd-aristide";
+      initialHashedPassword = "***REMOVED***";
       extraGroups = [
         "networkmanager"
         "wheel"
