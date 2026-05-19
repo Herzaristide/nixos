@@ -25,16 +25,15 @@
   head = false;
 
   # Legacy BIOS / MBR — GRUB installs to the disk MBR (no ESP)
+  # Device is managed by disko (bios_grub partition); set "nodev" here
+  # to avoid conflicting mirroredBoots declarations.
   boot.loader.systemd-boot.enable = false;
   boot.loader.efi.canTouchEfiVariables = false;
   boot.loader.grub = {
     enable = true;
-    device = "/dev/sda";
     efiSupport = false;
     useOSProber = false;
     configurationLimit = 10;
-    # /boot is a btrfs subvolume; copyKernels avoids subvolume-relative path issues
-    copyKernels = true;
   };
 
   # Firmware for hardware (network, etc.)
