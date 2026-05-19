@@ -121,7 +121,7 @@
 
     users.users.root = {
       hashedPasswordFile = "/etc/passwd-root";
-      initialHashedPassword = "$6$u2wJJ7xJQElhuej0$3KHwySc4rreG9Ysf6Os0w84SkRRO.lddFYiO5n7UL1mZH0n.T2yojHTFQUs2kot3yulf8Ev7USJtmwjSpWHni/";
+      initialHashedPassword = "$6$sFILMwJq1LgIfpTm$vZh8FMDQF.B/C8eCvlPc5/.YwtC5v27YgapTqF7Uv5ogUB8jac5r98s5tbWRSM0/bIg6v3/M0uh7zHgN72Dz5/";
     };
 
     users.users.aristide = {
@@ -129,7 +129,7 @@
       description = "aristide";
       shell = pkgs.fish;
       hashedPasswordFile = "/etc/passwd-aristide";
-      initialHashedPassword = "$6$u2wJJ7xJQElhuej0$3KHwySc4rreG9Ysf6Os0w84SkRRO.lddFYiO5n7UL1mZH0n.T2yojHTFQUs2kot3yulf8Ev7USJtmwjSpWHni/";
+      initialHashedPassword = "$6$pFEROTaCMssP8DT8$2tiSWTKT3ISBc0ExhmKdWNyWYRExTuCYGBxERQjrYqQVuSAuwfhOmI/wuxVV9gcHlH/lNS9X7Vjd8WTsXfqEE/";
       extraGroups = [
         "networkmanager"
         "wheel"
