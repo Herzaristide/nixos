@@ -9,8 +9,10 @@
 }:
 
 let
-  btrfsUuid = "19a9b4b2-b8af-4104-986c-1064f70ae557";
-  btrfsDevice = "/dev/disk/by-uuid/${btrfsUuid}";
+  # UUID of the raw LUKS partition (blkid: the partition containing the LUKS header)
+  luksUuid = "REPLACE-WITH-LUKS-PARTITION-UUID-AT-INSTALL";
+  # UUID of the btrfs filesystem inside the opened LUKS container
+  btrfsDevice = "/dev/mapper/cryptroot";
   btrfsOptions = [
     "compress=zstd:3"
     "noatime"
@@ -32,9 +34,15 @@ in
     "usb_storage"
     "sd_mod"
   ];
-  boot.initrd.kernelModules = [ ];
+  boot.initrd.kernelModules = [ "dm-crypt" ];
   boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
+
+  # LUKS encryption — passphrase prompted at boot
+  boot.initrd.luks.devices."cryptroot" = {
+    device = "/dev/disk/by-uuid/${luksUuid}";
+    allowDiscards = true; # pass TRIM through to the SSD
+  };
 
   fileSystems."/" = {
     device = btrfsDevice;
@@ -55,6 +63,7 @@ in
     neededForBoot = true;
   };
 
+  # ESP — unencrypted (required for UEFI bootloader)
   fileSystems."/boot" = {
     device = "/dev/disk/by-uuid/7988-2FC1";
     fsType = "vfat";
