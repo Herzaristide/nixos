@@ -21,6 +21,10 @@
     };
     explorer.url = "github:Herzaristide/Explorer";
     impermanence.url = "github:nix-community/impermanence";
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -63,6 +67,14 @@
       packages.${system} = {
         install-nixos = install-nixos-pkg;
         paletted = accent-daemon-pkg;
+        # Custom installer ISO — build with: nix build .#iso
+        iso = (nixpkgs.lib.nixosSystem {
+          modules = [
+            { nixpkgs.hostPlatform = system; }
+            ./iso/iso.nix
+          ];
+          specialArgs = { inherit inputs; };
+        }).config.system.build.isoImage;
       };
 
       apps.${system}.install-nixos = {
@@ -74,6 +86,8 @@
         zola = nixpkgs.lib.nixosSystem {
           modules = [
             { nixpkgs.hostPlatform = system; }
+            inputs.disko.nixosModules.disko
+            ./hosts/zola/disko.nix
             ./hosts/zola/configuration.nix
           ];
           specialArgs = { inherit inputs; };
@@ -82,6 +96,8 @@
         gary = nixpkgs.lib.nixosSystem {
           modules = [
             { nixpkgs.hostPlatform = system; }
+            inputs.disko.nixosModules.disko
+            ./hosts/gary/disko.nix
             ./hosts/gary/configuration.nix
           ];
           specialArgs = { inherit inputs; };
@@ -98,6 +114,8 @@
         kafka = nixpkgs.lib.nixosSystem {
           modules = [
             { nixpkgs.hostPlatform = system; }
+            inputs.disko.nixosModules.disko
+            ./hosts/kafka/disko.nix
             ./hosts/kafka/configuration.nix
           ];
           specialArgs = { inherit inputs; };
