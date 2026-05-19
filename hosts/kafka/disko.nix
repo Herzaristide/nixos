@@ -38,15 +38,15 @@
                 subvolumes = {
                   "@" = {
                     mountpoint = "/";
-                    mountOptions = [ "compress=zstd:3" "noatime" "space_cache=v2" ];
+                    mountOptions = [ "compress=zstd:1" "noatime" "space_cache=v2" ];
                   };
                   "@nix" = {
                     mountpoint = "/nix";
-                    mountOptions = [ "compress=zstd:3" "noatime" "space_cache=v2" ];
+                    mountOptions = [ "compress=zstd:1" "noatime" "space_cache=v2" ];
                   };
                   "@persist" = {
                     mountpoint = "/persist";
-                    mountOptions = [ "compress=zstd:3" "noatime" "space_cache=v2" ];
+                    mountOptions = [ "compress=zstd:1" "noatime" "space_cache=v2" ];
                   };
                 };
               };
