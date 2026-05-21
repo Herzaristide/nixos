@@ -62,14 +62,6 @@
       packages.${system} = {
         install-nixos = install-nixos-pkg;
         paletted = accent-daemon-pkg;
-        # Custom installer ISO — build with: nix build .#iso
-        iso = (nixpkgs.lib.nixosSystem {
-          modules = [
-            { nixpkgs.hostPlatform = system; }
-            ./iso/iso.nix
-          ];
-          specialArgs = { inherit inputs; };
-        }).config.system.build.isoImage;
       };
 
       apps.${system}.install-nixos = {

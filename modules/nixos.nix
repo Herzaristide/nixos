@@ -4,13 +4,10 @@
   nixpkgs.config.allowUnfree = true;
 
   nix.settings = {
-    # Required by nixd (Nix IDE) when evaluating flake-based options/expressions.
     experimental-features = [
       "nix-command"
       "flakes"
     ];
-    # Capped parallelism so the machine stays usable while ROCm rebuilds.
-    # 2 concurrent derivations × 6 threads each leaves headroom on Ryzen 5 1600 (6c/12t).
     max-jobs = 2;
     cores = 6;
   };
