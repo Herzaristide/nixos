@@ -112,11 +112,12 @@
 
     users.mutableUsers = false;
 
-    # Password files are created by deploy.sh (nixos-anywhere --extra-files).
-    # They must exist on the target at these paths, containing the sha-512 hash.
+    # Password file is created by nixos-anywhere --extra-files.
+    # It must exist on the target at /etc/passwd-aristide, containing the sha-512 hash.
+    # Both root and aristide share the same password.
 
     users.users.root = {
-      hashedPasswordFile = "/etc/passwd-root";
+      hashedPasswordFile = "/etc/passwd-aristide";
     };
 
     users.users.aristide = {

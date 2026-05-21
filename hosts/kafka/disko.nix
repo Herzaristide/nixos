@@ -9,7 +9,6 @@
       content = {
         type = "gpt";
         partitions = {
-          # BIOS boot partition (required for GPT + GRUB on BIOS)
           bios_grub = {
             size = "1M";
             type = "EF02";
@@ -27,11 +26,7 @@
             content = {
               type = "luks";
               name = "cryptroot";
-              # Passphrase file consumed only at `disko --mode disko` time by the
-              # installer. Path is in tmpfs of the live ISO; harmless if absent
-              # on the running system since LUKS is already open by initrd.
               passwordFile = "/tmp/disko-luks-passphrase";
-              # No allowDiscards — spinning disk, no TRIM needed
               content = {
                 type = "btrfs";
                 extraArgs = [ "-f" ];

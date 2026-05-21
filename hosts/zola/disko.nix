@@ -24,9 +24,6 @@
             content = {
               type = "luks";
               name = "cryptroot";
-              # Passphrase file consumed only at `disko --mode disko` time by the
-              # installer. Path is in tmpfs of the live ISO; harmless if absent
-              # on the running system since LUKS is already open by initrd.
               passwordFile = "/tmp/disko-luks-passphrase";
               settings.allowDiscards = true;
               content = {
