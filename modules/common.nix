@@ -115,9 +115,6 @@
     # To generate the password files on a new host (run as root):
     #   mkpasswd -m sha-512 | sudo tee /etc/passwd-root   && sudo chmod 400 /etc/passwd-root
     #   mkpasswd -m sha-512 | sudo tee /etc/passwd-aristide && sudo chmod 400 /etc/passwd-aristide
-    # On impermanence hosts, create them under /persist/etc/ instead:
-    #   mkpasswd -m sha-512 | sudo tee /persist/etc/passwd-root   && sudo chmod 400 /persist/etc/passwd-root
-    #   mkpasswd -m sha-512 | sudo tee /persist/etc/passwd-aristide && sudo chmod 400 /persist/etc/passwd-aristide
 
     users.users.root = {
       hashedPasswordFile = "/etc/passwd-root";

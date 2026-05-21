@@ -29,9 +29,6 @@
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
-  # Persist subvolume must be available before stage-2 (impermanence bind-mounts)
-  fileSystems."/persist".neededForBoot = true;
-
   swapDevices = [ ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
