@@ -120,6 +120,7 @@ in
       ];
 
       monitor = [
+        # gary — HP E24q G5, posé au-dessus de DP-1, retourné 180° (transform 2)
         {
           output = "DP-3";
           mode = "2560x1440@75";
@@ -127,12 +128,35 @@ in
           scale = 1.60;
           transform = 2;
         }
+        # gary — Samsung C27R50x, écran principal sous DP-3.
+        # Bord gauche aligné sur x=0 pour rejoindre le bord droit de DP-2.
+        {
+          output = "DP-1";
+          mode = "1920x1080@60";
+          position = "0x900";
+          scale = 1.25;
+        }
+        # gary — Dell U2413, portrait à gauche, couvrant la hauteur de DP-3+DP-1.
+        # Hauteur cible = DP-3 (900) + DP-1 (864) = 1764. À scale 1.0, DP-2 fait
+        # 1200×1920 logique → couvre largement les 1764 nécessaires.
+        # Position : bord droit collé à DP-3 (x = -1200), top à y=0.
+        # → accessible depuis DP-3 (y<900) ET DP-1 (900≤y<1764).
+        # transform = 1 → rotation 90° horaire (inversée par rapport à avant).
+        {
+          output = "DP-2";
+          mode = "1920x1200@60";
+          position = "-1200x0";
+          scale = 1.0;
+          transform = 1;
+        }
+        # zola — moniteur externe optionnel
         {
           output = "HDMI-A-1";
           mode = "1920x1080@60";
           position = "49x900";
           scale = 1.25;
         }
+        # zola — écran intégré
         {
           output = "eDP-1";
           mode = "preferred";
@@ -171,6 +195,11 @@ in
         {
           workspace = "5";
           monitor = primaryMonitor;
+        }
+        {
+          workspace = "6";
+          monitor = "DP-2";
+          default = true;
         }
         {
           workspace = "9";
@@ -363,6 +392,12 @@ in
         }
         {
           _args = [
+            "SUPER + minus"
+            (mkLuaInline "hl.dsp.focus({ workspace = 6 })")
+          ];
+        }
+        {
+          _args = [
             "SUPER + twosuperior"
             (mkLuaInline "hl.dsp.focus({ workspace = 9 })")
           ];
@@ -396,6 +431,12 @@ in
           _args = [
             "SUPER + SHIFT + parenleft"
             (mkLuaInline "hl.dsp.window.move({ workspace = 5 })")
+          ];
+        }
+        {
+          _args = [
+            "SUPER + SHIFT + minus"
+            (mkLuaInline "hl.dsp.window.move({ workspace = 6 })")
           ];
         }
         {

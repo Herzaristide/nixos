@@ -38,7 +38,12 @@
   # --- auditd: trace privilege escalations and config changes ---
   security.auditd.enable = true;
   security.audit = {
-    enable = true;
+    # NOTE: désactivé temporairement — audit-userspace 4.1.2-unstable-2025-09-06
+    # (snapshot pris par nixos-unstable) régressé : `auditctl -R` échoue sur la
+    # directive `-b N` du rules file, audit-rules-nixos.service ne démarre plus.
+    # auditd reste actif (logging kernel-side). Réactiver à `true` une fois le
+    # package stabilisé upstream.
+    enable = false;
     rules = [
       # Watch authentication / authorization config
       "-w /etc/sudoers -p wa -k sudoers"
