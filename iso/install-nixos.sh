@@ -113,30 +113,30 @@ disko --mode disko \
   --disk main "$DISK"
 ok "Disk partitioned and mounted at /mnt"
 
-# --- 7. Create persistent password files ---
+# --- 7. Create password files ---
 header "Creating password files"
-mkdir -p /mnt/persist/etc
-chmod 755 /mnt/persist/etc
+mkdir -p /mnt/etc
+chmod 755 /mnt/etc
 
-printf '%s' "$root_pass" | mkpasswd -m sha-512 -s > /mnt/persist/etc/passwd-root
-printf '%s' "$user_pass" | mkpasswd -m sha-512 -s > /mnt/persist/etc/passwd-aristide
-chmod 400 /mnt/persist/etc/passwd-root /mnt/persist/etc/passwd-aristide
-ok "Password files created in /mnt/persist/etc/"
+printf '%s' "$root_pass" | mkpasswd -m sha-512 -s > /mnt/etc/passwd-root
+printf '%s' "$user_pass" | mkpasswd -m sha-512 -s > /mnt/etc/passwd-aristide
+chmod 400 /mnt/etc/passwd-root /mnt/etc/passwd-aristide
+ok "Password files created in /mnt/etc/"
 
-# --- 8. Copy flake to persistent location on the target ---
+# --- 8. Copy flake to target ---
 header "Installing flake to target"
-mkdir -p /mnt/persist/etc/nixos
-cp -aT "$FLAKE_DIR" /mnt/persist/etc/nixos
+mkdir -p /mnt/etc/nixos
+cp -aT "$FLAKE_DIR" /mnt/etc/nixos
 # /etc/nixos in the live ISO was readonly (Nix store); restore write perms on target
-chown -R root:root /mnt/persist/etc/nixos
-chmod -R u+w /mnt/persist/etc/nixos
-ok "Flake copied to /mnt/persist/etc/nixos"
+chown -R root:root /mnt/etc/nixos
+chmod -R u+w /mnt/etc/nixos
+ok "Flake copied to /mnt/etc/nixos"
 
 # --- 9. Run nixos-install ---
 # --no-root-passwd: we use hashedPasswordFile, no interactive prompt
 header "Running nixos-install"
 nixos-install \
-  --flake "/mnt/persist/etc/nixos#$TARGET_HOST" \
+  --flake "/mnt/etc/nixos#$TARGET_HOST" \
   --no-root-passwd
 
 # --- Done ---

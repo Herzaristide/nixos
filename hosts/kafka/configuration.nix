@@ -14,7 +14,6 @@
     ../../modules/network.nix
     ../../modules/power.nix
     ../../modules/storage.nix
-    ../../modules/impermanence.nix
     ../../modules/security.nix
   ];
 
