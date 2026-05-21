@@ -18,8 +18,7 @@
   networking.hostName = "nixos-installer";
 
   # Embed the entire flake into the ISO at /etc/nixos so install-nixos.sh
-  # can reference it directly. The Nix store path is read-only; the install
-  # script copies it to /mnt/persist/etc/nixos before running nixos-install.
+  # can reference it directly.
   environment.etc."nixos".source = lib.cleanSource ../.;
 
   # Tools needed by install-nixos.sh.
