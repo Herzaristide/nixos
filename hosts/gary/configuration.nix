@@ -25,8 +25,8 @@
   # Enable GUI (Hyprland/DMS)
   head = true;
 
-  # Primary monitor: external display
-  primaryMonitor = "HDMI-A-1";
+  # Primary monitor: Samsung C27R50x (DP-1)
+  primaryMonitor = "DP-1";
 
   # Bootloader (systemd-boot for UEFI; GRUB disabled)
   boot.loader.grub.enable = false;
@@ -88,7 +88,8 @@
   # (gfx900..gfx1100), which is what causes "Loading Logics... N/2043" to crawl.
   # Downside: derivation hashes diverge from Hydra → no binary cache hit.
   nixpkgs.overlays = [
-    (final: prev:
+    (
+      final: prev:
       let
         gfx = [ "gfx1032" ];
         rocmPackages' = prev.rocmPackages.overrideScope (

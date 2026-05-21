@@ -151,4 +151,9 @@ in
       userMcp = mcp;
     };
   };
+
+  # VS Code se permet d'écrire dans settings.json/keybindings.json à l'exécution ;
+  # on force HM à écraser au lieu de bloquer le rebuild.
+  home.file."${config.xdg.configHome}/Code/User/settings.json".force = true;
+  home.file."${config.xdg.configHome}/Code/User/keybindings.json".force = true;
 }
