@@ -112,13 +112,11 @@
 
     users.mutableUsers = false;
 
-    # To generate the password files on a new host (run as root):
-    #   mkpasswd -m sha-512 | sudo tee /etc/passwd-root   && sudo chmod 400 /etc/passwd-root
-    #   mkpasswd -m sha-512 | sudo tee /etc/passwd-aristide && sudo chmod 400 /etc/passwd-aristide
+    # Password files are created by deploy.sh (nixos-anywhere --extra-files).
+    # They must exist on the target at these paths, containing the sha-512 hash.
 
     users.users.root = {
       hashedPasswordFile = "/etc/passwd-root";
-      initialHashedPassword = "$6$sFILMwJq1LgIfpTm$vZh8FMDQF.B/C8eCvlPc5/.YwtC5v27YgapTqF7Uv5ogUB8jac5r98s5tbWRSM0/bIg6v3/M0uh7zHgN72Dz5/";
     };
 
     users.users.aristide = {
@@ -126,7 +124,6 @@
       description = "aristide";
       shell = pkgs.fish;
       hashedPasswordFile = "/etc/passwd-aristide";
-      initialHashedPassword = "$6$pFEROTaCMssP8DT8$2tiSWTKT3ISBc0ExhmKdWNyWYRExTuCYGBxERQjrYqQVuSAuwfhOmI/wuxVV9gcHlH/lNS9X7Vjd8WTsXfqEE/";
       extraGroups = [
         "networkmanager"
         "wheel"
