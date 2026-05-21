@@ -56,8 +56,8 @@
                       "ssd"
                     ];
                   };
-                  "@persist" = {
-                    mountpoint = "/persist";
+                  "@home" = {
+                    mountpoint = "/home";
                     mountOptions = [
                       "compress=zstd"
                       "noatime"
