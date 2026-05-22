@@ -112,19 +112,18 @@
 
     users.mutableUsers = false;
 
-    # Password file is created by nixos-anywhere --extra-files.
-    # It must exist on the target at /etc/passwd-aristide, containing the sha-512 hash.
-    # Both root and aristide share the same password.
-
-    users.users.root = {
-      hashedPasswordFile = "/etc/passwd-aristide";
-    };
+    # aristide password hash is created by nixos-anywhere --extra-files at
+    # /etc/passwd-aristide. Root login is disabled (sudo via wheel only).
+    users.users.root.hashedPassword = "!";
 
     users.users.aristide = {
       isNormalUser = true;
       description = "aristide";
       shell = pkgs.fish;
       hashedPasswordFile = "/etc/passwd-aristide";
+      openssh.authorizedKeys.keys = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINi5jJe0xviTwThXWub9t7JdgvJ4OSKhhPfGJSyXbpEg aristide.pichereau@gmail.com"
+      ];
       extraGroups = [
         "networkmanager"
         "wheel"

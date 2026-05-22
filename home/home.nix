@@ -18,6 +18,7 @@ let
   headfullModules = [
     ./head.nix
     ./modules/hyprland.nix
+    ./modules/lock.nix
     ./modules/code/vscode/vscode.nix
     ./modules/alacritty.nix
     ../quickshell/quickshell.nix

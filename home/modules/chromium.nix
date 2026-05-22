@@ -13,7 +13,6 @@
   # ManagedBookmarks: home-manager n'expose pas `extraOpts`, donc on écrit
   # directement le fichier de policy par-utilisateur.
   xdg.configFile."chromium/policies/managed/preferences.json".text = builtins.toJSON {
-    PasswordManagerEnabled = false;
     TranslateEnabled = false;
   };
 
