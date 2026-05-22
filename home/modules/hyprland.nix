@@ -312,11 +312,10 @@ in
             (mkLuaInline ''hl.dsp.layout("togglesplit")'')
           ];
         }
-        # TODO: hl.dsp.exit() peut ne pas exister directement — fallback hyprctl si besoin.
         {
           _args = [
             "SUPER + SHIFT + M"
-            (mkLuaInline ''hl.dsp.exec_cmd("hyprctl dispatch exit")'')
+            (mkLuaInline "hl.dsp.exit()")
           ];
         }
 

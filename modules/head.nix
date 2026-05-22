@@ -41,21 +41,54 @@
   # X11 (for XWayland) and Hyprland
   services.xserver.enable = true;
 
-  # Greetd with autologin directly to Hyprland (no greeter needed)
-  # Use start-hyprland, not Hyprland: the wrapper sets XDG vars, portals, screen sharing
+  # Greetd with tuigreet (TUI login prompt) launching Hyprland.
+  # Use start-hyprland, not Hyprland: the wrapper sets XDG vars, portals, screen sharing.
+  # greetd is pinned to VT1 upstream, so isolation from boot logs relies on the quiet
+  # kernelParams + consoleLogLevel below to keep tty1 clean while tuigreet draws.
   services.greetd = {
     enable = true;
     settings = {
-      initial_session = {
-        command = "${config.programs.hyprland.package}/bin/start-hyprland";
-        user = "aristide";
+      # Épingle greetd sur VT1 et force le switch au (re)démarrage.
+      # Why: sans ça, `loginctl terminate-user` relance greetd sur le prochain VT
+      # libre et laisse l'ancien VT (où était Hyprland) vide → curseur qui clignote
+      # sans possibilité de retrouver l'écran de login.
+      terminal = {
+        vt = 1;
+        switch = true;
       };
       default_session = {
-        command = "${config.programs.hyprland.package}/bin/start-hyprland";
-        user = "aristide";
+        command = builtins.concatStringsSep " " [
+          "${pkgs.tuigreet}/bin/tuigreet"
+          "--time"
+          "--time-format '%A %d %B — %H:%M'"
+          "--remember"
+          "--remember-user-session"
+          "--asterisks"
+          "--asterisks-char '*'"
+          "--greeting 'Bienvenue, aristide.'"
+          "--window-padding 4"
+          "--container-padding 2"
+          "--prompt-padding 1"
+          "--theme 'border=magenta;text=white;prompt=magenta;time=cyan;action=blue;button=magenta;container=black;input=white;greet=cyan'"
+          "--power-shutdown 'systemctl poweroff'"
+          "--power-reboot 'systemctl reboot'"
+          "--cmd '${config.programs.hyprland.package}/bin/start-hyprland'"
+        ];
+        user = "greeter";
       };
     };
   };
+
+  # Silence kernel + initrd chatter so tuigreet isn't overwritten by late boot messages.
+  boot.kernelParams = [
+    "quiet"
+    "loglevel=3"
+    "rd.udev.log_level=3"
+    "udev.log_level=3"
+    "vt.global_cursor_default=0"
+  ];
+  boot.consoleLogLevel = 0;
+  boot.initrd.verbose = false;
 
   programs.hyprland.enable = true;
   services.xserver.xkb = {
