@@ -8,6 +8,8 @@ let
   credentialStore = if isHead then "secretservice" else "cache";
 in
 {
+  programs.lazygit.enable = true;
+
   programs.git = {
     enable = true;
     settings = {

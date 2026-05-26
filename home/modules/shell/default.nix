@@ -6,7 +6,7 @@
     ./fastfetch.nix
     ./starship.nix
     ./micro.nix
-    ./superfile.nix
+    ./yazi.nix
     ./direnv.nix
   ];
 }

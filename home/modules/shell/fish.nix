@@ -9,7 +9,6 @@
       la = "ls -la";
       ".." = "cd ..";
       "..." = "cd ../..";
-      sf = "superfile";
     };
 
     # Abbreviations Fish (se développent visuellement avant exécution)

@@ -65,7 +65,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `modules/chromium.nix` — chromium package + PWA wrappers (`gemini-pwa`, `claude-pwa`, `bandlab-pwa`) sharing `~/.config/chromium-$(hostname)` profile
 - `modules/kde.nix` — minimal KDE/Qt theming (for xdg-portal-kde + appearance protocol)
 - `modules/accent/accent.nix` — installs the accent daemon and its templates (see "Theming" below)
-- `modules/shell/` — `fish`, `starship`, `fastfetch`, `micro`, `direnv`, `superfile`
+- `modules/shell/` — `fish`, `starship`, `fastfetch`, `micro`, `direnv`, `yazi`
 - `modules/network/` — `git`, `ssh`
 - `modules/code/` — VSCode (`vscode/vscode.nix` headful, `vscode/vscode-server.nix` headless) + AI assistants (`ia/claude.nix`, `ia/copilot.nix`, `ia/mcp.nix`) + language runtimes
 
