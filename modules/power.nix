@@ -15,7 +15,7 @@
     HandleLidSwitchDocked = "ignore";
     HandleLidSwitchExternalPower = "ignore";
     IdleAction = "suspend";
-    IdleActionSec = "5min";
+    IdleActionSec = "30min";
     HandleSuspendKey = "suspend";
     HandleHibernateKey = "hibernate";
     HandlePowerKey = "poweroff";

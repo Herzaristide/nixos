@@ -12,11 +12,13 @@
     ../../modules/nixos.nix
     ../../modules/common.nix
     ../../modules/network.nix
+    ../../modules/initrd-ssh.nix
     ../../modules/power.nix
     ../../modules/storage.nix
     ../../modules/head.nix
     ../../modules/audio.nix
     ../../modules/security.nix
+    ../../modules/voice.nix
   ];
 
   # Hostname
@@ -83,40 +85,14 @@
   # ROCM_PATH — points ML frameworks to the ROCm installation
   environment.variables.ROCM_PATH = "${pkgs.rocmPackages.clr}";
 
-  # Restrict ROCm builds to this host's GPU (RX 6600 / Navi 23 / gfx1032).
-  # Without this, rocBLAS/Tensile generate kernels for every supported arch
-  # (gfx900..gfx1100), which is what causes "Loading Logics... N/2043" to crawl.
-  # Downside: derivation hashes diverge from Hydra → no binary cache hit.
-  nixpkgs.overlays = [
-    (
-      final: prev:
-      let
-        gfx = [ "gfx1032" ];
-        rocmPackages' = prev.rocmPackages.overrideScope (
-          rocmFinal: rocmPrev: {
-            clr = rocmPrev.clr.override { localGpuTargets = gfx; };
-            rocblas = rocmPrev.rocblas.override { gpuTargets = gfx; };
-            rocsparse = rocmPrev.rocsparse.override { gpuTargets = gfx; };
-            rocfft = rocmPrev.rocfft.override { gpuTargets = gfx; };
-            hipblaslt = rocmPrev.hipblaslt.override { gpuTargets = gfx; };
-            # miopen skipped: depends on composable_kernel which is marked broken for gfx1032.
-            rocrand = rocmPrev.rocrand.override { gpuTargets = gfx; };
-            rocsolver = rocmPrev.rocsolver.override { gpuTargets = gfx; };
-          }
-        );
-      in
-      {
-        rocmPackages = rocmPackages';
-        ollama-rocm = prev.ollama-rocm.override {
-          rocmGpuTargets = gfx;
-          rocmPackages = rocmPackages';
-        };
-      }
-    )
-  ];
-
-  # Ollama GPU acceleration — use AMD ROCm (RX 6600 / gfx1032)
+  # Ollama GPU acceleration — use AMD ROCm.
+  # The RX 6600 is gfx1032 but upstream rocBLAS in nixpkgs ships kernels for
+  # gfx1030 (and family), not gfx1032. Ollama 0.23 auto-sets
+  # HSA_OVERRIDE_GFX_VERSION=10.3.0 for the gfx103x family, so HSA exposes the
+  # GPU as gfx1030 and rocBLAS finds its Tensile kernels — works from the
+  # binary cache, no local rebuild. We keep the override explicit so other
+  # ROCm consumers on this host (PyTorch, etc.) get the same arch mapping.
   services.ollama.package = pkgs.ollama-rocm;
-  services.ollama.rocmOverrideGfx = "10.3.0"; # Navi 23 / gfx1032
+  environment.variables.HSA_OVERRIDE_GFX_VERSION = "10.3.0";
 
 }

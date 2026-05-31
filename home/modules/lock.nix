@@ -59,9 +59,7 @@
     };
   };
 
-  # hypridle: lock after 4 min idle, DPMS off after 5 min, lock before suspend.
-  # logind keeps managing the actual suspend (modules/power.nix → IdleActionSec=5min),
-  # so the lock fires *before* the suspend handoff.
+  # hypridle: lock after 30 min idle, DPMS off shortly after, lock before suspend.
   services.hypridle = {
     enable = true;
     settings = {
@@ -73,11 +71,11 @@
 
       listener = [
         {
-          timeout = 240;
+          timeout = 1800;
           on-timeout = "loginctl lock-session";
         }
         {
-          timeout = 300;
+          timeout = 1860;
           on-timeout = "hyprctl dispatch dpms off";
           on-resume = "hyprctl dispatch dpms on";
         }

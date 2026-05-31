@@ -7,8 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Flake-based NixOS configuration managing four hosts:
 
 - **zola** (laptop): Intel + NVIDIA hybrid graphics, Prime **offload** mode, full GUI
-- **gary** (desktop): AMD Ryzen 5 1600 + Radeon RX 6600 (ROCm/HIP), full GUI, **impermanence enabled**
-- **kafka** (headless server): old AMD machine, BIOS + GRUB, no functional GPU
+- **gary** (desktop): AMD Ryzen 5 1600 + Radeon RX 6600 (ROCm/HIP), full GUI
+- **kafka** (headless server): Intel + NVIDIA NVS 310 (nouveau), UEFI + systemd-boot, single HDD
 - **exupery** (WSL2): headless development environment
 
 ## Build and Deployment
@@ -42,7 +42,6 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `musnix` — low-latency audio (RT-friendly kernel tweaks, ALSA seq)
 - `quickshell` — Wayland shell / bar (replaces Waybar/DMS)
 - `explorer` — custom file manager (`github:Herzaristide/Explorer`)
-- `impermanence` — declarative state whitelist on top of an ephemeral root
 
 ### System modules (`/modules/`)
 
@@ -53,7 +52,6 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `storage.nix` — mdadm RAID, fstrim, NTFS support, and the cross-host whitelist of external/internal mounts (`/mnt/maxtor`, `/mnt/samsung`, `/mnt/raid` — all with `nofail` so disks remain portable between hosts)
 - `head.nix` — GUI layer: greetd autologin → Hyprland, XDG portal (hyprland + kde), fonts (JetBrains Mono only), printing
 - `audio.nix` — musnix, PipeWire (ALSA/JACK/Pulse), echo-cancel module, WirePlumber rule allowing chromium full audio permissions
-- `impermanence.nix` — imports `impermanence` flake module, defines the `/persist` whitelist, runs an initrd btrfs `wipe-root` service that recreates `@` on every boot
 
 ### Home-manager config (`/home/`)
 
@@ -101,22 +99,16 @@ Custom Rust/Python daemon packaged as `accent-daemon` (also exposed as `packages
 
 To change the active accent at runtime: `palette set "#5277c3"`.
 
-## Impermanence (gary now, kafka + zola at next install)
+## Filesystem layout
 
-`modules/impermanence.nix` is the single source of truth. It:
+All hosts use **disko** to declare partitions; layouts live in `hosts/<name>/disko.nix`.
 
-1. Imports the `impermanence` flake module
-2. Sets `boot.initrd.supportedFilesystems = [ "btrfs" ]`
-3. Defines an initrd systemd service `wipe-root` that mounts the btrfs root and deletes/recreates the `@` subvolume **before** `sysroot.mount`. The btrfs device is read from `config.fileSystems."/".device`, so the module is host-agnostic.
-4. Declares `environment.persistence."/persist"` with the whitelist of dirs/files that bind-mount from `/persist` back into the live FS
+- UEFI hosts (zola, gary, kafka): GPT + ESP (FAT32, `/boot`) + LUKS2 → btrfs
+- WSL host (exupery): no disko, no bootloader
+- btrfs subvolumes per host: `@` (`/`), `@home` (`/home`), `@nix` (`/nix`) — all persistent
+- Mount options: `compress=zstd noatime space_cache=v2` (+ `discard=async ssd` on SSD hosts)
 
-Filesystem layout (gary, and what kafka/zola will become):
-
-- btrfs subvolumes: `@` (root, wiped), `@nix` (Nix store, persisted), `@persist` (whitelist, persisted), `@boot` on kafka (BIOS+GRUB)
-- ESP `/boot` is FAT32 on UEFI hosts (gary/zola)
-- Mount options: `compress=zstd:3 noatime space_cache=v2 discard=async` (+ `ssd` on SSD hosts)
-
-**What survives a reboot:** `/nix` (rebuilt from flake anyway), `/boot`, and the explicit `/persist` whitelist. Everything else is wiped. To keep new state across reboots, add it to the whitelist in `modules/impermanence.nix`.
+LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — write the file before running disko, or pass it via `nixos-anywhere --extra-files`.
 
 ## Host-Specific Details
 
@@ -135,18 +127,17 @@ Filesystem layout (gary, and what kafka/zola will become):
 - AMD Radeon RX 6600 (Navi 23 / gfx1032) via `amdgpu`, loaded in initrd for seamless KMS
 - ROCm stack for ML: `rocm-smi`, `rocminfo`, `clr`, `rocm-runtime`, `hipcc`
 - `/opt/rocm` tmpfiles symlink to `pkgs.rocmPackages.clr` (PyTorch/TF default lookup path)
-- **Critical perf overlay**: `nixpkgs.overlays` restricts ROCm component builds (`rocblas`, `rocsparse`, `rocfft`, `hipblaslt`, `rocrand`, `rocsolver`, `clr`) to `gfx1032` only. Without this, Tensile generates kernels for every supported arch (`gfx900..gfx1100`) and "Loading Logics... N/2043" crawls. Side effect: derivation hashes diverge from Hydra, no binary cache hit on those packages.
-- `services.ollama.package = pkgs.ollama-rocm` with `rocmOverrideGfx = "10.3.0"`
+- **ROCm arch mapping**: RX 6600 is `gfx1032` but upstream rocBLAS ships kernels for `gfx1030` (not `gfx1032`). System-wide `HSA_OVERRIDE_GFX_VERSION=10.3.0` exposes the card as `gfx1030` so rocBLAS finds its Tensile kernels. No custom overlay → unmodified rocmPackages come straight from the Hydra binary cache (no 30-minute Tensile kernel regeneration on rebuild).
+- `services.ollama.package = pkgs.ollama-rocm` (Ollama 0.23+ also auto-injects the same `HSA_OVERRIDE_GFX_VERSION` for gfx103x, our system-wide var just makes it explicit and covers other ROCm consumers).
 - `zramSwap` enabled (zstd, 50%)
-- **Impermanence is live** (btrfs + `modules/impermanence.nix` imported)
 - Primary monitor: `HDMI-A-1`
 
-### kafka (headless server — BIOS + GRUB)
+### kafka (headless server — Intel + NVS 310, UEFI)
 
-- Old AMD platform (`pata_atiixp`, `floppy` in initrd — confirms its age)
-- Legacy BIOS boot via GRUB on `/dev/sda`, no ESP
-- GPU non-functional → `nomodeset` kernel param + all GPU kernel modules blacklisted
-- Configured for impermanence at next install: btrfs with `@boot` subvolume, GRUB `copyKernels = true`
+- Intel CPU (`kvm-intel`, `hardware.cpu.intel.updateMicrocode`)
+- NVIDIA NVS 310 (Fermi / GF119) — too old for the current proprietary driver; uses **in-tree nouveau** for a clean KMS console. No GUI stack.
+- UEFI boot via systemd-boot (no GRUB)
+- Single HDD on `/dev/sda`: GPT + ESP + LUKS2 + btrfs (`@`/`@home`/`@nix`)
 
 ### exupery (WSL2)
 
@@ -180,7 +171,7 @@ Three PWA wrappers, all sharing `~/.config/chromium-$(hostname)`:
 - `claude-pwa` → claude.ai
 - `bandlab-pwa` → bandlab.com
 
-All use `--enable-features=WebUIDarkMode --force-dark-mode`. The shared user-data-dir is **not** currently in the impermanence whitelist — logging in to these apps does not survive a reboot on impermanence hosts.
+All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 
 ## User and security
 
@@ -196,12 +187,11 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`. The shared user-dat
 ## Important quirks
 
 1. **NVIDIA on zola**: `WLR_NO_HARDWARE_CURSORS=1` is mandatory — disabling it kills the cursor on Wayland.
-2. **ROCm gfx1032 overlay on gary** is what makes ML workloads usable; if you remove it, expect ~30 minutes of `rocblas` Tensile kernel generation on every rebuild touching ROCm.
-3. **Impermanence**: anything you want to persist must be in `modules/impermanence.nix`. The Nix store survives but the running `/` does not.
-4. **VSCode** on headless hosts uses `vscode-server.nix` (for SSH remote attach), on headful hosts uses `vscode/vscode.nix`. Both are wired automatically by `home/home.nix`.
-5. **Lua Hyprland config** — when editing `home/modules/hyprland.nix`, remember it generates Lua, not the classic `hypr.conf` format. Use `mkLuaInline` for raw Lua, attribute sets for the rest.
-6. **`primaryMonitor` is consumed by Quickshell**: changing the option value rewrites `~/.config/quickshell/shell.qml` via `builtins.replaceStrings`.
-7. **mdadm warning at eval time** (`Neither MAILADDR nor PROGRAM has been set`) is benign — set `boot.swraid.mdadmConf` to silence it.
+2. **ROCm on gary**: don't bring back a custom `gpuTargets` overlay — upstream rocBLAS already has `gfx1030` and we map the RX 6600 onto it via `HSA_OVERRIDE_GFX_VERSION=10.3.0`. Any overlay that touches `gpuTargets` diverges from the Hydra cache and triggers a ~30-minute Tensile kernel regeneration.
+3. **VSCode** on headless hosts uses `vscode-server.nix` (for SSH remote attach), on headful hosts uses `vscode/vscode.nix`. Both are wired automatically by `home/home.nix`.
+4. **Lua Hyprland config** — when editing `home/modules/hyprland.nix`, remember it generates Lua, not the classic `hypr.conf` format. Use `mkLuaInline` for raw Lua, attribute sets for the rest.
+5. **`primaryMonitor` is consumed by Quickshell**: changing the option value rewrites `~/.config/quickshell/shell.qml` via `builtins.replaceStrings`.
+6. **mdadm warning at eval time** (`Neither MAILADDR nor PROGRAM has been set`) is benign — set `boot.swraid.mdadmConf` to silence it.
 
 ## Making changes
 
@@ -214,5 +204,5 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`. The shared user-dat
 ## Repo metadata
 
 - Git user: `Herzaristide` &lt;aristide.pichereau@gmail.com&gt;
-- Git credential helper: `store` (plaintext — fine on impermanence hosts where the file is in `/persist`)
+- Git credential helper: `store` (plaintext)
 - All `system.stateVersion` and `home.stateVersion` pinned to **25.11**

@@ -23,6 +23,35 @@
     };
   };
 
+  # Blocage global de YouTube et Twitch via /etc/hosts.
+  # Why: appliqué au niveau système → couvre tous les navigateurs et apps
+  # (les policies Chromium ne marchaient pas car écrites dans ~/.config/ au
+  # lieu de /etc/chromium/policies/managed/).
+  # How to extend: /etc/hosts ne supporte pas les wildcards → ajouter chaque
+  # sous-domaine explicitement ci-dessous.
+  networking.hosts = {
+    "0.0.0.0" = [
+      "youtube.com"
+      "www.youtube.com"
+      "m.youtube.com"
+      "music.youtube.com"
+      "studio.youtube.com"
+      "tv.youtube.com"
+      "kids.youtube.com"
+      "gaming.youtube.com"
+      "youtu.be"
+      "youtubekids.com"
+      "www.youtubekids.com"
+      "twitch.tv"
+      "www.twitch.tv"
+      "m.twitch.tv"
+      "clips.twitch.tv"
+      "player.twitch.tv"
+      "go.twitch.tv"
+      "safety.twitch.tv"
+    ];
+  };
+
   # Firewall configuration
   networking.firewall = {
     enable = lib.mkDefault true;

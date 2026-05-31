@@ -86,6 +86,15 @@
         args = [ "mcp-server-oracle" ];
         type = "stdio";
       };
+      # Blender: drive a running Blender instance via the BlenderMCP addon.
+      # Install the addon once in Blender (Edit → Preferences → Add-ons → Install
+      # → pick addon.py from https://github.com/ahujasid/blender-mcp), enable it,
+      # then click "Connect to Claude" in the BlenderMCP panel before chatting.
+      blender = {
+        command = "${pkgs.uv}/bin/uvx";
+        args = [ "blender-mcp" ];
+        type = "stdio";
+      };
       # AWS: general-purpose AWS API access via the AWS CLI (awslabs official).
       # Uses standard AWS credentials (~/.aws/credentials or env vars).
       # NOTE: awslabs.core-mcp-server was yanked from PyPI ("load individual
