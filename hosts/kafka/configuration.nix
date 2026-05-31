@@ -12,6 +12,7 @@
     ../../modules/nixos.nix
     ../../modules/common.nix
     ../../modules/network.nix
+    ../../modules/initrd-ssh.nix
     ../../modules/power.nix
     ../../modules/storage.nix
     ../../modules/security.nix
@@ -23,35 +24,20 @@
   # Headless server (no GUI)
   head = false;
 
-  # Legacy BIOS / MBR — GRUB installs to the disk MBR (no ESP)
-  # Device is managed by disko (bios_grub partition); set "nodev" here
-  # to avoid conflicting mirroredBoots declarations.
-  boot.loader.systemd-boot.enable = false;
-  boot.loader.efi.canTouchEfiVariables = false;
-  boot.loader.grub = {
-    enable = true;
-    efiSupport = false;
-    useOSProber = false;
-    configurationLimit = 10;
-  };
+  # UEFI boot via systemd-boot
+  boot.loader.grub.enable = false;
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
 
   # Firmware for hardware (network, etc.)
   hardware.enableRedistributableFirmware = true;
 
-  # NVIDIA GT 630 (Kepler/GK208) — GPU is broken, using nomodeset (VESA/framebuffer only)
-  # Blacklist all GPU drivers since GPU is non-functional
-  boot.blacklistedKernelModules = [
-    "nvidia"
-    "nvidia_drm"
-    "nvidia_modeset"
-    "nvidia_uvm"
-    "nouveau"
-    "amdgpu"
-    "radeon"
-  ];
+  # CPU: Intel — KVM module for virtualization
+  boot.kernelModules = [ "kvm-intel" ];
 
-  boot.kernelParams = [
-    "nomodeset" # Disable kernel mode setting — uses basic VESA framebuffer
-  ];
-
+  # GPU: NVIDIA NVS 310 (Fermi / GF119) — too old for the current proprietary
+  # driver. Use the in-tree nouveau driver: gives a clean KMS console for
+  # serial-less local recovery without pulling the legacy_390 package (which
+  # doesn't build against recent kernels).
+  hardware.graphics.enable = true;
 }

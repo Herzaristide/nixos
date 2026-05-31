@@ -1,24 +1,25 @@
 # Disko partition layout for kafka (headless server)
-# BIOS/GRUB + LUKS2 + btrfs (HDD)
+# UEFI + LUKS2 + btrfs on a single HDD.
 # Override disko.devices.disk.main.device if your disk path differs.
 {
   disko.devices = {
     disk.main = {
       type = "disk";
-      device = "/dev/sda";
+      device = "/dev/sdb";
       content = {
         type = "gpt";
         partitions = {
-          bios_grub = {
-            size = "1M";
-            type = "EF02";
-          };
-          boot = {
-            size = "512M";
+          ESP = {
+            size = "1G";
+            type = "EF00";
             content = {
               type = "filesystem";
-              format = "ext4";
+              format = "vfat";
               mountpoint = "/boot";
+              mountOptions = [
+                "fmask=0022"
+                "dmask=0022"
+              ];
             };
           };
           luks = {
@@ -33,15 +34,27 @@
                 subvolumes = {
                   "@" = {
                     mountpoint = "/";
-                    mountOptions = [ "compress=zstd:1" "noatime" "space_cache=v2" ];
+                    mountOptions = [
+                      "compress=zstd:1"
+                      "noatime"
+                      "space_cache=v2"
+                    ];
                   };
                   "@home" = {
                     mountpoint = "/home";
-                    mountOptions = [ "compress=zstd:1" "noatime" "space_cache=v2" ];
+                    mountOptions = [
+                      "compress=zstd:1"
+                      "noatime"
+                      "space_cache=v2"
+                    ];
                   };
                   "@nix" = {
                     mountpoint = "/nix";
-                    mountOptions = [ "compress=zstd:1" "noatime" "space_cache=v2" ];
+                    mountOptions = [
+                      "compress=zstd:1"
+                      "noatime"
+                      "space_cache=v2"
+                    ];
                   };
                 };
               };

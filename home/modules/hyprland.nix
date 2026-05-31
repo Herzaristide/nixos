@@ -68,6 +68,20 @@ in
             "6"
           ];
         }
+        # Qt apps en Wayland natif (fix pixellisation sur moniteurs scale != 1.0).
+        # Fallback xcb si l'app n'a pas le plugin Wayland.
+        {
+          _args = [
+            "QT_QPA_PLATFORM"
+            "wayland;xcb"
+          ];
+        }
+        {
+          _args = [
+            "QT_ENABLE_HIGHDPI_SCALING"
+            "1"
+          ];
+        }
       ];
 
       config = {
@@ -676,6 +690,15 @@ in
             class = "^(code-url-handler|code|Code)$";
           };
           opacity = "0.92 0.82";
+        }
+
+        # Minecraft : opacité pleine. `override` est obligatoire — sans lui,
+        # la valeur est multipliée par decoration.active_opacity (0.75) → reste transparent.
+        {
+          match = {
+            class = "^(Minecraft).*";
+          };
+          opacity = "1.0 override 1.0 override";
         }
 
         # Misc dialogs

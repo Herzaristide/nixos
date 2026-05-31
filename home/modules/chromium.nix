@@ -14,6 +14,13 @@
   # directement le fichier de policy par-utilisateur.
   xdg.configFile."chromium/policies/managed/preferences.json".text = builtins.toJSON {
     TranslateEnabled = false;
+    URLBlocklist = [
+      "youtube.com"
+      "*.youtube.com"
+      "youtu.be"
+      "twitch.tv"
+      "*.twitch.tv"
+    ];
   };
 
   xdg.configFile."chromium/policies/managed/bookmarks.json".text = builtins.toJSON {

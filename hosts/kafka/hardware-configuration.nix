@@ -17,20 +17,19 @@
   ];
 
   boot.initrd.availableKernelModules = [
+    "xhci_pci"
     "ahci"
-    "ohci_pci"
-    "ehci_pci"
-    "pata_atiixp"
     "usbhid"
-    "floppy"
+    "usb_storage"
     "sd_mod"
+    "sr_mod"
   ];
   boot.initrd.kernelModules = [ "dm-crypt" ];
-  boot.kernelModules = [ "kvm-amd" ];
+  boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
   swapDevices = [ ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }

@@ -39,6 +39,11 @@
     nautilus
     vesktop
     awww # Wallpaper daemon — caches GPU textures for instant zero-flash switching
+    blender
+    lilypond
+    zathura
+    calibre
+    watchexec
   ];
 
   # Wallpaper files for awww (dark/light toggle via Theme.qml)

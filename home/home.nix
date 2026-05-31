@@ -26,6 +26,8 @@ let
     ./modules/accent/accent.nix
     ./modules/kde.nix
     ./modules/chromium.nix
+    ./modules/musescore-mcp.nix
+    ./modules/minecraft.nix
   ];
 in
 {
