@@ -85,10 +85,11 @@
           modules = [
             ./home/home.nix
             (
-              { lib, ... }:
+              { lib, pkgs, ... }:
               {
                 home.username = lib.mkForce "apichere";
                 home.homeDirectory = lib.mkForce "/home/apichere";
+                home.packages = [ pkgs.nix ];
               }
             )
           ];
