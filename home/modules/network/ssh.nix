@@ -23,12 +23,12 @@
       #  identityFile = "~/.ssh/sisyphe";
       #  identitiesOnly = true;
       #};
-      # Serveur gary (clé salammbo)
+      # Serveur gary (clé siddhartha — même clé que GitHub, autorisée via modules/common.nix)
       "gary" = {
         addKeysToAgent = "yes";
         hostname = "192.168.1.138";
         user = "aristide";
-        identityFile = "~/.ssh/salammbo";
+        identityFile = "~/.ssh/siddhartha";
         identitiesOnly = true;
       };
       # Serveur kafka (NixOS headless, voir hosts/kafka/configuration.nix)
@@ -36,7 +36,7 @@
         addKeysToAgent = "yes";
         hostname = "192.168.1.64";
         user = "aristide";
-        identityFile = "~/.ssh/salammbo";
+        identityFile = "~/.ssh/siddhartha";
         identitiesOnly = true;
       };
     };
