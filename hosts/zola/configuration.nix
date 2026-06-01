@@ -13,7 +13,6 @@
     ../../modules/nixos.nix
     ../../modules/common.nix
     ../../modules/network.nix
-    ../../modules/initrd-ssh.nix
     ../../modules/power.nix
     ../../modules/storage.nix
     ../../modules/head.nix

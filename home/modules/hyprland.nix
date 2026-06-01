@@ -150,17 +150,17 @@ in
           position = "0x900";
           scale = 1.25;
         }
-        # gary — Dell U2413, portrait à gauche, couvrant la hauteur de DP-3+DP-1.
-        # Hauteur cible = DP-3 (900) + DP-1 (864) = 1764. À scale 1.0, DP-2 fait
-        # 1200×1920 logique → couvre largement les 1764 nécessaires.
-        # Position : bord droit collé à DP-3 (x = -1200), top à y=0.
-        # → accessible depuis DP-3 (y<900) ET DP-1 (900≤y<1764).
-        # transform = 1 → rotation 90° horaire (inversée par rapport à avant).
+        # gary — Dell U2413, portrait à gauche.
+        # Mode 1920×1200, scale 1.25 → 1536×960, puis transform=1 (90°) → 960×1536 logique.
+        # Position : bord droit collé à DP-3 (x = -960), top à y=0.
+        # → couvre toute la hauteur de DP-3 (900) + haut de DP-1 (jusqu'à y=1536).
+        # Les 228 derniers pixels en bas de DP-1 (y=1536→1764) n'ont pas de voisin
+        # à gauche — conséquence du scale 1.25 (à scale 1.0 on couvrait les 1764).
         {
           output = "DP-2";
           mode = "1920x1200@60";
-          position = "-1200x0";
-          scale = 1.0;
+          position = "-960x0";
+          scale = 1.25;
           transform = 1;
         }
         # zola — moniteur externe optionnel

@@ -12,7 +12,6 @@
     ../../modules/nixos.nix
     ../../modules/common.nix
     ../../modules/network.nix
-    ../../modules/initrd-ssh.nix
     ../../modules/power.nix
     ../../modules/storage.nix
     ../../modules/head.nix
@@ -35,22 +34,24 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Déverrouillage LUKS via clé USB (avec fallback mot de passe si USB absente).
+  # Le keyfile est écrit au début du device USB brut (offset 0, 4096 octets).
+  # Setup manuel — voir bloc d'instructions ci-dessous.
+  #
+  # Pour retrouver le bon by-id : `ls -l /dev/disk/by-id/ | grep -i usb`
+  # (prendre la ligne SANS suffixe `-part*` — on veut le device brut entier).
+  boot.initrd.luks.devices.cryptroot = {
+    keyFile = "/dev/disk/by-id/usb-Generic_Flash_Disk_933C4A92-0:0";
+    keyFileSize = 4096;
+    keyFileOffset = 0;
+  };
+
   # Firmware for hardware (network, etc.)
   hardware.enableRedistributableFirmware = true;
 
   # CPU: AMD Ryzen 5 1600 (Zen 1 / Summit Ridge, 6c/12t, AM4)
   # Microcode update is enabled via hardware-configuration.nix (cpu.amd.updateMicrocode)
   boot.kernelModules = [ "kvm-amd" ]; # AMD-V virtualization (KVM, QEMU, libvirt)
-
-  # CPU governor is set to "performance" by DMS base.nix — appropriate for a plugged-in desktop.
-  # Note: amd-pstate is NOT used (requires Zen 2+ with CPPC); acpi-cpufreq remains the driver.
-
-  # zram swap — fast in-memory compressed swap (Zen 1 has plenty of cycles for zstd)
-  zramSwap = {
-    enable = true;
-    algorithm = "zstd";
-    memoryPercent = 50;
-  };
 
   # GPU: AMD Radeon RX 6600 (RDNA 2 / Navi 23) — amdgpu driver
   services.xserver.videoDrivers = [ "amdgpu" ];
