@@ -89,7 +89,10 @@
               {
                 home.username = lib.mkForce "apichere";
                 home.homeDirectory = lib.mkForce "/home/apichere";
-                home.packages = [ pkgs.nix ];
+                home.packages = [
+                  pkgs.nix
+                  pkgs.docker
+                ];
               }
             )
           ];
