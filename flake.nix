@@ -69,6 +69,29 @@
         program = "${install-nixos-pkg}/bin/install-nixos";
       };
 
+      homeConfigurations = {
+        "aristide" = inputs.home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs {
+            system = "x86_64-linux";
+            config.allowUnfree = true;
+          };
+          extraSpecialArgs = {
+            inherit inputs;
+            head = false;
+            darkMode = true;
+            primaryMonitor = "HDMI-A-1";
+            accentDaemon = pkgs.callPackage ./accent-daemon/default.nix { };
+          };
+          modules = [
+            ./home/home.nix
+            {
+              home.username = "apichere";
+              home.homeDirectory = "/home/apichere";
+            }
+          ];
+        };
+      };
+
       nixosConfigurations = {
         zola = nixpkgs.lib.nixosSystem {
           modules = [
