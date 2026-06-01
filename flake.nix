@@ -84,10 +84,13 @@
           };
           modules = [
             ./home/home.nix
-            {
-              home.username = "apichere";
-              home.homeDirectory = "/home/apichere";
-            }
+            (
+              { lib, ... }:
+              {
+                home.username = lib.mkForce "apichere";
+                home.homeDirectory = lib.mkForce "/home/apichere";
+              }
+            )
           ];
         };
       };
