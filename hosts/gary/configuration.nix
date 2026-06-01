@@ -12,6 +12,7 @@
     ../../modules/nixos.nix
     ../../modules/common.nix
     ../../modules/network.nix
+    ../../modules/luks-usb-key.nix
     ../../modules/power.nix
     ../../modules/storage.nix
     ../../modules/head.nix
@@ -33,18 +34,6 @@
   boot.loader.grub.enable = false;
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  # Déverrouillage LUKS via clé USB (avec fallback mot de passe si USB absente).
-  # Le keyfile est écrit au début du device USB brut (offset 0, 4096 octets).
-  # Setup manuel — voir bloc d'instructions ci-dessous.
-  #
-  # Pour retrouver le bon by-id : `ls -l /dev/disk/by-id/ | grep -i usb`
-  # (prendre la ligne SANS suffixe `-part*` — on veut le device brut entier).
-  boot.initrd.luks.devices.cryptroot = {
-    keyFile = "/dev/disk/by-id/usb-Generic_Flash_Disk_933C4A92-0:0";
-    keyFileSize = 4096;
-    keyFileOffset = 0;
-  };
 
   # Firmware for hardware (network, etc.)
   hardware.enableRedistributableFirmware = true;
