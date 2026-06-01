@@ -87,6 +87,8 @@
       tcpdump # packet capture
       iproute2 # ip, ss
       iperf3 # bandwidth testing
+      ethtool # carte réseau / WoL
+      wakeonlan # envoi de magic packets
 
       # Filesystem & disk
       parted
