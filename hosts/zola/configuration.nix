@@ -13,6 +13,7 @@
     ../../modules/nixos.nix
     ../../modules/common.nix
     ../../modules/network.nix
+    ../../modules/luks-usb-key.nix
     ../../modules/power.nix
     ../../modules/storage.nix
     ../../modules/head.nix
