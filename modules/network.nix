@@ -52,6 +52,34 @@
     ];
   };
 
+  # Wake-on-LAN : arme toutes les interfaces Ethernet filaires au boot.
+  # Why: permet de réveiller kafka/gary/zola à distance via un magic packet
+  # (la NIC reste alimentée et écoute même machine éteinte, si autorisé BIOS).
+  # How to apply: oneshot systemd qui appelle `ethtool -s <iface> wol g` sur
+  # chaque interface réelle. Skip auto les loopback/virtual/wireless et les
+  # NIC qui ne supportent pas WoL (cas WSL) — donc safe à activer partout.
+  systemd.services.wake-on-lan = {
+    description = "Enable Wake-on-LAN on all wired interfaces";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network-pre.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    path = [ pkgs.ethtool ];
+    script = ''
+      for sys in /sys/class/net/*; do
+        name=$(basename "$sys")
+        [ "$name" = "lo" ] && continue
+        [ -d "$sys/wireless" ] && continue
+        [ ! -e "$sys/device" ] && continue
+        if ethtool "$name" 2>/dev/null | grep -q 'Supports Wake-on:.*g'; then
+          ethtool -s "$name" wol g || true
+        fi
+      done
+    '';
+  };
+
   # Firewall configuration
   networking.firewall = {
     enable = lib.mkDefault true;
