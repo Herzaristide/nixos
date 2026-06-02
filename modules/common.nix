@@ -92,6 +92,7 @@
 
       # Filesystem & disk
       parted
+      gptfdisk # sgdisk (GPT partitioning, used for the LUKS USB keyfile)
       tree
       fd # fast find
       ripgrep # fast grep
