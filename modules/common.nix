@@ -133,6 +133,7 @@
       hashedPasswordFile = "/etc/passwd-aristide";
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINi5jJe0xviTwThXWub9t7JdgvJ4OSKhhPfGJSyXbpEg aristide.pichereau@gmail.com"
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMKEUyD7riAHBYuRqajNOv+kRWK7b/ORBrVNtmBCipfl aristide.pichereau@gmail.com"
       ];
       extraGroups = [
         "networkmanager"
