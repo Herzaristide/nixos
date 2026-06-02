@@ -35,10 +35,17 @@
   # CPU: Intel — KVM module for virtualization
   boot.kernelModules = [ "kvm-intel" ];
 
-  # USB 2.0 host controller in initrd : la clé USB de déverrouillage LUKS est
-  # branchée sur un port noir (EHCI). Sans ce module, la clé n'apparaît pas
-  # à temps dans /dev/disk/by-partlabel/ et le déverrouillage tombe en timeout.
-  boot.initrd.availableKernelModules = [ "ehci_pci" ];
+  # USB host controllers in initrd : on charge tous les variants (xhci pour
+  # USB 3.x déjà en hardware-config, ehci/ohci/uhci pour USB 2.x et 1.1) afin
+  # que la clé USB de déverrouillage LUKS soit détectée sur n'importe quel
+  # port (bleu, noir, façade, arrière).
+  boot.initrd.availableKernelModules = [
+    "ehci_pci"
+    "ehci_hcd"
+    "ohci_pci"
+    "ohci_hcd"
+    "uhci_hcd"
+  ];
 
   # GPU: NVIDIA NVS 310 (Fermi / GF119) — too old for the current proprietary
   # driver. Use the in-tree nouveau driver: gives a clean KMS console for
