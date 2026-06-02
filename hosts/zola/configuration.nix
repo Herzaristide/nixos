@@ -8,12 +8,11 @@
 
 {
   imports = [
-    ./hardware-configuration.nix
     inputs.home-manager.nixosModules.default
     ../../modules/nixos.nix
     ../../modules/common.nix
+    ../../modules/kernel.nix
     ../../modules/network.nix
-    ../../modules/luks-usb-key.nix
     ../../modules/power.nix
     ../../modules/storage.nix
     ../../modules/head.nix
@@ -57,16 +56,12 @@
     powertop.enable = true;
   };
 
+  # CPU: Intel — KVM virtualization + microcode update
+  boot.kernelModules = [ "kvm-intel" ];
+  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+
   # Hostname
   networking.hostName = "zola";
-
-  # MAC randomization on Wi-Fi (laptop carried to untrusted networks).
-  # `stable` keeps a per-SSID MAC across associations (preserves DHCP reservations,
-  # captive-portal sessions) while still preventing cross-network tracking.
-  # `random` would generate a new MAC every connection — change to that if you
-  # prefer privacy over reliability of DHCP/captive portals.
-  networking.networkmanager.wifi.macAddress = "stable";
-  networking.networkmanager.ethernet.macAddress = "stable";
 
   # Head configuration
   head = true;
