@@ -11,7 +11,7 @@
     settings = {
       "$schema" = "https://starship.rs/config-schema.json";
 
-      format = "\${custom.folder_size} ◆ $directory$git_status$git_branch$fill \${custom.docker} ◆ \${custom.disk}\n$character";
+      format = "\${custom.disk} ◆ $directory$git_status$git_metrics$git_branch$character ";
 
       directory = {
         format = "[$path]($style) ";
@@ -34,35 +34,23 @@
         style = "red";
       };
 
-      fill = {
-        symbol = " ";
+      git_metrics = {
+        disabled = false;
+        format = "[+$added]($added_style)[/-$deleted]($deleted_style) ";
+        added_style = "red";
+        deleted_style = "bright-black";
       };
 
       character = {
-        success_symbol = "[❅](bold red)";
-        error_symbol = "[❅](bold red)";
-      };
-
-      custom.folder_size = {
-        command = "ls -lA . 2>/dev/null | awk 'NR>1 && !/^d/ {s+=$5} END {if(s>=1073741824) printf \"%.1fG\",s/1073741824; else if(s>=1048576) printf \"%.1fM\",s/1048576; else printf \"%.0fK\",s/1024}'";
-        when = "true";
-        format = "[$output]($style)";
-        style = "red";
+        success_symbol = "[✦](bold red)";
+        error_symbol = "[✦](bold red)";
       };
 
       custom.disk = {
-        command = "df -h . | awk 'NR==2 {n=$1; sub(\".*/\",\"\",n); s=toupper(substr(n,1,4)); print s \"#\" $5}'";
+        command = "df -h . | awk 'NR==2 {print $5}'";
         when = "true";
         format = "[$output]($style)";
         style = "red";
-      };
-
-      custom.docker = {
-        command = "docker ps -q 2>/dev/null | wc -l | tr -d ' '";
-        when = "docker ps -q 2>/dev/null | grep -q .";
-        format = "[$output]($style)";
-        style = "red";
-        disabled = false;
       };
     };
   };

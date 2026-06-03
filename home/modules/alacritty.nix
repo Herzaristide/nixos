@@ -40,6 +40,12 @@
 
       bell.duration = 0;
 
+      # Le démarrage automatique de zellij est géré par l'intégration fish
+      # (programs.zellij.enableFishIntegration = true) — fish lance zellij
+      # à l'ouverture du shell interactif.  On retire Alt+Q (Quit) côté
+      # Alacritty pour que zellij gère lui-même la fermeture: Alt+Q ferme
+      # un pane, et quand le dernier pane disparaît zellij quitte → Alacritty
+      # se ferme automatiquement (plus de processus enfant).
       terminal.shell.program = "fish";
 
       keyboard.bindings = [
@@ -49,14 +55,16 @@
           action = "CreateNewWindow";
         }
         {
-          key = "Q";
-          mods = "Alt";
-          action = "Quit";
-        }
-        {
           key = "T";
           mods = "Control|Shift";
           action = "SpawnNewInstance";
+        }
+      ];
+
+      mouse.bindings = [
+        {
+          mouse = "Middle";
+          action = "Paste";
         }
       ];
     };
