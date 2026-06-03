@@ -14,6 +14,10 @@
     # Abbreviations Fish (se développent visuellement avant exécution)
     # Plus transparent et éditable que des alias
     shellAbbrs = {
+      # TUI launchers
+      y = "yazi";
+      z = "zellij";
+
       # Git
       g = "git";
       gs = "git status";
