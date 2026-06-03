@@ -31,6 +31,19 @@
           "Bash(file *)"
           "Bash(which *)"
           "Bash(type *)"
+          "Bash(find *)"
+          "Bash(head *)"
+          "Bash(tail *)"
+          "Bash(wc *)"
+          "Bash(sort *)"
+          "Bash(uniq *)"
+          "Bash(grep *)"
+          "Bash(rg *)"
+          "Bash(tree *)"
+          "Bash(realpath *)"
+          "Bash(readlink *)"
+          "Bash(basename *)"
+          "Bash(dirname *)"
           "Bash(pactl *)"
           "Bash(pw-cli *)"
           "Bash(pw-dump *)"
@@ -55,6 +68,14 @@
           "Bash(rocm-smi*)"
           "Bash(rocminfo*)"
           "Bash(nvidia-smi*)"
+        ];
+        deny = [
+          "Bash(find * -delete*)"
+          "Bash(find * -exec *)"
+          "Bash(find * -execdir *)"
+          "Bash(find * -ok *)"
+          "Bash(find * -okdir *)"
+          "Bash(find * -fprint*)"
         ];
       };
     };
