@@ -80,5 +80,81 @@ in
 
   home.packages = with pkgs; [
     kdePackages.ark
+    kdePackages.konsole
   ];
+
+  # Konsole profile — references the "Accent" colorscheme written by paletted
+  # at ~/.local/share/konsole/Accent.colorscheme on every accent change.
+  xdg.dataFile."konsole/Accent.profile".text = ''
+    [Appearance]
+    ColorScheme=Accent
+    Font=JetBrains Mono,11,-1,5,50,0,0,0,0,0
+
+    [General]
+    Name=Accent
+    Parent=FALLBACK/
+
+    [Scrolling]
+    HistoryMode=2
+
+    [Terminal Features]
+    BlinkingCursorEnabled=true
+  '';
+
+  xdg.configFile."konsolerc".text = ''
+    [Desktop Entry]
+    DefaultProfile=Accent.profile
+  '';
+
+  # Dolphin — file manager. Most of dolphinrc is plain INI and lives here.
+  # Dock-widget layout (Konsole panel position, sizes) is stored separately
+  # in ~/.local/state/dolphinstaterc as Qt's opaque saveState() blob, which
+  # is kept mutable so the panel can be repositioned by drag at runtime.
+  xdg.configFile."dolphinrc".force = true;
+  xdg.configFile."dolphinrc".text = ''
+    [General]
+    BrowseThroughArchives=true
+    GlobalViewProps=true
+    OpenExternallyCalledFolderInNewTab=true
+    RememberOpenedTabs=false
+    ShowFullPath=true
+    ShowFullPathInTitlebar=true
+    ShowSpaceInfo=true
+    ShowStatusBar=FullWidth
+    Version=202
+
+    [DetailsMode]
+    PreviewSize=22
+    SidePadding=2
+
+    [IconsMode]
+    PreviewSize=64
+
+    [PreviewSettings]
+    Plugins=appimagethumbnail,audiothumbnail,blenderthumbnail,comicbookthumbnail,cursorthumbnail,djvuthumbnail,ebookthumbnail,exrthumbnail,directorythumbnail,fontthumbnail,imagethumbnail,jpegthumbnail,kraorathumbnail,windowsexethumbnail,windowsimagethumbnail,opendocumentthumbnail,gsthumbnail,rawthumbnail,svgthumbnail,textthumbnail,ffmpegthumbs
+
+    [VersionControl]
+    enabledPlugins=Git
+
+    [Search]
+    Location=Everywhere
+
+    [KFileDialog Settings]
+    Places Icons Auto-resize=false
+    Places Icons Static Size=22
+
+    [MainWindow]
+    MenuBar=Disabled
+    ToolBarsMovable=Disabled
+
+    [MainWindow][Toolbar mainToolBar]
+    ToolButtonStyle=IconOnly
+
+    [PlacesPanel]
+    PanelFontSize=10
+
+    [ContentDisplay]
+    UsePermissionsFormat=PermissionsFormatCombined
+  '';
+
 }

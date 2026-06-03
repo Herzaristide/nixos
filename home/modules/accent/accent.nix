@@ -34,6 +34,8 @@ in
   xdg.configFile."accent/templates/vesktop-colors.css.tmpl".source =
     ./templates/vesktop-colors.css.tmpl;
   xdg.configFile."accent/templates/kdeglobals.tmpl".source = ./templates/kdeglobals.tmpl;
+  xdg.configFile."accent/templates/konsole.colorscheme.tmpl".source =
+    ./templates/konsole.colorscheme.tmpl;
 
   # quickCss.css for Vesktop is a one-line stub that imports the fragment
   # rewritten by paletted on every accent change.

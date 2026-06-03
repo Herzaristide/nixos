@@ -15,11 +15,13 @@ pub fn render_all(state: &AppState) -> io::Result<()> {
     // colour layer is daemon-mutated.
     //
     // Exceptions written as full files (no native include mechanism):
-    //   - kdeglobals  : KDE/Qt has no include directive
+    //   - kdeglobals             : KDE/Qt has no include directive
+    //   - konsole.colorscheme    : Konsole reads a full .colorscheme file by name
     //
     // Live-reload triggers for the listed apps are handled either via file
     // watch (Alacritty, WezTerm) or D-Bus signals (KDE).  Hyprland is reloaded
     // via direct `hyprctl keyword` calls in `appctl.rs` — no fragment needed.
+    // Konsole picks up the new colorscheme on the next opened tab.
     let fragments = state.accent_dir.join("fragments");
     let templates: &[(&str, PathBuf)] = &[
         (
@@ -36,6 +38,10 @@ pub fn render_all(state: &AppState) -> io::Result<()> {
             fragments.join("vesktop-colors.css"),
         ),
         ("kdeglobals.tmpl", home.join(".config/kdeglobals")),
+        (
+            "konsole.colorscheme.tmpl",
+            home.join(".local/share/konsole/Accent.colorscheme"),
+        ),
     ];
 
     for (tmpl_name, out_path) in templates {
