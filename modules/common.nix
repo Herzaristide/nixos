@@ -3,10 +3,14 @@
   pkgs,
   inputs,
   lib,
+  modulesPath,
   ...
 }:
 
 {
+  # Hardware autodetection helper (was duplicated in every hardware-configuration.nix)
+  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
+
   # Option for head (GUI) configuration
   options.head = lib.mkOption {
     type = lib.types.bool;
@@ -29,6 +33,9 @@
   };
 
   config = {
+
+    # Plateforme cible — identique sur tous les hôtes
+    nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 
     # Virtual console (TTY) — French AZERTY for all hosts
     # mkDefault on enable so WSL (which disables console) can override without mkForce
@@ -126,6 +133,7 @@
       hashedPasswordFile = "/etc/passwd-aristide";
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINi5jJe0xviTwThXWub9t7JdgvJ4OSKhhPfGJSyXbpEg aristide.pichereau@gmail.com"
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMKEUyD7riAHBYuRqajNOv+kRWK7b/ORBrVNtmBCipfl aristide.pichereau@gmail.com"
       ];
       extraGroups = [
         "networkmanager"

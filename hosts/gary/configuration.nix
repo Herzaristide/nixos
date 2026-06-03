@@ -2,17 +2,17 @@
   config,
   pkgs,
   inputs,
+  lib,
   ...
 }:
 
 {
   imports = [
-    ./hardware-configuration.nix
     inputs.home-manager.nixosModules.default
     ../../modules/nixos.nix
     ../../modules/common.nix
+    ../../modules/kernel.nix
     ../../modules/network.nix
-    ../../modules/luks-usb-key.nix
     ../../modules/power.nix
     ../../modules/storage.nix
     ../../modules/head.nix
@@ -35,12 +35,9 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Firmware for hardware (network, etc.)
-  hardware.enableRedistributableFirmware = true;
-
   # CPU: AMD Ryzen 5 1600 (Zen 1 / Summit Ridge, 6c/12t, AM4)
-  # Microcode update is enabled via hardware-configuration.nix (cpu.amd.updateMicrocode)
   boot.kernelModules = [ "kvm-amd" ]; # AMD-V virtualization (KVM, QEMU, libvirt)
+  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
   # GPU: AMD Radeon RX 6600 (RDNA 2 / Navi 23) — amdgpu driver
   services.xserver.videoDrivers = [ "amdgpu" ];
