@@ -35,7 +35,7 @@ let
     hyprctl dispatch focusmonitor HDMI-A-1
   '';
 
-  wallpaperPng = ../../src/nix-wallpaper-binary-black_2k.png;
+  wallpaperPng = ../../../src/nix-wallpaper-binary-black_2k.png;
 in
 {
   wayland.windowManager.hyprland = {
@@ -278,14 +278,8 @@ in
         }
         {
           _args = [
-            "SUPER + R"
-            (mkLuaInline ''hl.dsp.exec_cmd("walker")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + CTRL + space"
-            (mkLuaInline ''hl.dsp.exec_cmd("walker")'')
+            "SUPER + space"
+            (mkLuaInline ''hl.dsp.exec_cmd("tofi-drun | xargs hyprctl dispatch exec --")'')
           ];
         }
         {
@@ -664,7 +658,7 @@ in
             class = "^(org.kde.dolphin)$";
           };
           float = true;
-          size = "1100 700";
+          size = "850 550";
           center = 1;
         }
 
@@ -739,6 +733,7 @@ in
 
     # extraConfig est désormais du Lua brut (configType = "lua").
     extraConfig = ''
+
       -- Accent color fragment rewritten by paletted on every change.
       -- Loaded at top-level so it applies on every config reload (hyprctl reload)
       -- AND at startup. The fragment returns a table of colors.
@@ -757,7 +752,6 @@ in
         hl.exec_cmd("gsettings set org.gnome.desktop.interface color-scheme prefer-dark")
         hl.exec_cmd("${hyprClosedLidLayout}")
         hl.exec_cmd("quickshell")
-        hl.exec_cmd("walker --gapplication-service")
         hl.exec_cmd("awww-daemon")
         hl.exec_cmd("sh -c 'until [ -S /run/user/$(id -u)/wayland-1-awww-daemon.sock ]; do sleep 0.1; done; awww img ${wallpaperPng} --transition-type=fade --transition-duration 0.3 --transition-fps 255'")
       end)

@@ -79,17 +79,6 @@
     };
   };
 
-  # Silence kernel + initrd chatter so tuigreet isn't overwritten by late boot messages.
-  # boot.kernelParams = [
-  #   "quiet"
-  #   "loglevel=3"
-  #   "rd.udev.log_level=3"
-  #   "udev.log_level=3"
-  #   "vt.global_cursor_default=0"
-  # ];
-  # boot.consoleLogLevel = 0;
-  # boot.initrd.verbose = false;
-
   programs.hyprland.enable = true;
   services.xserver.xkb = {
     layout = "fr";

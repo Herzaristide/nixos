@@ -8,13 +8,6 @@
 {
   # NetworkManager (overridden to false on exupery/WSL)
   networking.networkmanager.enable = lib.mkDefault true;
-
-  # MAC pseudo-aléatoire dérivée du SSID/nom de connexion (mode "stable") :
-  # protège du tracking inter-réseaux (la MAC matérielle ne fuit jamais) tout
-  # en gardant une MAC constante par réseau — DHCP leases stables, sessions
-  # captive-portal préservées. Pour confidentialité maximale au prix de la
-  # commodité, passer en "random" (nouvelle MAC à chaque connexion).
-  # Inoffensif sur les hôtes sans Wi-Fi ou sans Ethernet géré par NM.
   networking.networkmanager.wifi.macAddress = "stable";
   networking.networkmanager.ethernet.macAddress = "stable";
 
@@ -32,12 +25,6 @@
     };
   };
 
-  # Blocage global de YouTube et Twitch via /etc/hosts.
-  # Why: appliqué au niveau système → couvre tous les navigateurs et apps
-  # (les policies Chromium ne marchaient pas car écrites dans ~/.config/ au
-  # lieu de /etc/chromium/policies/managed/).
-  # How to extend: /etc/hosts ne supporte pas les wildcards → ajouter chaque
-  # sous-domaine explicitement ci-dessous.
   networking.hosts = {
     "0.0.0.0" = [
       "youtube.com"

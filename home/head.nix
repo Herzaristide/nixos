@@ -35,12 +35,10 @@
 
   home.packages = with pkgs; [
     kdePackages.dolphin
-    vesktop
     awww # Wallpaper daemon — caches GPU textures for instant zero-flash switching
     blender
     lilypond
     zathura
-    calibre
     watchexec
     wl-clipboard
   ];
