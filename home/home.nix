@@ -1,9 +1,5 @@
 {
-  config,
-  pkgs,
-  inputs,
   head ? false,
-  darkMode ? true,
   ...
 }:
 
@@ -17,16 +13,16 @@ let
 
   headfullModules = [
     ./head.nix
-    ./modules/hyprland.nix
-    ./modules/lock.nix
+    ./modules/hyprland/hyprland.nix
+    ./modules/hyprland/hyprlock.nix
     ./modules/code/vscode/vscode.nix
     ./modules/alacritty.nix
     ../quickshell/quickshell.nix
-    ./modules/walker.nix
+    ./modules/hyprland/tofi.nix
+    ./modules/vesktop.nix
     ./modules/accent/accent.nix
     ./modules/kde.nix
     ./modules/chromium.nix
-    ./modules/musescore-mcp.nix
     ./modules/minecraft.nix
   ];
 in

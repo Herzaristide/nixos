@@ -57,6 +57,20 @@ impl Color {
         Self::from_hsl(h, new_s, new_l)
     }
 
+    /// Bright accent for the Arcanum icon theme: same hue, S=100%, L=70%.
+    /// Replaces #ff6666 (the bright red highlight) when recoloring icons.
+    pub fn arcanum_bright(&self) -> Self {
+        let (h, _, _) = self.to_hsl();
+        Self::from_hsl(h, 1.0, 0.70)
+    }
+
+    /// Dark accent for the Arcanum icon theme: same hue, S=75%, L=20%.
+    /// Replaces #5a0d0d (the dark red shadow) when recoloring icons.
+    pub fn arcanum_dark(&self) -> Self {
+        let (h, _, _) = self.to_hsl();
+        Self::from_hsl(h, 0.75, 0.20)
+    }
+
     // ── Internal helpers ──────────────────────────────────────────────────
 
     fn to_hsl(&self) -> (f64, f64, f64) {
