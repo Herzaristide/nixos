@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  inputs,
   lib,
   darkMode ? true,
   ...
@@ -35,8 +34,7 @@
   '';
 
   home.packages = with pkgs; [
-    inputs.explorer.packages.${pkgs.stdenv.hostPlatform.system}.file-explorer
-    nautilus
+    kdePackages.dolphin
     vesktop
     awww # Wallpaper daemon — caches GPU textures for instant zero-flash switching
     blender
@@ -63,22 +61,8 @@
       "x-scheme-handler/unknown" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/figma" = [ "figma.desktop" ];
       "x-terminal-emulator" = [ "Alacritty.desktop" ];
-      "inode/directory" = [ "file-explorer.desktop" ];
+      "inode/directory" = [ "org.kde.dolphin.desktop" ];
     };
-  };
-
-  # Custom file explorer
-  xdg.desktopEntries.file-explorer = {
-    name = "File Explorer";
-    comment = "Explorateur de fichiers natif";
-    exec = "file-explorer %u";
-    icon = "system-file-manager";
-    categories = [
-      "System"
-      "FileManager"
-    ];
-    mimeType = [ "inode/directory" ];
-    startupNotify = true;
   };
 
 }
