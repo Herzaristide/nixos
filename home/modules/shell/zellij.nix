@@ -3,7 +3,10 @@
 {
   programs.zellij = {
     enable = true;
-    enableFishIntegration = false;
+    # Auto-démarre zellij quand fish s'ouvre dans un terminal interactif.
+    # Cela évite d'avoir à câbler zellij comme « shell » d'Alacritty et
+    # laisse fish maître de son cycle de vie.
+    enableFishIntegration = true;
   };
 
   xdg.configFile."zellij/config.kdl".force = true;
@@ -61,6 +64,9 @@
         bind "Alt s" { SwitchToMode "resize"; }
         bind "Alt o" { SwitchToMode "session"; }
         bind "Alt g" { SwitchToMode "locked"; }
+
+        bind "PageUp"   { PageScrollUp; }
+        bind "PageDown" { PageScrollDown; }
       }
 
       locked {
