@@ -261,7 +261,7 @@ in
         {
           _args = [
             "SUPER + F"
-            (mkLuaInline ''hl.dsp.exec_cmd("file-explorer")'')
+            (mkLuaInline ''hl.dsp.exec_cmd("dolphin")'')
           ];
         }
         {
@@ -658,29 +658,13 @@ in
           float = true;
         }
 
-        # Custom file-explorer (Iced) — règles consolidées
+        # Dolphin — flottant centré par défaut
         {
           match = {
-            class = "^(file-explorer)$";
+            class = "^(org.kde.dolphin)$";
           };
           float = true;
-          size = "900 600";
-          center = 1;
-        }
-        {
-          match = {
-            class = "^(file_explorer)$";
-          };
-          float = true;
-          size = "900 600";
-          center = 1;
-        }
-        {
-          match = {
-            title = "^(File Explorer)(.*)$";
-          };
-          float = true;
-          size = "900 600";
+          size = "1100 700";
           center = 1;
         }
 
