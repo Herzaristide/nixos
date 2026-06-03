@@ -3,10 +3,9 @@
 {
   programs.zellij = {
     enable = true;
-    # Auto-démarre zellij quand fish s'ouvre dans un terminal interactif.
-    # Cela évite d'avoir à câbler zellij comme « shell » d'Alacritty et
-    # laisse fish maître de son cycle de vie.
-    enableFishIntegration = true;
+    # Pas d'auto-start dans fish : zellij interfère avec l'intégration shell
+    # de Konsole (OSC 7, suivi de cwd côté Dolphin). Lancer manuellement via `z`.
+    enableFishIntegration = false;
   };
 
   xdg.configFile."zellij/config.kdl".force = true;

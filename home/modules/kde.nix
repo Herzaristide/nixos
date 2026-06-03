@@ -148,6 +148,7 @@ in
     ToolBarsMovable=Disabled
 
     [MainWindow][Toolbar mainToolBar]
+    Hidden=true
     ToolButtonStyle=IconOnly
 
     [PlacesPanel]
