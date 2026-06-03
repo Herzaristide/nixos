@@ -10,7 +10,7 @@
   xdg.configFile."zellij/config.kdl".text = ''
     theme "accent"
     default_layout "default"
-    pane_frames true
+    pane_frames false
     show_startup_tips false
     show_release_notes false
     support_kitty_keyboard_protocol true
@@ -39,32 +39,32 @@
 
     keybinds clear-defaults=true {
       shared_except "locked" {
-        bind "Ctrl Left"  { MoveFocus "left"; }
-        bind "Ctrl Down"  { MoveFocus "down"; }
-        bind "Ctrl Up"    { MoveFocus "up"; }
-        bind "Ctrl Right" { MoveFocus "right"; }
+        bind "Alt Left"  { MoveFocus "left"; }
+        bind "Alt Down"  { MoveFocus "down"; }
+        bind "Alt Up"    { MoveFocus "up"; }
+        bind "Alt Right" { MoveFocus "right"; }
 
-        bind "Ctrl h" { MoveFocus "left"; }
-        bind "Ctrl j" { MoveFocus "down"; }
-        bind "Ctrl k" { MoveFocus "up"; }
-        bind "Ctrl l" { MoveFocus "right"; }
+        bind "Alt h" { MoveFocus "left"; }
+        bind "Alt j" { MoveFocus "down"; }
+        bind "Alt k" { MoveFocus "up"; }
+        bind "Alt l" { MoveFocus "right"; }
 
-        bind "Ctrl Enter" { NewPane; }
-        bind "Ctrl q" { CloseFocus; }
-        bind "Ctrl d" { NewPane "down"; }
-        bind "Ctrl r" { NewPane "right"; }
-        bind "Ctrl f" { ToggleFocusFullscreen; }
-        bind "Ctrl e" { TogglePaneEmbedOrFloating; }
-        bind "Ctrl w" { ToggleFloatingPanes; }
-        bind "Ctrl z" { TogglePaneFrames; }
+        bind "Alt Enter" { NewPane; }
+        bind "Alt q" { CloseFocus; }
+        bind "Alt d" { NewPane "down"; }
+        bind "Alt r" { NewPane "right"; }
+        bind "Alt f" { ToggleFocusFullscreen; }
+        bind "Alt e" { TogglePaneEmbedOrFloating; }
+        bind "Alt w" { ToggleFloatingPanes; }
+        bind "Alt z" { TogglePaneFrames; }
 
-        bind "Ctrl s" { SwitchToMode "resize"; }
-        bind "Ctrl o" { SwitchToMode "session"; }
-        bind "Ctrl g" { SwitchToMode "locked"; }
+        bind "Alt s" { SwitchToMode "resize"; }
+        bind "Alt o" { SwitchToMode "session"; }
+        bind "Alt g" { SwitchToMode "locked"; }
       }
 
       locked {
-        bind "Ctrl g" { SwitchToMode "normal"; }
+        bind "Alt g" { SwitchToMode "normal"; }
       }
 
       resize {
@@ -82,7 +82,7 @@
         bind "L" { Resize "Decrease right"; }
         bind "+" { Resize "Increase"; }
         bind "-" { Resize "Decrease"; }
-        bind "Ctrl s" { SwitchToMode "normal"; }
+        bind "Alt s" { SwitchToMode "normal"; }
         bind "esc"    { SwitchToMode "normal"; }
         bind "enter"  { SwitchToMode "normal"; }
       }
@@ -103,7 +103,7 @@
           SwitchToMode "normal"
         }
         bind "d" { Detach; }
-        bind "Ctrl o" { SwitchToMode "normal"; }
+        bind "Alt o" { SwitchToMode "normal"; }
         bind "esc"    { SwitchToMode "normal"; }
       }
     }
