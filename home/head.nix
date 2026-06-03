@@ -44,6 +44,7 @@
     zathura
     calibre
     watchexec
+    wl-clipboard
   ];
 
   # Wallpaper files for awww (dark/light toggle via Theme.qml)
