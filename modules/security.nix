@@ -26,10 +26,6 @@
     "net.ipv4.conf.all.log_martians" = 1; # Log spoofed packets to dmesg
   };
 
-  # --- AppArmor ---
-  # NixOS profiles cover firefox, chromium, evince, and a few system daemons.
-  # killUnconfinedConfinables = false to avoid breaking workflows on first activation;
-  # flip to true once you've confirmed nothing critical is unconfined.
   security.apparmor = {
     enable = true;
     killUnconfinedConfinables = false;
@@ -99,9 +95,5 @@
     keyFileTimeout = 20;
   };
 
-  # --- Reduce boot-time attack surface ---
-  # Disable the systemd-boot kernel-parameter editor: prevents anyone with
-  # console access from booting with `init=/bin/sh` and dropping into a root shell.
-  # (No-op on hosts using GRUB; ignored harmlessly.)
   boot.loader.systemd-boot.editor = false;
 }

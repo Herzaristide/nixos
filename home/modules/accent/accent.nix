@@ -13,6 +13,7 @@ let
   # NixOS blue — used to seed accent.hex on first install only.
   defaultAccent = "#5277c3";
   defaultMode = if darkMode then "dark" else "light";
+  defaultIconsTheme = "Arcanum-Accent";
 in
 {
   home.packages = [
@@ -31,13 +32,13 @@ in
     ./templates/alacritty-colors.toml.tmpl;
   xdg.configFile."accent/templates/hyprland-colors.lua.tmpl".source =
     ./templates/hyprland-colors.lua.tmpl;
-  xdg.configFile."accent/templates/gtk4-colors.css.tmpl".source =
-    ./templates/gtk4-colors.css.tmpl;
+  xdg.configFile."accent/templates/gtk4-colors.css.tmpl".source = ./templates/gtk4-colors.css.tmpl;
   xdg.configFile."accent/templates/vesktop-colors.css.tmpl".source =
     ./templates/vesktop-colors.css.tmpl;
   xdg.configFile."accent/templates/kdeglobals.tmpl".source = ./templates/kdeglobals.tmpl;
   xdg.configFile."accent/templates/konsole.colorscheme.tmpl".source =
     ./templates/konsole.colorscheme.tmpl;
+  xdg.configFile."accent/templates/tofi.config.tmpl".source = ./templates/tofi.config.tmpl;
 
   # quickCss.css for Vesktop is a one-line stub that imports the fragment
   # rewritten by paletted on every accent change.
@@ -68,6 +69,7 @@ in
       ''
         accent_dir="$HOME/.config/accent"
         mkdir -p "$accent_dir/fragments"
+        mkdir -p "$HOME/.config/tofi"
 
         # Seed accent.hex with the current persisted color (or the palette default
         # on first install) so paletted --init has a source of truth to read.
@@ -77,6 +79,9 @@ in
         if [ ! -s "$accent_dir/mode.txt" ]; then
           printf '%s' "${defaultMode}" > "$accent_dir/mode.txt"
         fi
+        # icons_theme.txt is always overwritten: it tracks the Nix declaration
+        # (no runtime CLI to change it yet, so the rebuild value always wins).
+        printf '%s' "${defaultIconsTheme}" > "$accent_dir/icons_theme.txt"
 
         # One-shot render: re-generates all template outputs without starting
         # the socket server.  --no-hyprctl because Hyprland may not be running

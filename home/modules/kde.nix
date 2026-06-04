@@ -1,11 +1,25 @@
 {
   config,
+  lib,
   pkgs,
   darkMode ? true,
   ...
 }:
 
 let
+  # Arcanum - Red icon theme by StormRosenaa (GPL-3.0)
+  # https://codeberg.org/StormRosenaa/Arcanum
+  arcanum-red-icons = pkgs.runCommand "arcanum-red-icons" { } ''
+    mkdir -p "$out/share/icons"
+    tar -xf ${
+      pkgs.fetchurl {
+        url = "https://codeberg.org/StormRosenaa/Arcanum/raw/branch/main/Arcanum%20-%20Red.tar.xz";
+        name = "arcanum-red.tar.xz";
+        hash = "sha256-3vZPao6T0saE5RiQGyYEZVts3FLZeGirRxU9hepSGgM=";
+      }
+    } -C "$out/share/icons"
+  '';
+
   # Slot Plasma Themes — GPL-3.0 by L4ki
   # Only the GTK theme and icon themes are used here (Hyprland, not KDE Plasma).
   slot-src = pkgs.fetchFromGitHub {
@@ -25,6 +39,36 @@ let
     '';
   };
 
+  # Activation script: set infoDock visibility byte to 0 (hidden) in the
+  # Qt binary state blob.  Idempotent: exits early when already hidden.
+  hideDolphinInfoScript = pkgs.writeText "hide-dolphin-info-panel.py" ''
+    import base64, os, re, sys
+    path = os.path.expanduser("~/.local/state/dolphinstaterc")
+    if not os.path.exists(path):
+        sys.exit(0)
+    with open(path) as f:
+        content = f.read()
+    m = re.search(r"^State=(.+)$", content, re.MULTILINE)
+    if not m:
+        sys.exit(0)
+    try:
+        data = bytearray(base64.b64decode(m.group(1).strip()))
+    except Exception:
+        sys.exit(0)
+    needle = "infoDock".encode("utf-16-be")
+    idx = bytes(data).find(needle)
+    if idx < 0:
+        sys.exit(0)
+    vis = idx + len(needle)
+    if data[vis] == 0:
+        sys.exit(0)  # already hidden
+    data[vis] = 0
+    new_b64 = base64.b64encode(bytes(data)).decode()
+    new_content = re.sub(r"^State=.+$", "State=" + new_b64, content, flags=re.MULTILINE)
+    with open(path, "w") as f:
+        f.write(new_content)
+  '';
+
 in
 {
   # GTK theme — Slot Dark (Hyprland-compatible GTK theme by L4ki)
@@ -36,9 +80,11 @@ in
       package = if darkMode then slot-gtk-theme else pkgs.kdePackages.breeze-gtk;
     };
     iconTheme = {
-      name = "Slot-Gray-Accent-Icons";
-      # Populated at activation time by paletted (places/ recolored with accent).
-      # Falls back to Slot-Gray-Dark-Icons via Inherits.
+      # Arcanum-Accent is generated at activation time by paletted:
+      # it copies all SVGs from "Arcanum - Red" and recolors #ff6666/#5a0d0d
+      # to match the current accent hue. Falls back to "Arcanum - Red" via Inherits.
+      name = "Arcanum-Accent";
+      package = arcanum-red-icons; # installs the base theme used as source
     };
     font = {
       name = "JetBrains Mono";
@@ -73,8 +119,8 @@ in
 
   # Icon themes — symlinked into ~/.local/share/icons/ so both GTK and Qt/KDE
   # find them without any cache generation step.
-  xdg.dataFile."icons/Slot-Gray-Dark-Icons" = {
-    source = "${slot-src}/Slot Icons Themes/Slot-Gray-Dark-Icons";
+  xdg.dataFile."icons/Arcanum - Red" = {
+    source = "${arcanum-red-icons}/share/icons/Arcanum - Red";
     force = true;
   };
 
@@ -131,7 +177,7 @@ in
     PreviewSize=64
 
     [PreviewSettings]
-    Plugins=appimagethumbnail,audiothumbnail,blenderthumbnail,comicbookthumbnail,cursorthumbnail,djvuthumbnail,ebookthumbnail,exrthumbnail,directorythumbnail,fontthumbnail,imagethumbnail,jpegthumbnail,kraorathumbnail,windowsexethumbnail,windowsimagethumbnail,opendocumentthumbnail,gsthumbnail,rawthumbnail,svgthumbnail,textthumbnail,ffmpegthumbs
+    Plugins=appimagethumbnail,audiothumbnail,blenderthumbnail,comicbookthumbnail,cursorthumbnail,djvuthumbnail,ebookthumbnail,exrthumbnail,fontthumbnail,imagethumbnail,jpegthumbnail,kraorathumbnail,windowsexethumbnail,windowsimagethumbnail,opendocumentthumbnail,gsthumbnail,rawthumbnail,svgthumbnail,textthumbnail,ffmpegthumbs
 
     [VersionControl]
     enabledPlugins=Git
@@ -148,6 +194,7 @@ in
     ToolBarsMovable=Disabled
 
     [MainWindow][Toolbar mainToolBar]
+    Hidden=true
     ToolButtonStyle=IconOnly
 
     [PlacesPanel]
@@ -155,6 +202,15 @@ in
 
     [ContentDisplay]
     UsePermissionsFormat=PermissionsFormatCombined
+
+    [FoldersPanel]
+    LimitFoldersPanelToHome=false
+  '';
+
+  # Patch the Qt binary state blob on every rebuild so the information panel
+  # starts hidden.  The file remains mutable at runtime (drag/resize still work).
+  home.activation.hideDolphinInfoPanel = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    ${pkgs.python3}/bin/python3 ${hideDolphinInfoScript}
   '';
 
 }

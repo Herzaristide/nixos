@@ -1,11 +1,6 @@
 { config, ... }:
 
 {
-  # Config statique gérée déclarativement par home-manager.  Les couleurs
-  # vivent dans un fragment écrit par paletted sous
-  # ~/.config/accent/fragments/alacritty-colors.toml, importé via la
-  # directive `general.import` d'Alacritty (qui surveille les fichiers
-  # importés et auto-reload sur changement).
   programs.alacritty = {
     enable = true;
     settings = {
@@ -49,14 +44,16 @@
           action = "CreateNewWindow";
         }
         {
-          key = "Q";
-          mods = "Alt";
-          action = "Quit";
-        }
-        {
           key = "T";
           mods = "Control|Shift";
           action = "SpawnNewInstance";
+        }
+      ];
+
+      mouse.bindings = [
+        {
+          mouse = "Middle";
+          action = "Paste";
         }
       ];
     };
