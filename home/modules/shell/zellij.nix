@@ -3,6 +3,8 @@
 {
   programs.zellij = {
     enable = true;
+    # Pas d'auto-start dans fish : zellij interfère avec l'intégration shell
+    # de Konsole (OSC 7, suivi de cwd côté Dolphin). Lancer manuellement via `z`.
     enableFishIntegration = false;
   };
 
@@ -61,6 +63,9 @@
         bind "Alt s" { SwitchToMode "resize"; }
         bind "Alt o" { SwitchToMode "session"; }
         bind "Alt g" { SwitchToMode "locked"; }
+
+        bind "PageUp"   { PageScrollUp; }
+        bind "PageDown" { PageScrollDown; }
       }
 
       locked {

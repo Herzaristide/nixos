@@ -3,22 +3,10 @@
 { ... }:
 
 {
-  # Firmware redistribuable (Wi-Fi/BT Intel & Realtek, microcode CPU,
-  # xhci_pci_renesas, GPU AMD/nouveau, etc.). Tire ~500 MB de linux-firmware
-  # mais évite des diagnostics pénibles de matériel "muet".
-  # Le microcode CPU lui-même est activé par hôte (cf. hardware.cpu.*.updateMicrocode
-  # dans hosts/<host>/configuration.nix) puisqu'il dépend du vendor.
   hardware.enableRedistributableFirmware = true;
 
-  # dm-crypt requis dans l'initrd pour ouvrir le LUKS root
   boot.initrd.kernelModules = [ "dm-crypt" ];
 
-  # Modules initrd centralisés pour tous les hôtes.
-  # availableKernelModules = "disponibles si udev les demande" (pas "chargés
-  # systématiquement") — donc inoffensif d'inclure des modules non utilisés
-  # par un hôte donné. Centraliser ici évite que la clé USB de déverrouillage
-  # LUKS échoue à monter sur un hôte qui n'a pas explicitement déclaré
-  # usb_storage/usbhid/sd_mod dans son hardware-configuration.nix.
   boot.initrd.availableKernelModules = [
     # Stockage
     "nvme"

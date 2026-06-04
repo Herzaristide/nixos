@@ -68,12 +68,6 @@
     # Fish as default shell
     programs.fish.enable = true;
 
-    # Enable automatic line wrapping in terminals
-    # environment.interactiveShellInit = ''
-    #   # Enable automatic line wrapping (DECAWM - DEC Auto Wrap Mode)
-    #   printf '\033[?7h'
-    # '';
-
     # System-level packages
     environment.systemPackages = with pkgs; [
       # Monitoring & diagnostics
@@ -175,11 +169,6 @@
       enable = true;
       host = "127.0.0.1";
     };
-
-    # /records directory for voice memos (OllamaChat audio recording tool)
-    systemd.tmpfiles.rules = [
-      "d /records 0755 aristide users -"
-    ];
 
     # Home Manager
     home-manager = {

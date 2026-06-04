@@ -17,9 +17,11 @@
       # TUI launchers
       y = "yazi";
       z = "zellij";
+      c = "claude";
+      cr = "claude --continue";
 
       # Git
-      g = "git";
+      g = "copilot";
       gs = "git status";
       ga = "git add";
       gaa = "git add --all";
@@ -67,7 +69,7 @@
 
       # Nix
       nr = "nixos-rebuild";
-      nrs = "sudo nixos-rebuild switch --flake /etc/nixos#(hostname)";
+      nrs = "sudo nixos-rebuild switch --flake /home/aristide/nixos#(hostname)";
       nfu = "nix flake update";
       nfc = "nix flake check";
     };
