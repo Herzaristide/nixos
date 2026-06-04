@@ -279,7 +279,7 @@ in
         {
           _args = [
             "SUPER + space"
-            (mkLuaInline ''hl.dsp.exec_cmd("tofi-drun | xargs hyprctl dispatch exec --")'')
+            (mkLuaInline ''hl.dsp.exec_cmd("tofi-drun --drun-launch=true")'')
           ];
         }
         {

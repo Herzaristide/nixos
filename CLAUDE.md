@@ -59,7 +59,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `head.nix` — GUI user layer: dconf (color-scheme), cursor theme, fontconfig cache refresh, default mime apps, custom `file-explorer` desktop entry
 - `modules/hyprland.nix` — Hyprland config in **Lua** mode (`configType = "lua"`), keybinds, monitor setup, special workspaces. Has a lid-closed-layout helper script for zola.
 - `modules/alacritty.nix` — terminal config
-- `modules/walker.nix` — application launcher
+- `modules/hyprland/tofi.nix` — tofi application launcher (config rendue par paletted, voir Theming)
 - `modules/chromium.nix` — chromium package + PWA wrappers (`gemini-pwa`, `claude-pwa`, `bandlab-pwa`) sharing `~/.config/chromium-$(hostname)` profile
 - `modules/kde.nix` — minimal KDE/Qt theming (for xdg-portal-kde + appearance protocol)
 - `modules/accent/accent.nix` — installs the accent daemon and its templates (see "Theming" below)
