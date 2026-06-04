@@ -734,6 +734,14 @@ in
     # extraConfig est désormais du Lua brut (configType = "lua").
     extraConfig = ''
 
+      -- Tofi : flou + assombrissement de l'écran sauf la zone du launcher.
+      -- Le namespace du layer-surface de tofi est "launcher" (vérifié via hyprctl layers).
+      -- API : HL.LayerRuleSpec attend `match = { namespace = ... }` + booléens (cf. stubs/hl.meta.lua).
+      hl.layer_rule({
+        match = { namespace = "^(launcher)$" },
+        dim_around = true,
+      })
+
       -- Accent color fragment rewritten by paletted on every change.
       -- Loaded at top-level so it applies on every config reload (hyprctl reload)
       -- AND at startup. The fragment returns a table of colors.

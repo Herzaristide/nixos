@@ -42,6 +42,7 @@ pub fn render_all(state: &AppState) -> io::Result<()> {
             "konsole.colorscheme.tmpl",
             home.join(".local/share/konsole/Accent.colorscheme"),
         ),
+        ("tofi.config.tmpl", home.join(".config/tofi/config")),
     ];
 
     for (tmpl_name, out_path) in templates {
