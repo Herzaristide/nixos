@@ -114,8 +114,7 @@ let
   '';
 
   mkSymlinks =
-    dir: attrs:
-    lib.mapAttrs' (n: v: lib.nameValuePair "${dir}/${n}" { source = v; }) attrs;
+    dir: attrs: lib.mapAttrs' (n: v: lib.nameValuePair "${dir}/${n}" { source = v; }) attrs;
 in
 {
   home.packages = [ pkgs.prismlauncher ];
@@ -126,12 +125,6 @@ in
     (mkSymlinks "${mcPath}/resourcepacks" resourcePacks)
     (mkSymlinks "${mcPath}/shaderpacks" shaderPacks)
     {
-      # Sans ça, MC rejette les resource packs qui sont des symlinks
-      # ("Found forbidden symlinks"). Iris n'a pas cette restriction.
-      # Format MC (vérifié par decompile de PathAllowList$ConfigEntry.parse) :
-      #   - ligne nue → match par préfixe (String.startsWith)
-      #   - `[glob]<pattern>` ou `[regex]<pattern>` → PathMatcher
-      # → une simple ligne `/nix/store/` autorise tout ce qui pointe dans le store.
       "${mcPath}/allowed_symlinks.txt".text = ''
         # Autorise les chemins pointant dans le Nix store.
         /nix/store/

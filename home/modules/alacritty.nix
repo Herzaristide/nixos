@@ -28,6 +28,8 @@
 
       scrolling.history = 5000;
 
+      selection.save_to_clipboard = true;
+
       cursor.style = {
         shape = "Beam";
         blinking = "On";
@@ -47,13 +49,6 @@
           key = "T";
           mods = "Control|Shift";
           action = "SpawnNewInstance";
-        }
-      ];
-
-      mouse.bindings = [
-        {
-          mouse = "Middle";
-          action = "Paste";
         }
       ];
     };

@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   lib,
   accentDaemon,
@@ -38,11 +37,9 @@ in
     ./templates/konsole.colorscheme.tmpl;
   xdg.configFile."accent/templates/tofi.config.tmpl".source = ./templates/tofi.config.tmpl;
 
-  # quickCss.css for Vesktop is a one-line stub that imports the fragment
-  # rewritten by paletted on every accent change.
-  xdg.configFile."vesktop/settings/quickCss.css".text = ''
-    @import url("file://${config.home.homeDirectory}/.config/accent/fragments/vesktop-colors.css");
-  '';
+  # quickCss.css for Vesktop is written directly by paletted (see templates.rs).
+  # We don't declare it here because @import url("file://…") is dropped by
+  # Vencord's inline <style> injection, so the full CSS must live at the target.
 
   # Remove settings.json.bak BEFORE home-manager checks for link-target collisions.
   # paletted replaces the nix-store symlink with a real file on first run; on the
