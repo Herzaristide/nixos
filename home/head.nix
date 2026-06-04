@@ -38,7 +38,6 @@
     awww # Wallpaper daemon — caches GPU textures for instant zero-flash switching
     blender
     lilypond
-    zathura
     watchexec
     wl-clipboard
   ];
@@ -61,6 +60,7 @@
       "x-scheme-handler/figma" = [ "figma.desktop" ];
       "x-terminal-emulator" = [ "Alacritty.desktop" ];
       "inode/directory" = [ "org.kde.dolphin.desktop" ];
+      "application/pdf" = [ "sioyek.desktop" ];
     };
   };
 

@@ -33,9 +33,12 @@ pub fn render_all(state: &AppState) -> io::Result<()> {
             fragments.join("hyprland-colors.lua"),
         ),
         ("gtk4-colors.css.tmpl", fragments.join("gtk4-colors.css")),
+        // Vesktop/Vencord injects quickCss.css as an inline <style>; @import url("file://…")
+        // is silently dropped in that context, so we write the full CSS directly to the
+        // settings file (same pattern as kdeglobals / konsole below).
         (
             "vesktop-colors.css.tmpl",
-            fragments.join("vesktop-colors.css"),
+            home.join(".config/vesktop/settings/quickCss.css"),
         ),
         ("kdeglobals.tmpl", home.join(".config/kdeglobals")),
         (
