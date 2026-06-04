@@ -4,6 +4,8 @@
   lib,
   accentDaemon,
   darkMode ? true,
+  msiKeyboardEnabled ? false,
+  msiRgbSet ? null,
   ...
 }:
 
@@ -86,17 +88,36 @@ in
   # Started automatically when the graphical session begins.
   # QuickShell, the `palette` CLI, and any future subscriber connect to
   # $XDG_RUNTIME_DIR/paletted.sock to read or change colors.
-  systemd.user.services.paletted = {
-    Unit = {
-      Description = "Accent color and palette daemon";
-      After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
+  systemd.user.services = {
+    paletted = {
+      Unit = {
+        Description = "Accent color and palette daemon";
+        After = [ "graphical-session.target" ];
+        PartOf = [ "graphical-session.target" ];
+      };
+      Service = {
+        ExecStart = "${accentDaemon}/bin/paletted";
+        Restart = "on-failure";
+        RestartSec = "2s";
+      };
+      Install.WantedBy = [ "graphical-session.target" ];
     };
-    Service = {
-      ExecStart = "${accentDaemon}/bin/paletted";
-      Restart = "on-failure";
-      RestartSec = "2s";
+  } // lib.optionalAttrs msiKeyboardEnabled {
+    msi-rgb-watcher = {
+      Unit = {
+        Description = "Reflect paletted accent color onto MSI RGB keyboard";
+        After = [ "paletted.service" ];
+        PartOf = [ "graphical-session.target" ];
+      };
+      Service = {
+        ExecStart = "${accentDaemon}/bin/msi-rgb-watcher";
+        Environment = [
+          "MSI_RGB_SET=${msiRgbSet}/bin/msi-rgb-set"
+        ];
+        Restart = "on-failure";
+        RestartSec = "2s";
+      };
+      Install.WantedBy = [ "graphical-session.target" ];
     };
-    Install.WantedBy = [ "graphical-session.target" ];
   };
 }

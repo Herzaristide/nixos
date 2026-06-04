@@ -9,7 +9,10 @@
 
 {
   # Hardware autodetection helper (was duplicated in every hardware-configuration.nix)
-  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
+  imports = [
+    (modulesPath + "/installer/scan/not-detected.nix")
+    ./msi-keyboard.nix
+  ];
 
   # Option for head (GUI) configuration
   options.head = lib.mkOption {
@@ -188,6 +191,8 @@
         darkMode = config.darkMode;
         primaryMonitor = config.primaryMonitor;
         accentDaemon = pkgs.callPackage ../accent-daemon/default.nix { };
+        msiKeyboardEnabled = config.msiKeyboard.enable;
+        msiRgbSet = pkgs.callPackage ../msi-rgb { };
       };
       users.aristide = import ../home/home.nix;
     };
