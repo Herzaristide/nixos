@@ -66,6 +66,10 @@
   # Head configuration
   head = true;
 
+  # MSI laptop RGB keyboard (SteelSeries KLC 1038:113a) — kernel doesn't
+  # configure this controller, so udev/boot/resume scripts re-apply the color.
+  msiKeyboard.enable = true;
+
   # Primary monitor: built-in screen (laptop)
   primaryMonitor = "eDP-1";
 
