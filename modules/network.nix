@@ -30,7 +30,6 @@
       "youtube.com"
       "www.youtube.com"
       "m.youtube.com"
-      "music.youtube.com"
       "studio.youtube.com"
       "tv.youtube.com"
       "kids.youtube.com"

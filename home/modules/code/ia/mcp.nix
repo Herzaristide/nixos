@@ -27,20 +27,14 @@
         args = [ "@playwright/mcp@latest" ];
         type = "stdio";
       };
-      # Linear: remote MCP server, OAuth on first connection (browser flow).
-      # Migrated to Streamable HTTP transport (/mcp) — SSE endpoint deprecated.
       linear = {
         url = "https://mcp.linear.app/mcp";
         type = "http";
       };
-      # Figma: remote MCP, authenticate once via OAuth in Claude Code.
-      # Uses Streamable HTTP transport (not SSE — SSE endpoint /sse is gone).
       figma = {
         url = "https://mcp.figma.com/mcp";
         type = "http";
       };
-      # Filesystem: read/write under the listed root. Extend args with more
-      # directories to widen access.
       filesystem = {
         command = "${pkgs.nodejs_22}/bin/npx";
         args = [
@@ -50,8 +44,6 @@
         ];
         type = "stdio";
       };
-      # Postgres: read-only DB introspection. Replace the connection string with
-      # a real one (e.g. postgresql://user:pass@host:5432/db).
       postgres = {
         command = "${pkgs.nodejs_22}/bin/npx";
         args = [
@@ -61,7 +53,6 @@
         ];
         type = "stdio";
       };
-      # Sequential Thinking: reasoning tool, no config needed.
       sequential-thinking = {
         command = "${pkgs.nodejs_22}/bin/npx";
         args = [
@@ -70,7 +61,6 @@
         ];
         type = "stdio";
       };
-      # Tavily: web search. Requires TAVILY_API_KEY in the client's env.
       tavily = {
         command = "${pkgs.nodejs_22}/bin/npx";
         args = [
@@ -79,26 +69,16 @@
         ];
         type = "stdio";
       };
-      # Oracle Cloud (OCI): Oracle Database access via mcp-server-oracle.
-      # Requires ORACLE_DSN, ORACLE_USER, ORACLE_PASSWORD in the client's env.
       oracle = {
         command = "${pkgs.uv}/bin/uvx";
         args = [ "mcp-server-oracle" ];
         type = "stdio";
       };
-      # Blender: drive a running Blender instance via the BlenderMCP addon.
-      # Install the addon once in Blender (Edit → Preferences → Add-ons → Install
-      # → pick addon.py from https://github.com/ahujasid/blender-mcp), enable it,
-      # then click "Connect to Claude" in the BlenderMCP panel before chatting.
-      blender = {
+      reaper = {
         command = "${pkgs.uv}/bin/uvx";
-        args = [ "blender-mcp" ];
+        args = [ "reaper-mcp-server" ];
         type = "stdio";
       };
-      # AWS: general-purpose AWS API access via the AWS CLI (awslabs official).
-      # Uses standard AWS credentials (~/.aws/credentials or env vars).
-      # NOTE: awslabs.core-mcp-server was yanked from PyPI ("load individual
-      # MCPs"); aws-api-mcp-server is the closest general-purpose replacement.
       aws = {
         command = "${pkgs.uv}/bin/uvx";
         args = [ "awslabs.aws-api-mcp-server@latest" ];

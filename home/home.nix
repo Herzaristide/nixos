@@ -20,11 +20,11 @@ let
     ../quickshell/quickshell.nix
     ./modules/hyprland/tofi.nix
     ./modules/vesktop.nix
-    ./modules/sioyek.nix
     ./modules/accent/accent.nix
-    ./modules/kde.nix
+    ./modules/kde
     ./modules/chromium.nix
     ./modules/minecraft.nix
+    ./modules/music
   ];
 in
 {
