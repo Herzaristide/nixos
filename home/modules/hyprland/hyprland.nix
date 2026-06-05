@@ -114,6 +114,14 @@ in
           disable_hyprland_logo = true;
           disable_splash_rendering = true;
         };
+
+        # XWayland apps (e.g. Reaper) apparaissent pixelisés avec le fractional scaling
+        # (1.25×, 1.60×) car Hyprland upscale la surface X11.  force_zero_scaling=true
+        # fait que XWayland expose la résolution physique aux apps → plus de blur.
+        # Les apps doivent ensuite gérer leur propre scaling (ex: uiscale dans reaper.ini).
+        xwayland = {
+          force_zero_scaling = true;
+        };
       };
 
       animation = [

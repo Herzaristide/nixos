@@ -13,7 +13,7 @@
   musnix = {
     enable = true;
     alsaSeq.enable = true;
-    kernel.realtime = false;
+    kernel.realtime = true;
     soundcardPciId = "";
   };
 

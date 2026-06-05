@@ -43,6 +43,24 @@ let
         version = "2.6.0";
         sha256 = "sha256-tgZokvZLlzj2/CQt8q1e1EK/rLfLgL/dNt9cbfwmxOk=";
       })
+      (pkgs.vscode-utils.extensionFromVscodeMarketplace {
+        name = "vslilypond";
+        publisher = "lhl2617";
+        version = "1.7.3";
+        sha256 = "sha256-zWs+kEu1YH5Vp/wPr/WrLmeblqIwKeqiH9difCaiYJs=";
+      })
+      (pkgs.vscode-utils.extensionFromVscodeMarketplace {
+        name = "lilypond-pdf-preview";
+        publisher = "lhl2617";
+        version = "0.2.8";
+        sha256 = "sha256-otDRrc49Ej1So29quTX/evfotQbH/p+IeIb35votKi0=";
+      })
+      (pkgs.vscode-utils.extensionFromVscodeMarketplace {
+        name = "lilypond-formatter";
+        publisher = "lhl2617";
+        version = "0.2.3";
+        sha256 = "sha256-4wjZKQvfqQpVlBvnR/s0Okipf7Xwhzol71uW0uOtk3k=";
+      })
     ];
 
   # VSCode desktop settings
