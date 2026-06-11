@@ -471,90 +471,6 @@ Item {
                 }
             }
 
-            // ── Lyrics-mode view: replaces the vinyl in-place ─────────
-            // Shows the active sentence centered, plus 1–2 sibling lines
-            // fading out above and below. No scrolling — lines just rotate
-            // through this fixed 5-slot column as the position advances.
-            Item {
-                id: lyricsModeView
-                anchors.fill: parent
-                opacity: root.showLyrics ? 1 : 0
-                visible: opacity > 0.001
-                Behavior on opacity { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
-
-                // Loading state
-                Text {
-                    anchors.centerIn: parent
-                    visible: root.lyricsLoading
-                    text: "Fetching lyrics…"
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 11
-                    color: Theme.textDim
-                    SequentialAnimation on opacity {
-                        running: root.lyricsLoading && root.showLyrics
-                        loops: Animation.Infinite
-                        NumberAnimation { from: 0.3; to: 1.0; duration: 700; easing.type: Easing.InOutQuad }
-                        NumberAnimation { from: 1.0; to: 0.3; duration: 700; easing.type: Easing.InOutQuad }
-                    }
-                }
-
-                // Empty / not-found / not-synced states
-                Text {
-                    anchors.centerIn: parent
-                    visible: !root.lyricsLoading && (!root.isSynced || root.lyricLines.length === 0)
-                    text: root.lyricsText && root.lyricsText.length > 0 && !root.isSynced
-                          ? "Synced lyrics unavailable"
-                          : "No lyrics found"
-                    horizontalAlignment: Text.AlignHCenter
-                    width: parent.width - 24
-                    wrapMode: Text.WordWrap
-                    font.family: "JetBrains Mono"
-                    font.pixelSize: 11
-                    color: Theme.textDim
-                }
-
-                // Synced lyrics: 5 fixed slots (−2 −1 0 +1 +2)
-                Column {
-                    anchors.centerIn: parent
-                    width: parent.width - 12
-                    spacing: 6
-                    visible: !root.lyricsLoading && root.isSynced && root.lyricLines.length > 0
-
-                    Repeater {
-                        model: 5  // offsets: -2, -1, 0, +1, +2
-                        delegate: Text {
-                            required property int index
-                            readonly property int offset: index - 2
-                            readonly property int targetIdx: root.currentLyricIndex + offset
-                            readonly property bool isCurrent: offset === 0
-                            readonly property bool inRange:
-                                targetIdx >= 0 && targetIdx < root.lyricLines.length
-
-                            width: parent.width
-                            horizontalAlignment: Text.AlignHCenter
-                            wrapMode: Text.WordWrap
-                            elide: Text.ElideRight
-                            maximumLineCount: isCurrent ? 3 : 2
-
-                            text: inRange
-                                  ? (root.lyricLines[targetIdx].text === ""
-                                     ? "·" : root.lyricLines[targetIdx].text)
-                                  : ""
-                            font.family: "JetBrains Mono"
-                            font.pixelSize: isCurrent ? 14 : 11
-                            font.weight: isCurrent ? Font.SemiBold : Font.Normal
-                            color: isCurrent ? Theme.accentColor : Theme.textSecondary
-                            opacity: !inRange ? 0
-                                     : isCurrent ? 1.0
-                                     : Math.abs(offset) === 1 ? 0.55
-                                     : 0.28
-                            Behavior on opacity { NumberAnimation { duration: 280 } }
-                            Behavior on color   { ColorAnimation  { duration: 280 } }
-                        }
-                    }
-                }
-            }
-
             // Drag direction hint (◮ previous / ◭ next — swipe right pulls in
             // the previous track from the left, swipe left brings the next one)
             Rectangle {
@@ -628,6 +544,8 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             height: 36
             spacing: 4
+            opacity: root.showLyrics ? 0 : 1
+            Behavior on opacity { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
 
             Repeater {
                 model: 9
@@ -659,6 +577,8 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 70
             active: root.isPlaying
+            opacity: root.showLyrics ? 0 : 1
+            Behavior on opacity { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
         }
 
         // ── Title + Artist ───────────────────────────────────────────
@@ -666,6 +586,8 @@ Item {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter
             spacing: 4
+            opacity: root.showLyrics ? 0 : 1
+            Behavior on opacity { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
 
             // Marquee title
             Item {
@@ -737,8 +659,8 @@ Item {
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 4
-            opacity: root.hasPlayer ? 1.0 : 0.4
-            Behavior on opacity { NumberAnimation { duration: 250 } }
+            opacity: root.showLyrics ? 0 : (root.hasPlayer ? 1.0 : 0.4)
+            Behavior on opacity { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
 
             Rectangle {
                 id: progressTrack
@@ -821,6 +743,94 @@ Item {
 
         // Bottom spacer — paired with the top spacer to vertically center content
         Item { Layout.fillHeight: true }
+    }
+
+    // ── Lyrics overlay (full panel width) ────────────────────────────────
+    // Shows the active sentence centered, plus 1–2 sibling lines fading out
+    // above and below. No scrolling — lines just rotate through this fixed
+    // 5-slot column as the position advances. Spans the entire widget width
+    // with a small padding so long lines wrap rather than getting cropped.
+    Item {
+        id: lyricsOverlay
+        anchors.fill: parent
+        anchors.margins: 12
+        opacity: root.showLyrics ? 1 : 0
+        visible: opacity > 0.001
+        Behavior on opacity { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
+
+        // Loading state
+        Text {
+            anchors.centerIn: parent
+            width: parent.width - 16
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            visible: root.lyricsLoading
+            text: "Fetching lyrics…"
+            font.family: "JetBrains Mono"
+            font.pixelSize: 11
+            color: Theme.textDim
+            SequentialAnimation on opacity {
+                running: root.lyricsLoading && root.showLyrics
+                loops: Animation.Infinite
+                NumberAnimation { from: 0.3; to: 1.0; duration: 700; easing.type: Easing.InOutQuad }
+                NumberAnimation { from: 1.0; to: 0.3; duration: 700; easing.type: Easing.InOutQuad }
+            }
+        }
+
+        // Empty / not-found / not-synced states
+        Text {
+            anchors.centerIn: parent
+            visible: !root.lyricsLoading && (!root.isSynced || root.lyricLines.length === 0)
+            text: root.lyricsText && root.lyricsText.length > 0 && !root.isSynced
+                  ? "Synced lyrics unavailable"
+                  : "No lyrics found"
+            horizontalAlignment: Text.AlignHCenter
+            width: parent.width - 16
+            wrapMode: Text.WordWrap
+            font.family: "JetBrains Mono"
+            font.pixelSize: 11
+            color: Theme.textDim
+        }
+
+        // Synced lyrics: 5 fixed slots (−2 −1 0 +1 +2)
+        Column {
+            anchors.centerIn: parent
+            width: parent.width - 16
+            spacing: 8
+            visible: !root.lyricsLoading && root.isSynced && root.lyricLines.length > 0
+
+            Repeater {
+                model: 5  // offsets: -2, -1, 0, +1, +2
+                delegate: Text {
+                    required property int index
+                    readonly property int offset: index - 2
+                    readonly property int targetIdx: root.currentLyricIndex + offset
+                    readonly property bool isCurrent: offset === 0
+                    readonly property bool inRange:
+                        targetIdx >= 0 && targetIdx < root.lyricLines.length
+
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    elide: Text.ElideNone
+
+                    text: inRange
+                          ? (root.lyricLines[targetIdx].text === ""
+                             ? "·" : root.lyricLines[targetIdx].text)
+                          : ""
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: isCurrent ? 20 : 15
+                    font.weight: isCurrent ? Font.SemiBold : Font.Normal
+                    color: isCurrent ? Theme.accentColor : Theme.textSecondary
+                    opacity: !inRange ? 0
+                             : isCurrent ? 1.0
+                             : Math.abs(offset) === 1 ? 0.55
+                             : 0.28
+                    Behavior on opacity { NumberAnimation { duration: 280 } }
+                    Behavior on color   { ColorAnimation  { duration: 280 } }
+                }
+            }
+        }
     }
 
     // ── Empty-state overlay (subtle) ─────────────────────────────────────

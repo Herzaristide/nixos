@@ -19,6 +19,22 @@
     options = "--delete-older-than 7d";
   };
 
+  # Periodic rebuild from git — daily at 04:00, no reboot
+  system.autoUpgrade = {
+    enable = true;
+    flake = "github:Herzaristide/nixos";
+    flags = [
+      "--update-input"
+      "nixpkgs"
+      "--no-write-lock-file"
+      "-L"
+    ];
+    dates = "04:00";
+    randomizedDelaySec = "30min";
+    persistent = true;
+    allowReboot = false;
+  };
+
   # nix-ld for running unpatched dynamic executables on NixOS
   programs.nix-ld.enable = true;
   programs.nix-ld.libraries = with pkgs; [

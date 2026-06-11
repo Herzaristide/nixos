@@ -20,6 +20,9 @@ let
     ../quickshell/quickshell.nix
     ./modules/hyprland/tofi.nix
     ./modules/vesktop.nix
+    ./modules/onlyoffice.nix
+    ./modules/penpot.nix
+    ./modules/claude-desktop.nix
     ./modules/accent/accent.nix
     ./modules/kde
     ./modules/chromium.nix

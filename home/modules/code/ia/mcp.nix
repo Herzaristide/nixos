@@ -1,4 +1,9 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  inputs,
+  config,
+  ...
+}:
 
 {
   # MCP (Model Context Protocol) servers — writes ~/.config/mcp/mcp.json
@@ -74,11 +79,6 @@
         args = [ "mcp-server-oracle" ];
         type = "stdio";
       };
-      reaper = {
-        command = "${pkgs.uv}/bin/uvx";
-        args = [ "reaper-mcp-server" ];
-        type = "stdio";
-      };
       aws = {
         command = "${pkgs.uv}/bin/uvx";
         args = [ "awslabs.aws-api-mcp-server@latest" ];
@@ -86,6 +86,18 @@
         environment = {
           FASTMCP_LOG_LEVEL = "ERROR";
         };
+      };
+      onlyoffice = {
+        command = "${pkgs.nodejs_22}/bin/npx";
+        args = [
+          "--yes"
+          "@onlyoffice/docspace-mcp"
+        ];
+        type = "stdio";
+      };
+      penpot = {
+        url = "http://localhost:4401/mcp";
+        type = "http";
       };
     };
   };

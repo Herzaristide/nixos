@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   inputs,
   ...
@@ -13,7 +12,7 @@
   musnix = {
     enable = true;
     alsaSeq.enable = true;
-    kernel.realtime = true;
+    kernel.realtime = false;
     soundcardPciId = "";
   };
 

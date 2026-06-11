@@ -1,6 +1,6 @@
-# Disko partition layout for gary (desktop)
-# UEFI + LUKS2 + btrfs (SSD)
-# Override disko.devices.disk.main.device if your disk path differs.
+# Shared disko partition layout for all NVMe SSD hosts (zola, gary, kafka).
+# UEFI + LUKS2 + btrfs on /dev/nvme0n1, ESP restricted to root.
+# Override disko.devices.disk.main.device per host if the disk path differs.
 {
   disko.devices = {
     disk.main = {
@@ -17,8 +17,8 @@
               format = "vfat";
               mountpoint = "/boot";
               mountOptions = [
-                "fmask=0022"
-                "dmask=0022"
+                "fmask=0077"
+                "dmask=0077"
               ];
             };
           };
@@ -43,8 +43,8 @@
                       "ssd"
                     ];
                   };
-                  "@nix" = {
-                    mountpoint = "/nix";
+                  "@home" = {
+                    mountpoint = "/home";
                     mountOptions = [
                       "compress=zstd"
                       "noatime"
@@ -53,8 +53,8 @@
                       "ssd"
                     ];
                   };
-                  "@home" = {
-                    mountpoint = "/home";
+                  "@nix" = {
+                    mountpoint = "/nix";
                     mountOptions = [
                       "compress=zstd"
                       "noatime"

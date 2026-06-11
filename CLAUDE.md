@@ -8,7 +8,7 @@ Flake-based NixOS configuration managing four hosts:
 
 - **zola** (laptop): Intel + NVIDIA hybrid graphics, Prime **offload** mode, full GUI
 - **gary** (desktop): AMD Ryzen 5 1600 + Radeon RX 6600 (ROCm/HIP), full GUI
-- **kafka** (headless server): Intel + NVIDIA NVS 310 (nouveau), UEFI + systemd-boot, single HDD
+- **kafka** (headless server): Intel + NVIDIA NVS 310 (nouveau), UEFI + systemd-boot, single NVMe SSD
 - **exupery** (WSL2): headless development environment
 
 ## Build and Deployment
@@ -101,12 +101,13 @@ To change the active accent at runtime: `palette set "#5277c3"`.
 
 ## Filesystem layout
 
-All hosts use **disko** to declare partitions; layouts live in `hosts/<name>/disko.nix`.
+All UEFI hosts share a single **disko** layout in `modules/disko.nix` (imported via `flake.nix`).
 
-- UEFI hosts (zola, gary, kafka): GPT + ESP (FAT32, `/boot`) + LUKS2 → btrfs
+- UEFI hosts (zola, gary, kafka): GPT + ESP (FAT32, `/boot`, `fmask=0077`/`dmask=0077`) + LUKS2 (`allowDiscards=true`) → btrfs on `/dev/nvme0n1`
 - WSL host (exupery): no disko, no bootloader
-- btrfs subvolumes per host: `@` (`/`), `@home` (`/home`), `@nix` (`/nix`) — all persistent
-- Mount options: `compress=zstd noatime space_cache=v2` (+ `discard=async ssd` on SSD hosts)
+- btrfs subvolumes: `@` (`/`), `@home` (`/home`), `@nix` (`/nix`) — all persistent
+- Mount options: `compress=zstd noatime space_cache=v2 discard=async ssd`
+- To target a different disk on a future host, override `disko.devices.disk.main.device` with `lib.mkForce` in that host's `configuration.nix`.
 
 LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — write the file before running disko, or pass it via `nixos-anywhere --extra-files`.
 
@@ -137,7 +138,7 @@ LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — wri
 - Intel CPU (`kvm-intel`, `hardware.cpu.intel.updateMicrocode`)
 - NVIDIA NVS 310 (Fermi / GF119) — too old for the current proprietary driver; uses **in-tree nouveau** for a clean KMS console. No GUI stack.
 - UEFI boot via systemd-boot (no GRUB)
-- Single HDD on `/dev/sda`: GPT + ESP + LUKS2 + btrfs (`@`/`@home`/`@nix`)
+- Single NVMe SSD on `/dev/nvme0n1`: shared layout from `modules/disko.nix` (GPT + ESP + LUKS2 + btrfs `@`/`@home`/`@nix`)
 
 ### exupery (WSL2)
 
