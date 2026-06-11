@@ -23,6 +23,10 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    claude-desktop = {
+      url = "github:aaddrick/claude-desktop-debian";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -80,7 +84,7 @@
           modules = [
             { nixpkgs.hostPlatform = system; }
             inputs.disko.nixosModules.disko
-            ./hosts/zola/disko.nix
+            ./modules/disko.nix
             ./hosts/zola/configuration.nix
           ];
           specialArgs = { inherit inputs; };
@@ -90,7 +94,7 @@
           modules = [
             { nixpkgs.hostPlatform = system; }
             inputs.disko.nixosModules.disko
-            ./hosts/gary/disko.nix
+            ./modules/disko.nix
             ./hosts/gary/configuration.nix
           ];
           specialArgs = { inherit inputs; };
@@ -108,7 +112,7 @@
           modules = [
             { nixpkgs.hostPlatform = system; }
             inputs.disko.nixosModules.disko
-            ./hosts/kafka/disko.nix
+            ./modules/disko.nix
             ./hosts/kafka/configuration.nix
           ];
           specialArgs = { inherit inputs; };

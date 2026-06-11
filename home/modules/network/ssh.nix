@@ -34,7 +34,7 @@
       # Serveur kafka (NixOS headless, voir hosts/kafka/configuration.nix)
       "kafka" = {
         addKeysToAgent = "yes";
-        hostname = "192.168.1.106 ";
+        hostname = "192.168.1.143";
         user = "aristide";
         identityFile = "~/.ssh/siddhartha";
         identitiesOnly = true;

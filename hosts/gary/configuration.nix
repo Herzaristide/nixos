@@ -17,6 +17,7 @@
     ../../modules/storage.nix
     ../../modules/head.nix
     ../../modules/audio.nix
+    ../../modules/bluetooth.nix
     ../../modules/security.nix
     ../../modules/voice.nix
   ];

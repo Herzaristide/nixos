@@ -32,8 +32,6 @@
     ];
     config.common = {
       default = "hyprland;kde";
-      # xdph does not implement org.freedesktop.portal.Settings; route explicitly to kde
-      # so Chromium and Qt apps read color-scheme from kdeglobals.
       "org.freedesktop.portal.Settings" = "kde";
     };
   };
@@ -41,17 +39,9 @@
   # X11 (for XWayland) and Hyprland
   services.xserver.enable = true;
 
-  # Greetd with tuigreet (TUI login prompt) launching Hyprland.
-  # Use start-hyprland, not Hyprland: the wrapper sets XDG vars, portals, screen sharing.
-  # greetd is pinned to VT1 upstream, so isolation from boot logs relies on the quiet
-  # kernelParams + consoleLogLevel below to keep tty1 clean while tuigreet draws.
   services.greetd = {
     enable = true;
     settings = {
-      # Épingle greetd sur VT1 et force le switch au (re)démarrage.
-      # Why: sans ça, `loginctl terminate-user` relance greetd sur le prochain VT
-      # libre et laisse l'ancien VT (où était Hyprland) vide → curseur qui clignote
-      # sans possibilité de retrouver l'écran de login.
       terminal = {
         vt = 1;
         switch = true;

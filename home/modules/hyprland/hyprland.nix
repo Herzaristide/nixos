@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   lib,
   primaryMonitor ? "HDMI-A-1",
@@ -231,16 +230,6 @@ in
         # gaps_out: css_gap = soit un int soit { top, right, bottom, left }.
         # En hyprlang `gapsout:60 300 60` = top=60, h=300, bottom=60 (CSS 3-valeurs).
         {
-          workspace = "special:claude";
-          on_created_empty = "hypr-claude-launch";
-          gaps_out = {
-            top = 60;
-            right = 300;
-            bottom = 60;
-            left = 300;
-          };
-        }
-        {
           workspace = "special:gemini";
           on_created_empty = "hypr-gemini-launch";
           gaps_out = {
@@ -282,6 +271,12 @@ in
           _args = [
             "SUPER + Z"
             (mkLuaInline ''hl.dsp.exec_cmd("zen-twilight")'')
+          ];
+        }
+        {
+          _args = [
+            "SUPER + Y"
+            (mkLuaInline ''hl.dsp.exec_cmd("ytmusic-pwa")'')
           ];
         }
         {
@@ -462,12 +457,6 @@ in
         }
 
         # Special workspaces
-        {
-          _args = [
-            "SUPER + C"
-            (mkLuaInline ''hl.dsp.workspace.toggle_special("claude")'')
-          ];
-        }
         {
           _args = [
             "SUPER + G"
