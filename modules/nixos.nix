@@ -19,17 +19,15 @@
     options = "--delete-older-than 7d";
   };
 
-  # Periodic rebuild from git — daily at 04:00, no reboot
+  # Periodic rebuild from git — daily at 10:00, no reboot.
+  # Suit le flake.lock commité dans le repo (pas de --update-input) : on évite
+  # qu'une régression nixos-unstable casse un boot silencieusement. Pour
+  # bumper les inputs : `nix flake update` + commit + push manuellement.
   system.autoUpgrade = {
     enable = true;
     flake = "github:Herzaristide/nixos";
-    flags = [
-      "--update-input"
-      "nixpkgs"
-      "--no-write-lock-file"
-      "-L"
-    ];
-    dates = "04:00";
+    flags = [ "-L" ];
+    dates = "10:00";
     randomizedDelaySec = "30min";
     persistent = true;
     allowReboot = false;
