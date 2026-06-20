@@ -33,14 +33,23 @@
     ];
   };
 
-  # PWA launcher scripts (default Chromium profile, forced dark mode)
-  # On utilise le profil par défaut pour que les extensions s'appliquent.
+  # PWA launcher scripts. Chromium suit le color-scheme système via xdg-desktop-portal.
   home.packages = with pkgs; [
     (writeShellScriptBin "hypr-gemini-launch" "gemini-pwa")
-    (writeShellScriptBin "gemini-pwa" "chromium --app=https://gemini.google.com --user-data-dir=$HOME/.config/chromium --enable-features=WebUIDarkMode --force-dark-mode")
-    (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium --enable-features=WebUIDarkMode --force-dark-mode")
-    (writeShellScriptBin "ytmusic-pwa" "chromium --app=https://music.youtube.com --user-data-dir=$HOME/.config/chromium --enable-features=WebUIDarkMode --force-dark-mode")
+    (writeShellScriptBin "gemini-pwa" "chromium --app=https://gemini.google.com --user-data-dir=$HOME/.config/chromium")
+    (writeShellScriptBin "claude-pwa" "chromium --app=https://claude.ai --user-data-dir=$HOME/.config/chromium")
+    (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium")
+    (writeShellScriptBin "ytmusic-pwa" "chromium --app=https://music.youtube.com --user-data-dir=$HOME/.config/chromium")
   ];
+
+  xdg.desktopEntries.claude-chrome = {
+    name = "Claude";
+    comment = "Claude AI assistant in a Chromium PWA";
+    exec = "claude-pwa";
+    icon = "claude";
+    categories = [ "Utility" ];
+    startupNotify = true;
+  };
 
   # BandLab PWA (music production web app)
   xdg.desktopEntries.bandlab-chrome = {

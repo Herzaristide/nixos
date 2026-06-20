@@ -32,7 +32,7 @@
     ];
     config.common = {
       default = "hyprland;kde";
-      "org.freedesktop.portal.Settings" = "kde";
+      "org.freedesktop.impl.portal.Settings" = "kde";
     };
   };
 

@@ -22,11 +22,9 @@ let
     ./modules/vesktop.nix
     ./modules/onlyoffice.nix
     ./modules/penpot.nix
-    ./modules/claude-desktop.nix
     ./modules/accent/accent.nix
     ./modules/kde
     ./modules/chromium.nix
-    ./modules/minecraft.nix
     ./modules/music
   ];
 in

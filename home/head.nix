@@ -36,6 +36,10 @@
     awww # Wallpaper daemon — caches GPU textures for instant zero-flash switching
     watchexec
     wl-clipboard
+    # Home-manager forces NIX_XDG_DESKTOP_PORTAL_DIR to the user profile, so the
+    # xdg-desktop-portal frontend only sees portals installed here. Ship kde.portal
+    # in the user profile so the Settings interface (color-scheme) is routed correctly.
+    kdePackages.xdg-desktop-portal-kde
   ];
 
   # Wallpaper files for awww (dark/light toggle via Theme.qml)
