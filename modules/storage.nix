@@ -7,8 +7,13 @@
   # mdadm software RAID — auto-assemble arrays from superblocks at boot.
   # /dev/md/<name> symlinks created from the array name embedded in the superblock.
   # mdmonitor.service est démarré automatiquement par boot.swraid.enable.
-  # Pour configurer l'email d'alerte: ajouter une ligne MAILADDR dans boot.swraid.mdadmConf.
+  # MAILADDR root : silence le warning d'eval ("Neither MAILADDR nor PROGRAM
+  # has been set") et redirige les alertes mdmon vers le mail système local
+  # (perdu sans MTA, ce qui est OK ici — on n'a pas de RAID critique en prod).
   boot.swraid.enable = true;
+  boot.swraid.mdadmConf = ''
+    MAILADDR root
+  '';
 
   # udisks2: hotplug auto-mount for removable media (USB sticks, etc.)
   services.udisks2.enable = true;
