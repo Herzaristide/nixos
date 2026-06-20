@@ -128,7 +128,7 @@
       # Configuration for hybrid Intel+Nvidia laptop
       prime = {
         # OFFLOAD MODE: Intel iGPU by default, NVIDIA on-demand (massive battery savings)
-        # Use `nvidia-offload <command>` to run apps on NVIDIA (e.g., nvidia-offload steam)
+        # Use `nvidia-offload <command>` to run apps on NVIDIA (e.g., nvidia-offload glxgears)
         offload = {
           enable = true; # Mode optimized for power saving
           enableOffloadCmd = true; # Creates nvidia-offload wrapper command

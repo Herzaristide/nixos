@@ -239,6 +239,16 @@ in
             left = 300;
           };
         }
+        {
+          workspace = "special:claude";
+          on_created_empty = "claude-pwa";
+          gaps_out = {
+            top = 60;
+            right = 300;
+            bottom = 60;
+            left = 300;
+          };
+        }
       ];
 
       bind = [
@@ -463,6 +473,12 @@ in
             (mkLuaInline ''hl.dsp.workspace.toggle_special("gemini")'')
           ];
         }
+        {
+          _args = [
+            "SUPER + C"
+            (mkLuaInline ''hl.dsp.workspace.toggle_special("claude")'')
+          ];
+        }
 
         # Quickshell panel widgets
         {
@@ -647,16 +663,6 @@ in
             class = "^(org.freedesktop.impl.portal.desktop.gtk)$";
           };
           float = true;
-        }
-
-        # Dolphin — flottant centré par défaut
-        {
-          match = {
-            class = "^(org.kde.dolphin)$";
-          };
-          float = true;
-          size = "850 550";
-          center = 1;
         }
 
         # VSCode opacity — l'API Lua attend un string format hyprlang "active inactive".
