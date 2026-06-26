@@ -67,13 +67,12 @@
 
       # --- Clé USB relais : porte l'ESP (FAT32, /boot) ---
       #
-      # ⚠️ device référencé par by-id : INDISPENSABLE pour ne JAMAIS confondre
-      # la clé relais avec la clé live d'installation (toutes deux en /dev/sdX).
-      # À l'install, remplace la valeur ci-dessous par l'ID réel de la clé
-      # relais, obtenu via :  ls -l /dev/disk/by-id/ | grep -i usb
+      # device référencé par by-id : INDISPENSABLE pour ne jamais confondre la
+      # clé relais avec une autre clé USB (p. ex. la live d'installation).
+      # Clé relais = Generic Flash Disk 3,8 Go (ls -l /dev/disk/by-id/).
       usb = {
         type = "disk";
-        device = "/dev/disk/by-id/usb-REMPLACER_PAR_LE_VRAI_ID";
+        device = "/dev/disk/by-id/usb-Generic_Flash_Disk_13D0FD63-0:0";
         content = {
           type = "gpt";
           partitions = {
