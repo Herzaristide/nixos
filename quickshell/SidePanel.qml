@@ -88,7 +88,7 @@ PanelWindow {
             currentIndex: panel.activeWidget
 
             HardwareStats {}
-            OllamaChat {}
+            AIPanel {}
             NotesWidget {}
             Metronome {}
             MusicPlayerWidget {}

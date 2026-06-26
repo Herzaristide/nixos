@@ -46,6 +46,12 @@ pub fn render_all(state: &AppState) -> io::Result<()> {
             home.join(".local/share/konsole/Accent.colorscheme"),
         ),
         ("tofi.config.tmpl", home.join(".config/tofi/config")),
+        // Zed reads any JSON theme dropped in its themes dir; we render a full
+        // theme file (no include mechanism) named "Accent", selected in zed.nix.
+        (
+            "zed-theme.json.tmpl",
+            home.join(".config/zed/themes/accent.json"),
+        ),
     ];
 
     for (tmpl_name, out_path) in templates {

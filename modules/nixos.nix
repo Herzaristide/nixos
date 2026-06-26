@@ -23,15 +23,19 @@
   # Suit le flake.lock commité dans le repo (pas de --update-input) : on évite
   # qu'une régression nixos-unstable casse un boot silencieusement. Pour
   # bumper les inputs : `nix flake update` + commit + push manuellement.
-  system.autoUpgrade = {
-    enable = true;
-    flake = "github:Herzaristide/nixos";
-    flags = [ "-L" ];
-    dates = "10:00";
-    randomizedDelaySec = "30min";
-    persistent = true;
-    allowReboot = false;
-  };
+  # Désactivé : le repo GitHub est privé et autoUpgrade tourne en root, qui n'a
+  # pas d'accès authentifié à l'API GitHub (le fetcher `github:` interroge l'API
+  # en anonyme → 404). À réactiver une fois l'auth root réglée (PAT via
+  # nix.settings.access-tokens, ou git+ssh + deploy key).
+  # system.autoUpgrade = {
+  #   enable = true;
+  #   flake = "github:Herzaristide/nixos";
+  #   flags = [ "-L" ];
+  #   dates = "10:00";
+  #   randomizedDelaySec = "30min";
+  #   persistent = true;
+  #   allowReboot = false;
+  # };
 
   # nix-ld for running unpatched dynamic executables on NixOS
   programs.nix-ld.enable = true;

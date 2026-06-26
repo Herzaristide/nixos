@@ -9,6 +9,8 @@
       theme = "dark-ansi";
       language = "French";
       model = "opus";
+      # Pas de tips/suggestions rotatifs pendant le spinner.
+      spinnerTipsEnabled = false;
       voiceEnabled = true;
       voice = {
         enabled = true;

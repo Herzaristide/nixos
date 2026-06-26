@@ -15,6 +15,11 @@
       font-name = "JetBrains Mono 11";
       document-font-name = "JetBrains Mono 11";
       monospace-font-name = "JetBrains Mono 11";
+      # Chromium >= 144 honors this GTK preference for middle-click (primary
+      # selection) paste instead of always pasting. On a bare Hyprland session
+      # (no GNOME settings daemon) it defaults to off, which kills middle-click
+      # paste in Chromium. Force it on so the button-3 paste works like before.
+      gtk-enable-primary-paste = true;
     };
   };
 
@@ -35,10 +40,6 @@
   home.packages = with pkgs; [
     awww # Wallpaper daemon — caches GPU textures for instant zero-flash switching
     watchexec
-    wl-clipboard
-    # Home-manager forces NIX_XDG_DESKTOP_PORTAL_DIR to the user profile, so the
-    # xdg-desktop-portal frontend only sees portals installed here. Ship kde.portal
-    # in the user profile so the Settings interface (color-scheme) is routed correctly.
     kdePackages.xdg-desktop-portal-kde
   ];
 
@@ -82,5 +83,4 @@
       "audio/x-midi" = [ "fluidsynth.desktop" ];
     };
   };
-
 }
