@@ -6,6 +6,8 @@ SettingsWindow 1.0 SettingsWindow.qml
 HardwareStats 1.0 HardwareStats.qml
 OllamaChat 1.0 OllamaChat.qml
 OllamaTools 1.0 OllamaTools.qml
+ClaudeChat 1.0 ClaudeChat.qml
+AIPanel 1.0 AIPanel.qml
 NotesWidget 1.0 NotesWidget.qml
 MiniGraph 1.0 MiniGraph.qml
 Metronome 1.0 Metronome.qml

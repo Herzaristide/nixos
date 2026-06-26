@@ -50,7 +50,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `network.nix` — NetworkManager + SSH (password auth) + firewall
 - `power.nix` — UPower, logind suspend rules, USB wakeup
 - `storage.nix` — mdadm RAID, fstrim, NTFS support, and the cross-host whitelist of external/internal mounts (`/mnt/maxtor`, `/mnt/samsung`, `/mnt/raid` — all with `nofail` so disks remain portable between hosts)
-- `head.nix` — GUI layer: greetd autologin → Hyprland, XDG portal (hyprland + kde), fonts (JetBrains Mono only), printing
+- `head.nix` — GUI layer: getty autologin (`aristide` on tty1) → fish `loginShellInit` exec's Hyprland directly (no greeter), XDG portal (hyprland + kde), fonts (JetBrains Mono only), printing
 - `audio.nix` — musnix, PipeWire (ALSA/JACK/Pulse), echo-cancel module, WirePlumber rule allowing chromium full audio permissions
 
 ### Home-manager config (`/home/`)

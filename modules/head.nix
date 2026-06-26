@@ -12,13 +12,18 @@
   # Force the stable FreeType backend instead.
   environment.variables.FC_FONTATIONS = "0";
 
+  # Run Electron/Chromium apps in native Wayland mode. Required so Chromium uses
+  # wl_data_device for drag-and-drop: without it Chromium runs under XWayland and
+  # cross-protocol DnD from native Wayland apps (Dolphin) silently fails.
+  environment.variables.NIXOS_OZONE_WL = "1";
+
   # dconf: required for GTK app settings and GNOME applications
   programs.dconf.enable = true;
 
   # GNOME Keyring (Secret Service daemon) for git-credential-manager `secretservice` store.
   # PAM hook unlocks the keyring at login with the user's password.
   services.gnome.gnome-keyring.enable = true;
-  security.pam.services.greetd.enableGnomeKeyring = true;
+  security.pam.services.login.enableGnomeKeyring = true;
 
   # XDG Portal (for file picker, screen sharing in Hyprland)
   # xdg-desktop-portal-kde exposes color-scheme (dark mode) to Chrome/Gemini, etc.
@@ -39,35 +44,21 @@
   # X11 (for XWayland) and Hyprland
   services.xserver.enable = true;
 
-  services.greetd = {
-    enable = true;
-    settings = {
-      terminal = {
-        vt = 1;
-        switch = true;
-      };
-      default_session = {
-        command = builtins.concatStringsSep " " [
-          "${pkgs.tuigreet}/bin/tuigreet"
-          "--time"
-          "--time-format '%A %d %B — %H:%M'"
-          "--remember"
-          "--remember-user-session"
-          "--asterisks"
-          "--asterisks-char '*'"
-          "--greeting 'Bienvenue, aristide.'"
-          "--window-padding 4"
-          "--container-padding 2"
-          "--prompt-padding 1"
-          "--theme 'border=magenta;text=white;prompt=magenta;time=cyan;action=blue;button=magenta;container=black;input=white;greet=cyan'"
-          "--power-shutdown 'systemctl poweroff'"
-          "--power-reboot 'systemctl reboot'"
-          "--cmd '${config.programs.hyprland.package}/bin/start-hyprland'"
-        ];
-        user = "greeter";
-      };
-    };
-  };
+  # No display manager / greeter: getty auto-logs in `aristide` on tty1,
+  # and the fish login shell exec's Hyprland directly (see loginShellInit below).
+  # `services.xserver.enable = true` otherwise pulls in lightdm by default, which
+  # would grab the VT and show a graphical login — disable it explicitly.
+  services.displayManager.enable = false;
+  services.xserver.displayManager.lightdm.enable = false;
+  services.getty.autologinUser = "aristide";
+
+  # Launch Hyprland automatically on the first VT right after autologin.
+  # Guarded so it only runs on tty1 and not inside an existing session.
+  programs.fish.loginShellInit = ''
+    if test -z "$WAYLAND_DISPLAY" -a (tty) = /dev/tty1
+        exec ${config.programs.hyprland.package}/bin/start-hyprland
+    end
+  '';
 
   programs.hyprland.enable = true;
   services.xserver.xkb = {
@@ -78,7 +69,7 @@
   # Printing
   services.printing.enable = true;
 
-  # Fonts — single font family: JetBrains Mono
+  # Fonts — JetBrains Mono for text/UI, Noto Color Emoji for emoji glyphs
   fonts = {
     enableDefaultPackages = false;
     fontconfig = {
@@ -87,12 +78,13 @@
         serif = [ "JetBrains Mono" ];
         sansSerif = [ "JetBrains Mono" ];
         monospace = [ "JetBrains Mono" ];
-        emoji = [ "JetBrains Mono" ];
+        emoji = [ "Noto Color Emoji" ];
       };
     };
     packages = with pkgs; [
       jetbrains-mono
       monocraft
+      noto-fonts-color-emoji
     ];
   };
 

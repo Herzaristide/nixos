@@ -28,6 +28,8 @@
   xdg.configFile."quickshell/SettingsWindow.qml".source = ./SettingsWindow.qml;
   xdg.configFile."quickshell/OllamaChat.qml".source = ./OllamaChat.qml;
   xdg.configFile."quickshell/OllamaTools.qml".source = ./OllamaTools.qml;
+  xdg.configFile."quickshell/ClaudeChat.qml".source = ./ClaudeChat.qml;
+  xdg.configFile."quickshell/AIPanel.qml".source = ./AIPanel.qml;
   xdg.configFile."quickshell/QuickControls.qml".source = ./QuickControls.qml;
   xdg.configFile."quickshell/NotesWidget.qml".source = ./NotesWidget.qml;
   xdg.configFile."quickshell/HardwareStats.qml".source = ./HardwareStats.qml;

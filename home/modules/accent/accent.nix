@@ -38,6 +38,7 @@ in
   xdg.configFile."accent/templates/konsole.colorscheme.tmpl".source =
     ./templates/konsole.colorscheme.tmpl;
   xdg.configFile."accent/templates/tofi.config.tmpl".source = ./templates/tofi.config.tmpl;
+  xdg.configFile."accent/templates/zed-theme.json.tmpl".source = ./templates/zed-theme.json.tmpl;
 
   # quickCss.css for Vesktop is written directly by paletted (see templates.rs).
   # We don't declare it here because @import url("file://…") is dropped by
@@ -104,7 +105,8 @@ in
       };
       Install.WantedBy = [ "graphical-session.target" ];
     };
-  } // lib.optionalAttrs msiKeyboardEnabled {
+  }
+  // lib.optionalAttrs msiKeyboardEnabled {
     msi-rgb-watcher = {
       Unit = {
         Description = "Reflect paletted accent color onto MSI RGB keyboard";

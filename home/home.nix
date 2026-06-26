@@ -16,6 +16,7 @@ let
     ./modules/hyprland/hyprland.nix
     ./modules/hyprland/hyprlock.nix
     ./modules/code/vscode/vscode.nix
+    ./modules/code/zed.nix
     ./modules/alacritty.nix
     ../quickshell/quickshell.nix
     ./modules/hyprland/tofi.nix
@@ -38,7 +39,7 @@ in
 
   home.sessionVariables = {
     EDITOR = "micro";
-    VISUAL = "micro";
+    VISUAL = "zed --wait";
     PAGER = "less";
     MANPAGER = "less";
     BROWSER = "chromium";

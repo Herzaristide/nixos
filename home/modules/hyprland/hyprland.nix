@@ -261,8 +261,8 @@ in
         }
         {
           _args = [
-            "SUPER + V"
-            (mkLuaInline ''hl.dsp.exec_cmd("code")'')
+            "SUPER + Z"
+            (mkLuaInline ''hl.dsp.exec_cmd("${pkgs.zed-editor}/bin/zeditor")'')
           ];
         }
         {
@@ -275,12 +275,6 @@ in
           _args = [
             "SUPER + D"
             (mkLuaInline ''hl.dsp.exec_cmd("vesktop")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + Z"
-            (mkLuaInline ''hl.dsp.exec_cmd("zen-twilight")'')
           ];
         }
         {
@@ -470,7 +464,7 @@ in
         {
           _args = [
             "SUPER + G"
-            (mkLuaInline ''hl.dsp.workspace.toggle_special("gemini")'')
+            (mkLuaInline ''hl.dsp.exec_cmd("chromium")'')
           ];
         }
         {
@@ -595,6 +589,15 @@ in
       ];
 
       window_rule = [
+        # Dolphin flottant par défaut, taille réduite et centré
+        {
+          match = {
+            class = "^(org.kde.dolphin)$";
+          };
+          float = true;
+          size = "1000 650";
+          center = true;
+        }
         # File-chooser dialogs (titre)
         {
           match = {
