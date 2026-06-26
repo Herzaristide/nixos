@@ -108,7 +108,9 @@
           modules = [
             { nixpkgs.hostPlatform = system; }
             inputs.disko.nixosModules.disko
-            ./modules/disko.nix
+            # Disko dédié : ESP sur clé USB (relais de boot), NVMe = LUKS+btrfs.
+            # Le firmware du T3610 ne sait pas booter le NVMe.
+            ./hosts/kafka/disko.nix
             ./hosts/kafka/configuration.nix
           ];
           specialArgs = { inherit inputs; };
