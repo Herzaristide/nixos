@@ -42,6 +42,9 @@
   # de secours EFI/BOOT/BOOTX64.EFI, que le firmware boote comme média USB.
   boot.loader.efi.canTouchEfiVariables = false;
 
+  # NB : l'auto-déverrouillage LUKS par clé USB (partition GPT "LUKSKEY",
+  # fallback passphrase) est fourni par modules/security.nix.
+
   # CPU: Intel — KVM virtualization + microcode update
   boot.kernelModules = [ "kvm-intel" ];
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
