@@ -11,21 +11,14 @@
   programs.mcp = {
     enable = true;
     servers = {
+      # Remote hébergé : un seul serveur distant, partagé par toutes les sessions
+      # (fini le process local multiplié). Fonctionne en anonyme ; pour des limites
+      # plus hautes, ajouter une clé via header, ex :
+      #   headers.CONTEXT7_API_KEY = "{env:CONTEXT7_API_KEY}";
+      # ({env:…} est résolu au runtime par le client → clé jamais dans le store).
       context7 = {
-        command = "${pkgs.nodejs_22}/bin/npx";
-        args = [
-          "-y"
-          "@upstash/context7-mcp@latest"
-        ];
-        type = "stdio";
-      };
-      docker = {
-        command = "${pkgs.nodejs_22}/bin/npx";
-        args = [
-          "-y"
-          "mcp-server-docker"
-        ];
-        type = "stdio";
+        url = "https://mcp.context7.com/mcp";
+        type = "http";
       };
       playwright = {
         command = "${pkgs.nodejs_22}/bin/npx";
@@ -49,15 +42,6 @@
         ];
         type = "stdio";
       };
-      postgres = {
-        command = "${pkgs.nodejs_22}/bin/npx";
-        args = [
-          "-y"
-          "@modelcontextprotocol/server-postgres"
-          "postgresql://localhost/postgres"
-        ];
-        type = "stdio";
-      };
       sequential-thinking = {
         command = "${pkgs.nodejs_22}/bin/npx";
         args = [
@@ -66,34 +50,12 @@
         ];
         type = "stdio";
       };
+      # Remote hébergé Tavily : clé passée en header Authorization, résolue au
+      # runtime depuis l'env TAVILY_API_KEY (jamais écrite dans le store Nix).
       tavily = {
-        command = "${pkgs.nodejs_22}/bin/npx";
-        args = [
-          "-y"
-          "tavily-mcp"
-        ];
-        type = "stdio";
-      };
-      oracle = {
-        command = "${pkgs.uv}/bin/uvx";
-        args = [ "mcp-server-oracle" ];
-        type = "stdio";
-      };
-      aws = {
-        command = "${pkgs.uv}/bin/uvx";
-        args = [ "awslabs.aws-api-mcp-server@latest" ];
-        type = "stdio";
-        environment = {
-          FASTMCP_LOG_LEVEL = "ERROR";
-        };
-      };
-      onlyoffice = {
-        command = "${pkgs.nodejs_22}/bin/npx";
-        args = [
-          "--yes"
-          "@onlyoffice/docspace-mcp"
-        ];
-        type = "stdio";
+        url = "https://mcp.tavily.com/mcp/";
+        type = "http";
+        headers.Authorization = "Bearer {env:TAVILY_API_KEY}";
       };
       penpot = {
         url = "http://localhost:4401/mcp";

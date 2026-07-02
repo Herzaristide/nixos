@@ -141,7 +141,6 @@
         "audio"
         "storage"
         "greeter"
-        "gamemode"
       ];
     };
 

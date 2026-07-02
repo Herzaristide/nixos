@@ -1,8 +1,11 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   # Filesystem drivers
   boot.supportedFilesystems = [ "ntfs" ];
+
+  # Disk tooling: nvme-cli pour l'admin des SSD NVMe (list, id-ctrl, secure erase…)
+  environment.systemPackages = [ pkgs.nvme-cli ];
 
   # mdadm software RAID — auto-assemble arrays from superblocks at boot.
   # /dev/md/<name> symlinks created from the array name embedded in the superblock.
@@ -18,6 +21,21 @@
   # udisks2: hotplug auto-mount for removable media (USB sticks, etc.)
   services.udisks2.enable = true;
   services.fstrim.enable = true;
+
+  # Crucial P3 (CT1000P3PSSD8) — 1 To NVMe, partition unique btrfs.
+  # `nofail` pour rester portable entre hôtes ; options SSD (discard/ssd).
+  fileSystems."/mnt/crucial" = {
+    device = "/dev/disk/by-uuid/91bb1965-362e-4f06-b7d3-6881bef81b3f";
+    fsType = "btrfs";
+    options = [
+      "nofail"
+      "compress=zstd"
+      "noatime"
+      "space_cache=v2"
+      "discard=async"
+      "ssd"
+    ];
+  };
 
   # Montages automatiques désactivés temporairement (changement de disques en cours).
   # All known internal HDDs across all hosts. `nofail` lets the host boot

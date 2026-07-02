@@ -19,6 +19,7 @@
     ../../modules/audio.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix
+    ../../modules/android.nix
   ];
 
   # --- Battery / CPU power management (laptop, Intel) ---

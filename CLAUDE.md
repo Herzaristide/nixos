@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Flake-based NixOS configuration managing four hosts:
 
 - **zola** (laptop): Intel + NVIDIA hybrid graphics, Prime **offload** mode, full GUI
-- **gary** (desktop): AMD Ryzen 5 1600 + Radeon RX 6600 (ROCm/HIP), full GUI
+- **gary** (desktop): AMD Ryzen 5 7600X + Radeon RX 7600 XT (ROCm/HIP), full GUI
 - **kafka** (headless server): Intel + NVIDIA NVS 310 (nouveau), UEFI + systemd-boot, single NVMe SSD
 - **exupery** (WSL2): headless development environment
 
@@ -124,14 +124,14 @@ LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — wri
 
 ### gary (desktop — AMD CPU + AMD GPU)
 
-- AMD Ryzen 5 1600 (Zen 1, no amd-pstate; acpi-cpufreq governor)
-- AMD Radeon RX 6600 (Navi 23 / gfx1032) via `amdgpu`, loaded in initrd for seamless KMS
+- AMD Ryzen 5 7600X (Zen 4 / Raphael, AM5, 6c/12t; amd-pstate EPP used automatically, no governor override)
+- AMD Radeon RX 7600 XT (Navi 33 / RDNA3 / gfx1102) via `amdgpu`, loaded in initrd for seamless KMS. The 7600X also has a Raphael RDNA2 iGPU (gfx1036), also driven by amdgpu.
 - ROCm stack for ML: `rocm-smi`, `rocminfo`, `clr`, `rocm-runtime`, `hipcc`
 - `/opt/rocm` tmpfiles symlink to `pkgs.rocmPackages.clr` (PyTorch/TF default lookup path)
-- **ROCm arch mapping**: RX 6600 is `gfx1032` but upstream rocBLAS ships kernels for `gfx1030` (not `gfx1032`). System-wide `HSA_OVERRIDE_GFX_VERSION=10.3.0` exposes the card as `gfx1030` so rocBLAS finds its Tensile kernels. No custom overlay → unmodified rocmPackages come straight from the Hydra binary cache (no 30-minute Tensile kernel regeneration on rebuild).
-- `services.ollama.package = pkgs.ollama-rocm` (Ollama 0.23+ also auto-injects the same `HSA_OVERRIDE_GFX_VERSION` for gfx103x, our system-wide var just makes it explicit and covers other ROCm consumers).
-- `zramSwap` enabled (zstd, 50%)
-- Primary monitor: `HDMI-A-1`
+- **ROCm arch mapping**: RX 7600 XT is `gfx1102` but upstream rocBLAS ships kernels for the RDNA3 flagship `gfx1100` (not `gfx1102`). System-wide `HSA_OVERRIDE_GFX_VERSION=11.0.0` exposes the card as `gfx1100` so rocBLAS finds its Tensile kernels. No custom overlay → unmodified rocmPackages come straight from the Hydra binary cache (no 30-minute Tensile kernel regeneration on rebuild).
+- `services.ollama.package = pkgs.ollama-rocm` (the explicit `HSA_OVERRIDE_GFX_VERSION` also covers other ROCm consumers on this host).
+- `services.hardware.openrgb` (motherboard = amd) — RGB control for the ITE ARGB controller (case fans), Corsair mouse, RAM and GPU over SMBus
+- Primary monitor: `DP-1` (Samsung C27R50x)
 
 ### kafka (headless server — Intel + NVS 310, UEFI)
 
@@ -188,7 +188,7 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 ## Important quirks
 
 1. **NVIDIA on zola**: `WLR_NO_HARDWARE_CURSORS=1` is mandatory — disabling it kills the cursor on Wayland.
-2. **ROCm on gary**: don't bring back a custom `gpuTargets` overlay — upstream rocBLAS already has `gfx1030` and we map the RX 6600 onto it via `HSA_OVERRIDE_GFX_VERSION=10.3.0`. Any overlay that touches `gpuTargets` diverges from the Hydra cache and triggers a ~30-minute Tensile kernel regeneration.
+2. **ROCm on gary**: don't bring back a custom `gpuTargets` overlay — upstream rocBLAS already has `gfx1100` and we map the RX 7600 XT (Navi 33 / gfx1102) onto it via `HSA_OVERRIDE_GFX_VERSION=11.0.0`. Any overlay that touches `gpuTargets` diverges from the Hydra cache and triggers a ~30-minute Tensile kernel regeneration.
 3. **VSCode** on headless hosts uses `vscode-server.nix` (for SSH remote attach), on headful hosts uses `vscode/vscode.nix`. Both are wired automatically by `home/home.nix`.
 4. **Lua Hyprland config** — when editing `home/modules/hyprland.nix`, remember it generates Lua, not the classic `hypr.conf` format. Use `mkLuaInline` for raw Lua, attribute sets for the rest.
 5. **`primaryMonitor` is consumed by Quickshell**: changing the option value rewrites `~/.config/quickshell/shell.qml` via `builtins.replaceStrings`.

@@ -21,6 +21,7 @@ let
     ../quickshell/quickshell.nix
     ./modules/hyprland/tofi.nix
     ./modules/vesktop.nix
+    ./modules/teams.nix
     ./modules/onlyoffice.nix
     ./modules/penpot.nix
     ./modules/accent/accent.nix

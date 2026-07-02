@@ -7,7 +7,7 @@
   home.packages = with pkgs; [
     # JavaScript / TypeScript
     nodejs_22
-    corepack_22 # pnpm / yarn à la demande (corepack enable)
+
     bun
     deno
     prettier # JS/TS/JSON/YAML/Markdown/HTML/CSS

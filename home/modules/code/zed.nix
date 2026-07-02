@@ -26,7 +26,7 @@ in
     pkgs.terraform-ls
     pkgs.tailwindcss-language-server
     pkgs.vtsls
-    pkgs.dockerfile-language-server-nodejs
+    pkgs.dockerfile-language-server
   ];
 
   programs.zed-editor = {
@@ -74,6 +74,7 @@ in
       };
       terminal = {
         dock = "right";
+        toolbar.breadcrumbs = false;
       };
 
       # Complétions inline via GitHub Copilot (auth : commande "copilot: sign in").
@@ -86,6 +87,18 @@ in
 
       # Retour à la ligne automatique à la largeur de l'éditeur.
       soft_wrap = "editor_width";
+
+      tab_bar = {
+        show = false;
+      };
+      #max_tabs = 1;
+
+      # Un seul fichier ouvert à la fois : chaque navigation remplace l'onglet courant.
+      preview_tabs = {
+        enabled = true;
+        enable_preview_from_file_finder = true;
+        enable_preview_from_code_navigation = true;
+      };
 
       # Chemins explicites vers les serveurs fournis par Nix.
       lsp = {

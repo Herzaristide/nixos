@@ -143,32 +143,18 @@ in
       monitor = [
         # gary — HP E24q G5, posé au-dessus de DP-1, retourné 180° (transform 2)
         {
-          output = "DP-3";
+          output = "DP-2";
           mode = "2560x1440@75";
           position = "0x0";
           scale = 1.60;
           transform = 2;
         }
-        # gary — Samsung C27R50x, écran principal sous DP-3.
-        # Bord gauche aligné sur x=0 pour rejoindre le bord droit de DP-2.
+        # gary — Samsung C27R50x, écran principal sous DP-2.
         {
           output = "DP-1";
           mode = "1920x1080@60";
           position = "0x900";
           scale = 1.25;
-        }
-        # gary — Dell U2413, portrait à gauche.
-        # Mode 1920×1200, scale 1.25 → 1536×960, puis transform=1 (90°) → 960×1536 logique.
-        # Position : bord droit collé à DP-3 (x = -960), top à y=0.
-        # → couvre toute la hauteur de DP-3 (900) + haut de DP-1 (jusqu'à y=1536).
-        # Les 228 derniers pixels en bas de DP-1 (y=1536→1764) n'ont pas de voisin
-        # à gauche — conséquence du scale 1.25 (à scale 1.0 on couvrait les 1764).
-        {
-          output = "DP-2";
-          mode = "1920x1200@60";
-          position = "-960x0";
-          scale = 1.25;
-          transform = 1;
         }
         # zola — moniteur externe optionnel
         {
@@ -218,13 +204,8 @@ in
           monitor = primaryMonitor;
         }
         {
-          workspace = "6";
-          monitor = "DP-2";
-          default = true;
-        }
-        {
           workspace = "9";
-          monitor = "DP-3";
+          monitor = "DP-2";
           default = true;
         }
         # gaps_out: css_gap = soit un int soit { top, right, bottom, left }.
@@ -596,6 +577,15 @@ in
           };
           float = true;
           size = "1000 650";
+          center = true;
+        }
+        # Émulateur Android : flottant et centré — sinon la fenêtre s'ouvre
+        # hors écran (position X négative, au-delà des moniteurs).
+        {
+          match = {
+            class = "^(Emulator)$";
+          };
+          float = true;
           center = true;
         }
         # File-chooser dialogs (titre)
