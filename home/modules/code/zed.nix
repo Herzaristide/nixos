@@ -77,11 +77,12 @@ in
         toolbar.breadcrumbs = false;
       };
 
-      # Complétions inline via GitHub Copilot (auth : commande "copilot: sign in").
+      # Complétions inline (edit predictions) désactivées : plus de Copilot,
+      # ce qui évite le lancement du copilot-language-server (~440 Mio).
       features = {
-        edit_prediction_provider = "copilot";
+        edit_prediction_provider = "none";
       };
-      show_edit_predictions = true;
+      show_edit_predictions = false;
 
       format_on_save = "on";
 
