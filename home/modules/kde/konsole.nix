@@ -3,7 +3,7 @@
 {
   home.packages = [ pkgs.kdePackages.konsole ];
 
-  # Konsole profile — references the "Accent" colorscheme written by paletted
+  # Konsole profile — references the "Accent" colorscheme written by anna
   # at ~/.local/share/konsole/Accent.colorscheme on every accent change.
   xdg.dataFile."konsole/Accent.profile".text = ''
     [Appearance]

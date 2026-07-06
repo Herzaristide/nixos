@@ -138,7 +138,7 @@
   };
 
   # ── RAM + case fans follow the accent colour ────────────────────────────────
-  # The paletted daemon writes the current accent to ~/.config/accent/accent.hex
+  # The anna daemon writes the current accent to ~/.config/accent/accent.hex
   # on every change; a path unit re-applies it to OpenRGB here. One invocation
   # drives two devices:
   #   - Case fans on the motherboard D_LED1 header = zone 1 of the

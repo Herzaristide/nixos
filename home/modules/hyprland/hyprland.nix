@@ -99,7 +99,7 @@ in
           gaps_in = 8;
           gaps_out = 12;
           "col.inactive_border" = "rgba(44444433)";
-          # col.active_border is set by the paletted fragment
+          # col.active_border is set by the anna fragment
           # (~/.config/accent/fragments/hyprland-colors.lua) loaded below.
         };
 
@@ -738,11 +738,11 @@ in
         dim_around = true,
       })
 
-      -- Accent color fragment rewritten by paletted on every change.
+      -- Accent color fragment rewritten by anna on every change.
       -- Loaded at top-level so it applies on every config reload (hyprctl reload)
       -- AND at startup. The fragment returns a table of colors.
-      -- Live updates during the session are pushed directly by the paletted daemon
-      -- via `hyprctl keyword` (see accent-daemon/src/appctl.rs::reload_hyprland).
+      -- Live updates during the session are pushed directly by the anna daemon
+      -- via `hyprctl keyword` (see karenine anna/src/appctl.rs::reload_hyprland).
       do
         local ok, colors = pcall(dofile, os.getenv("HOME") .. "/.config/accent/fragments/hyprland-colors.lua")
         if ok and type(colors) == "table" and colors.accent_rgba then

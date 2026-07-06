@@ -19,7 +19,7 @@
     };
 
     # Couleurs interactives sur les ANSI 1 (red) et 9 (lightred),
-    # remappées vers l'accent courant par Alacritty (cf. accent-daemon).
+    # remappées vers l'accent courant par Alacritty (cf. anna).
     # Les sections non listées gardent les défauts de yazi.
     theme = {
       mgr = {

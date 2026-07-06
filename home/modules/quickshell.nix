@@ -97,7 +97,7 @@ in
   ];
 
   # Un seul symlink : ~/.config/quickshell → layout assemblé (lecture seule).
-  # L'état runtime (state.json du daemon paletted) vit ailleurs
+  # L'état runtime (state.json du daemon anna) vit ailleurs
   # (~/.config/accent/state.json), donc le dossier n'a pas besoin d'être writable.
   xdg.configFile."quickshell".source = configured;
 

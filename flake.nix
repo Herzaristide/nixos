@@ -42,11 +42,13 @@
         config.allowUnfree = true;
       };
 
-      accent-daemon-pkg = import ./accent-daemon/default.nix { inherit pkgs; };
+      # anna — moteur unifié (thème accent/palette + stats matérielles), fourni
+      # par le flake karenine (auparavant le paquet local accent-daemon).
+      anna = inputs.karenine.packages.${system}.anna;
     in
     {
       packages.${system} = {
-        paletted = accent-daemon-pkg;
+        anna = anna;
       };
 
       homeConfigurations = {
@@ -60,7 +62,7 @@
             head = false;
             darkMode = true;
             primaryMonitor = "HDMI-A-1";
-            accentDaemon = pkgs.callPackage ./accent-daemon/default.nix { };
+            anna = anna;
           };
           modules = [
             ./home/home.nix

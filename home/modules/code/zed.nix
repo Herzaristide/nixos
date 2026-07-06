@@ -50,7 +50,7 @@ in
         diagnostics = false;
       };
 
-      # "Accent" (couleurs) est rendu par le daemon paletted dans
+      # "Accent" (couleurs) est rendu par le daemon anna dans
       # ~/.config/zed/themes/ et suit la couleur d'accent du système.
       theme = {
         mode = "dark";

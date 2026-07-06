@@ -178,7 +178,7 @@
         head = config.head;
         darkMode = config.darkMode;
         primaryMonitor = config.primaryMonitor;
-        accentDaemon = pkgs.callPackage ../accent-daemon/default.nix { };
+        anna = inputs.karenine.packages.${pkgs.stdenv.hostPlatform.system}.anna;
         msiKeyboardEnabled = config.msiKeyboard.enable;
         msiRgbSet = pkgs.callPackage ../msi-rgb { };
       };

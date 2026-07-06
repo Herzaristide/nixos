@@ -56,7 +56,7 @@ in
       package = if darkMode then slot-gtk-theme else pkgs.kdePackages.breeze-gtk;
     };
     iconTheme = {
-      # Arcanum-Accent is generated at activation time by paletted:
+      # Arcanum-Accent is generated at activation time by anna:
       # it copies all SVGs from "Arcanum - Red" and recolors #ff6666/#5a0d0d
       # to match the current accent hue. Falls back to "Arcanum - Red" via Inherits.
       name = "Arcanum-Accent";
@@ -75,7 +75,7 @@ in
       extraConfig = {
         "gtk-application-prefer-dark-theme" = darkMode;
       };
-      # Pulls in the libadwaita color tokens fragment rewritten by paletted
+      # Pulls in the libadwaita color tokens fragment rewritten by anna
       # on every accent change. The rest of the GTK4 config stays declarative.
       extraCss = ''
         @import url("file://${config.home.homeDirectory}/.config/accent/fragments/gtk4-colors.css");
