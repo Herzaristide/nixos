@@ -22,6 +22,7 @@
     python3
     uv # gestionnaire de paquets / venv rapide (remplace pip+venv+pipx)
     ruff # linter + formatter (remplace black)
+    pyright # LSP Python (langserver) — utilisé par le plugin LSP de Claude Code + Zed
 
     # Go
     go
@@ -43,6 +44,7 @@
 
     # Nix
     nixfmt
+    nixd # LSP Nix (langserver)
 
     # Shell
     shfmt

@@ -5,6 +5,34 @@
     enable = true;
     package = pkgs.claude-code;
     enableMcpIntegration = true;
+
+    # Serveurs LSP pour l'outil LSP intégré de Claude Code (rendu dans .lsp.json).
+    # Approche déclarative équivalente aux plugins LSP du marketplace, mais qui
+    # couvre aussi Nix (hors des 11 langages des plugins officiels). Les binaires
+    # sont pointés directement dans le store — pas de dépendance au PATH.
+    lspServers = {
+      rust = {
+        command = "${pkgs.rust-analyzer}/bin/rust-analyzer";
+        extensionToLanguage = {
+          ".rs" = "rust";
+        };
+      };
+      python = {
+        command = "${pkgs.pyright}/bin/pyright-langserver";
+        args = [ "--stdio" ];
+        extensionToLanguage = {
+          ".py" = "python";
+          ".pyi" = "python";
+        };
+      };
+      nix = {
+        command = "${pkgs.nixd}/bin/nixd";
+        extensionToLanguage = {
+          ".nix" = "nix";
+        };
+      };
+    };
+
     settings = {
       theme = "dark-ansi";
       language = "French";

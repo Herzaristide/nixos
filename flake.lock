@@ -43,11 +43,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783222121,
-        "narHash": "sha256-E/ElL373TO8lQ2aMvYyzN+k4xkVaUGoRqoa8AtM71tI=",
+        "lastModified": 1783358420,
+        "narHash": "sha256-UEyBpf+XmQe8laXfDzIlo11Er7E0rKrLS8jeMnMj0Ds=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "a1645f40777620c4bd2b6d854b290c2fc354a266",
+        "rev": "0d33882bd46c1f9ef62276700f5e5f2bd6ff6604",
         "type": "github"
       },
       "original": {
@@ -63,13 +63,12 @@
         ]
       },
       "locked": {
-        "lastModified": 1783364041,
-        "narHash": "sha256-bIzggXc/yvBKgDno+GHUAUs+3eT1CTIbTNKvzAA+k4c=",
-        "ref": "anna-engine",
-        "rev": "31462b746f10196fa95fc71687f271a8cb38384b",
-        "revCount": 6,
-        "type": "git",
-        "url": "file:///home/aristide/karenine"
+        "lastModified": 1783351134,
+        "narHash": "sha256-k1w1cQWrsoDwqZ+yETXD2VR61zIGAFHsHmJkrCPawQs=",
+        "owner": "Herzaristide",
+        "repo": "karenine",
+        "rev": "847eb9790e0b4430b7e3bfe93de884970572b720",
+        "type": "github"
       },
       "original": {
         "owner": "Herzaristide",
