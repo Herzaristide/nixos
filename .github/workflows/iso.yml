@@ -1,8 +1,10 @@
 name: Build ISO
 
 on:
-  # Publication automatique d'une release à chaque tag « iso-* » ou « v* ».
   push:
+    # Build + artefact à chaque push sur main (l'ISO valide toute la config).
+    branches: [main]
+    # Publication d'une release en plus à chaque tag « iso-* » ou « v* ».
     tags:
       - "iso-*"
       - "v*"
