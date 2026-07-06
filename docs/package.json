@@ -1,0 +1,15 @@
+{
+  "name": "nixos-docs",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Documentation de la configuration NixOS (générée avec Barjavel).",
+  "scripts": {
+    "dev": "barjavel dev",
+    "build": "barjavel build",
+    "preview": "barjavel preview"
+  },
+  "dependencies": {
+    "barjavel": "^1.0.0"
+  }
+}
