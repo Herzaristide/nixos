@@ -8,118 +8,98 @@
 }:
 
 let
+  system = pkgs.stdenv.hostPlatform.system;
+
   # Interface Quickshell (QML/scripts/assets) — dépôt séparé, tiré comme input
-  # de flake (`flake = false`). Voir flake.nix. Cette glue installe les fichiers
-  # dans ~/.config/quickshell et référence le paquet quickshell amont.
-  src = inputs.karenine;
+  # de flake. Depuis la restructuration, karenine expose `packages.default` :
+  # un layout ~/.config/quickshell prêt à l'emploi (sous-dossiers services/
+  # panels/ widgets/ ai/ backend/ assets/ + un qmldir par dossier). Ce paquet
+  # est la seule source de vérité de la structure ; on n'y superpose ci-dessous
+  # que ce qui est spécifique à la machine.
+  karenine = inputs.karenine.packages.${system}.default;
+
+  pythonNp = pkgs.python3.withPackages (ps: [ ps.numpy ]);
+  parec = "${pkgs.pulseaudio}/bin/parec";
+  pactl = "${pkgs.pulseaudio}/bin/pactl";
+
+  # ── Wrappers backend spécifiques à la machine ────────────────────────────
+  # karenine fournit des wrappers portables (parec|python via PATH, micro par
+  # défaut). Sous NixOS on les remplace pour épingler parec / python+numpy
+  # depuis le store et choisir les bons périphériques audio. Les scripts .py
+  # (logique numpy) restent ceux du paquet.
+
+  tunerSh = pkgs.writeShellScript "tuner.sh" ''
+    # Capture le micro par défaut en PCM stéréo 44,1 kHz → détecteur de pitch.
+    # À la sortie on tue python pour que parec reçoive SIGPIPE et s'arrête aussi.
+    set -u
+    cleanup() { [ -n "''${pid:-}" ] && kill "$pid" 2>/dev/null; }
+    trap cleanup INT TERM EXIT
+    ${parec} \
+          --device=@DEFAULT_SOURCE@ \
+          --rate=44100 --channels=2 --format=s16le --raw \
+          --latency-msec=15 \
+          2>/dev/null \
+      | ${pythonNp}/bin/python3 -u ${karenine}/backend/tuner.py &
+    pid=$!
+    wait "$pid"
+  '';
+
+  chromaSh = pkgs.writeShellScript "chroma-analyzer.sh" ''
+    # Capture le monitor du sink par défaut (ce que joue le système) en PCM
+    # mono 22,05 kHz → analyseur de chromagramme.
+    set -u
+    SINK="$(${pactl} get-default-sink 2>/dev/null)"
+    if [ -z "$SINK" ]; then
+      echo "STATUS:READY"
+      exec sleep infinity
+    fi
+    exec ${parec} \
+          --device="''${SINK}.monitor" \
+          --rate=22050 --channels=1 --format=s16le --raw \
+          2>/dev/null \
+      | ${pythonNp}/bin/python3 -u ${karenine}/backend/chroma-analyzer.py
+  '';
+
+  micLevelSh = pkgs.writeShellScript "mic-level.sh" ''
+    # Épingle parec/python puis délègue au script mic-level du paquet
+    # (sa logique RMS inline n'a pas besoin de numpy).
+    export PAREC_BIN="${parec}"
+    export PYTHON_BIN="${pkgs.python3}/bin/python3"
+    exec bash ${karenine}/backend/mic-level.sh
+  '';
+
+  nixSnowflake = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake-white.svg";
+
+  # Layout final = paquet karenine + superpositions machine.
+  configured = pkgs.runCommand "karenine-configured" { } ''
+    cp -r ${karenine} "$out"
+    chmod -R u+w "$out"
+
+    # Écran de la barre (le paquet code "DP-1" en dur pour l'usage standalone).
+    substituteInPlace "$out/shell.qml" \
+      --replace 'primaryScreen: "DP-1"' 'primaryScreen: "${primaryMonitor}"'
+
+    # Wrappers backend épinglés au store + icône NixOS de nixpkgs.
+    cp ${tunerSh}    "$out/backend/tuner.sh"
+    cp ${chromaSh}   "$out/backend/chroma-analyzer.sh"
+    cp ${micLevelSh} "$out/backend/mic-level.sh"
+    cp ${nixSnowflake} "$out/assets/nixos.svg"
+    chmod +x "$out"/backend/*.sh
+  '';
 in
 {
-  # QuickShell configured without interface
-  # NB: pas de `python3` ici — les scripts qui ont besoin de numpy
-  # (chroma-analyzer.sh, mic-level.sh) référencent leur propre env Python
-  # via chemin absolu du store (cf. plus bas), donc rien à exposer sur PATH.
+  # NB: pas de python3 sur le PATH — les wrappers ci-dessus référencent leur
+  # propre env python (avec numpy) via chemin absolu du store.
   home.packages = with pkgs; [
-    inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default
-    cava # audio-spectrum source for the music widget EQ bars
-    pulseaudio # provides parec/pactl used by chroma-analyzer.sh
+    inputs.quickshell.packages.${system}.default
+    cava # source du spectre audio pour les barres EQ du widget musique
+    pulseaudio # fournit parec/pactl
   ];
 
-  # Minimal QuickShell config (bottom bar)
-  xdg.configFile."quickshell/shell.qml".text =
-    builtins.replaceStrings [ "@PRIMARY_MONITOR@" ] [ primaryMonitor ]
-      (builtins.readFile "${src}/shell.qml");
-  xdg.configFile."quickshell/BottomBar.qml".source = "${src}/BottomBar.qml";
-  xdg.configFile."quickshell/SidePanel.qml".source = "${src}/SidePanel.qml";
-  xdg.configFile."quickshell/RightPanel.qml".source = "${src}/RightPanel.qml";
-  xdg.configFile."quickshell/Settings.qml".source = "${src}/Settings.qml";
-  xdg.configFile."quickshell/SettingsWindow.qml".source = "${src}/SettingsWindow.qml";
-  xdg.configFile."quickshell/OllamaChat.qml".source = "${src}/OllamaChat.qml";
-  xdg.configFile."quickshell/OllamaTools.qml".source = "${src}/OllamaTools.qml";
-  xdg.configFile."quickshell/ClaudeChat.qml".source = "${src}/ClaudeChat.qml";
-  xdg.configFile."quickshell/AIPanel.qml".source = "${src}/AIPanel.qml";
-  xdg.configFile."quickshell/QuickControls.qml".source = "${src}/QuickControls.qml";
-  xdg.configFile."quickshell/NotesWidget.qml".source = "${src}/NotesWidget.qml";
-  xdg.configFile."quickshell/HardwareStats.qml".source = "${src}/HardwareStats.qml";
-  xdg.configFile."quickshell/MiniGraph.qml".source = "${src}/MiniGraph.qml";
-  xdg.configFile."quickshell/voice-assistant.sh" = {
-    source = "${src}/voice-assistant.sh";
-    executable = true;
-  };
-  xdg.configFile."quickshell/mic-level.sh" = {
-    text = ''
-      #!/usr/bin/env bash
-      # Wrapper that pins parec/python paths from the Nix store before
-      # delegating to the actual mic-level script.
-      export PAREC_BIN="${pkgs.pulseaudio}/bin/parec"
-      export PYTHON_BIN="${pkgs.python3.withPackages (_: [ ])}/bin/python3"
-      exec bash ${src}/mic-level.sh
-    '';
-    executable = true;
-  };
-  xdg.configFile."quickshell/Metronome.qml".source = "${src}/Metronome.qml";
-  xdg.configFile."quickshell/Tuner.qml".source = "${src}/Tuner.qml";
-  xdg.configFile."quickshell/MusicPlayerWidget.qml".source = "${src}/MusicPlayerWidget.qml";
-  xdg.configFile."quickshell/ChromaGraph.qml".source = "${src}/ChromaGraph.qml";
-  xdg.configFile."quickshell/metronome.sh" = {
-    source = "${src}/metronome.sh";
-    executable = true;
-  };
-  xdg.configFile."quickshell/chroma-analyzer.py".source = "${src}/chroma-analyzer.py";
-  xdg.configFile."quickshell/chroma-analyzer.sh" = {
-    text = ''
-      #!/usr/bin/env bash
-      # Capture the default sink monitor (what the system is playing) and
-      # stream raw mono PCM into the python chroma analyzer.
-      set -u
-      SINK="$(${pkgs.pulseaudio}/bin/pactl get-default-sink 2>/dev/null)"
-      if [ -z "$SINK" ]; then
-        echo "STATUS:READY"
-        exec sleep infinity
-      fi
-      exec ${pkgs.pulseaudio}/bin/parec \
-            --device="''${SINK}.monitor" \
-            --rate=22050 --channels=1 --format=s16le --raw \
-            2>/dev/null \
-        | ${pkgs.python3.withPackages (ps: [ ps.numpy ])}/bin/python3 \
-            "$HOME/.config/quickshell/chroma-analyzer.py"
-    '';
-    executable = true;
-  };
-  xdg.configFile."quickshell/tuner.py".source = "${src}/tuner.py";
-  xdg.configFile."quickshell/tuner.sh" = {
-    text = ''
-      #!/usr/bin/env bash
-      # Capture the default source (microphone) as raw mono PCM @44.1 kHz and
-      # stream it into the python pitch detector. On exit we kill python so
-      # parec receives SIGPIPE and stops too — no lingering capture stream
-      # (the Tuner widget only starts this while it is visible).
-      set -u
-      cleanup() { [ -n "''${pid:-}" ] && kill "$pid" 2>/dev/null; }
-      trap cleanup INT TERM EXIT
-      ${pkgs.pulseaudio}/bin/parec \
-            --device=@DEFAULT_SOURCE@ \
-            --rate=44100 --channels=2 --format=s16le --raw \
-            --latency-msec=15 \
-            2>/dev/null \
-        | ${pkgs.python3.withPackages (ps: [ ps.numpy ])}/bin/python3 \
-            "$HOME/.config/quickshell/tuner.py" &
-      pid=$!
-      wait "$pid"
-    '';
-    executable = true;
-  };
-  xdg.configFile."quickshell/nixos.svg".source =
-    "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake-white.svg";
+  # Un seul symlink : ~/.config/quickshell → layout assemblé (lecture seule).
+  # L'état runtime (state.json du daemon paletted) vit ailleurs
+  # (~/.config/accent/state.json), donc le dossier n'a pas besoin d'être writable.
+  xdg.configFile."quickshell".source = configured;
 
-  # Theme.qml: the @PALETTE_ACCENT@ placeholder is seeded with the daemon's
-  # default NixOS blue accent so the UI has a color before the daemon runs.
-  # The user can still override it at runtime via Settings.
-  xdg.configFile."quickshell/Theme.qml".text =
-    builtins.replaceStrings [ "@PALETTE_ACCENT@" ] [ "#5277c3" ]
-      (builtins.readFile "${src}/Theme.qml");
-
-  xdg.configFile."quickshell/qmldir".source = "${src}/qmldir";
-
-  # Note: Quickshell is started via Hyprland's exec-once (see home/modules/hyprland.nix)
-  # No systemd service needed - that would run it twice!
+  # Note: Quickshell est lancé via l'exec-once de Hyprland (voir hyprland.nix).
 }
