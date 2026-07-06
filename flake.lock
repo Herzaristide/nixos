@@ -63,12 +63,13 @@
         ]
       },
       "locked": {
-        "lastModified": 1783346798,
-        "narHash": "sha256-I8JqEa81Zi6PogLfbNcpMy7s9L/fppIWXUEna2FU5O4=",
-        "owner": "Herzaristide",
-        "repo": "karenine",
-        "rev": "bf73bf3bbb4eb0f9de5c94026a095067940d85a8",
-        "type": "github"
+        "lastModified": 1783364041,
+        "narHash": "sha256-bIzggXc/yvBKgDno+GHUAUs+3eT1CTIbTNKvzAA+k4c=",
+        "ref": "anna-engine",
+        "rev": "31462b746f10196fa95fc71687f271a8cb38384b",
+        "revCount": 6,
+        "type": "git",
+        "url": "file:///home/aristide/karenine"
       },
       "original": {
         "owner": "Herzaristide",

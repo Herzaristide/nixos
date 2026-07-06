@@ -40,7 +40,8 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `home-manager` — user environment, integrated as NixOS module
 - `nixos-wsl` — WSL2 support (exupery only)
 - `musnix` — low-latency audio (RT-friendly kernel tweaks, ALSA seq)
-- `quickshell` — Wayland shell / bar (replaces Waybar/DMS)
+- `quickshell` — Wayland shell / bar runtime (replaces Waybar/DMS)
+- `karenine` — the Quickshell interface (QML layout) **and** the `anna` engine (Rust: accent/palette theming + hardware stats). `github:Herzaristide/karenine`
 - `explorer` — custom file manager (`github:Herzaristide/Explorer`)
 
 ### System modules (`/modules/`)
@@ -59,10 +60,10 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `head.nix` — GUI user layer: dconf (color-scheme), cursor theme, fontconfig cache refresh, default mime apps, custom `file-explorer` desktop entry
 - `modules/hyprland.nix` — Hyprland config in **Lua** mode (`configType = "lua"`), keybinds, monitor setup, special workspaces. Has a lid-closed-layout helper script for zola.
 - `modules/alacritty.nix` — terminal config
-- `modules/hyprland/tofi.nix` — tofi application launcher (config rendue par paletted, voir Theming)
+- `modules/hyprland/tofi.nix` — tofi application launcher (config rendue par anna, voir Theming)
 - `modules/chromium.nix` — chromium package + PWA wrappers (`gemini-pwa`, `claude-pwa`, `bandlab-pwa`) sharing `~/.config/chromium-$(hostname)` profile
 - `modules/kde.nix` — minimal KDE/Qt theming (for xdg-portal-kde + appearance protocol)
-- `modules/accent/accent.nix` — installs the accent daemon and its templates (see "Theming" below)
+- `modules/accent/accent.nix` — installs the anna engine (from the karenine flake) + its templates, systemd user service, and seed activation (see "Theming" below)
 - `modules/shell/` — `fish`, `starship`, `fastfetch`, `micro`, `direnv`, `yazi`
 - `modules/network/` — `git`, `ssh`
 - `modules/code/` — VSCode (`vscode/vscode.nix` headful, `vscode/vscode-server.nix` headless) + AI assistants (`ia/claude.nix`, `ia/copilot.nix`, `ia/mcp.nix`) + language runtimes
@@ -87,17 +88,19 @@ QuickShell is the Wayland shell (bottom bar + side panel + Ollama chat + notes +
 
 `darkMode` (bool, default true) drives the color scheme broadcast to dconf, GTK, Qt, and the accent daemon's seed defaults.
 
-## Theming — accent daemon (`/accent-daemon/`)
+## Theming — anna engine (in the `karenine` flake)
 
-Custom Rust/Python daemon packaged as `accent-daemon` (also exposed as `packages.x86_64-linux.paletted`).
+The theming daemon now lives in the **`karenine`** repo as part of the unified Rust engine **`anna`** (`karenine/anna/`), exposed as `inputs.karenine.packages.x86_64-linux.anna` and re-exported here as `packages.x86_64-linux.anna`. It replaces the former local `accent-daemon` (binaries `paletted` + `palette`).
 
-- Provides two binaries: `paletted` (template renderer) and `palette` (CLI to set the current accent color)
-- Templates installed under `~/.config/accent/templates/`; rendered fragments under `~/.config/accent/fragments/`
+- Single binary `anna` dispatching on its first argument: `anna` (daemon), `anna init` (one-shot render), `anna set "#rrggbb"` / `anna mode` / `anna palette-color` / `anna get` / `anna watch` (CLI client), `anna msi-rgb-watch` (MSI keyboard mirror)
+- Runtime socket: `$XDG_RUNTIME_DIR/anna.sock`. State/fragments stay under `~/.config/accent/` (accent.hex, mode.txt, state.json, fragments/) — this path is still referenced by many app configs and gary's OpenRGB service
+- Templates ship inside the anna package (`$out/share/anna/templates/`) and are installed read-only under `~/.config/accent/templates/`; rendered fragments land under `~/.config/accent/fragments/`
 - Apps that support color includes (Hyprland, Alacritty, …) source the fragment directly from their declarative Nix config
 - `kdeglobals.tmpl` is rendered as a full file (KDE/Qt has no include directive)
 - Shell tools (starship/micro/fastfetch) are static ANSI-only and NOT templated
+- The same engine serves hardware stats to Quickshell over the socket (`hwstats_watch`), replacing the shell-outs `HardwareStats.qml` used to spawn
 
-To change the active accent at runtime: `palette set "#5277c3"`.
+To change the active accent at runtime: `anna set "#5277c3"`.
 
 ## Filesystem layout
 
@@ -183,7 +186,7 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 ## Custom packages (`packages.x86_64-linux`)
 
 - `install-nixos` — clones the flake to `/etc/nixos`, regenerates `hardware-configuration.nix`, runs `nixos-rebuild`. Entry point: `install.sh`. `nix run .#install-nixos -- <git-url> <hostname>`.
-- `paletted` — alias for `accent-daemon`
+- `anna` — re-export of `inputs.karenine.packages.x86_64-linux.anna` (the unified theming + hwstats engine; see "Theming")
 
 ## Important quirks
 
