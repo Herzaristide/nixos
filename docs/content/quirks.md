@@ -1,7 +1,7 @@
 ---
 title: Points d'attention
 group: Système
-summary: Les pièges à connaître — NVIDIA, ROCm, Hyprland Lua, VSCode headless.
+summary: Les pièges à connaître — NVIDIA, ROCm, Hyprland Lua, Zed.
 links: [zola, gary, hyprland, home-manager]
 ---
 
@@ -15,9 +15,10 @@ Les subtilités à garder en tête avant de modifier la config.
    rocBLAS amont a déjà `gfx1100`, et on y mappe la RX 7600 XT (`gfx1102`) via
    `HSA_OVERRIDE_GFX_VERSION=11.0.0`. Tout overlay touchant `gpuTargets` diverge
    du cache Hydra et déclenche ~30 min de régénération des kernels Tensile.
-3. **VSCode** : hôtes headless → `vscode-server.nix` (attach SSH distant) ;
-   hôtes headful → `vscode/vscode.nix`. Câblés automatiquement par
-   `home/home.nix` (voir [Home-manager](#home-manager)).
+3. **Zed** : éditeur unique (headful uniquement), configuré dans
+   `modules/code/zed.nix` — LSP fournis par Nix (chemins explicites), thème
+   "Accent" rendu par le daemon anna. Câblé automatiquement par `home/home.nix`
+   (voir [Home-manager](#home-manager)).
 4. **Config Lua d'[Hyprland](#hyprland)** : `home/modules/hyprland.nix` génère du
    Lua, pas le format `hypr.conf` classique. Utiliser `mkLuaInline` pour du Lua
    brut, des attribute sets pour le reste.

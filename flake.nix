@@ -49,6 +49,8 @@
     {
       packages.${system} = {
         anna = anna;
+        # Image ISO installateur embarquant ce flake (voir hosts/iso).
+        iso = self.nixosConfigurations.iso.config.system.build.isoImage;
       };
 
       homeConfigurations = {
@@ -118,6 +120,19 @@
             # Le firmware du T3610 ne sait pas booter le NVMe.
             ./hosts/kafka/disko.nix
             ./hosts/kafka/configuration.nix
+          ];
+          specialArgs = { inherit inputs; };
+        };
+
+        # Image ISO installateur : live bootable embarquant ce flake pour
+        # installer n'importe quel hôte. N'importe PAS le module disko : le
+        # partitionnement s'applique à l'hôte cible via le flake embarqué,
+        # pas au système de fichiers live de l'installateur.
+        # Build : nix build .#iso
+        iso = nixpkgs.lib.nixosSystem {
+          modules = [
+            { nixpkgs.hostPlatform = system; }
+            ./hosts/iso/configuration.nix
           ];
           specialArgs = { inherit inputs; };
         };

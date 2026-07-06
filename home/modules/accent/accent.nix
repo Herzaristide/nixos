@@ -50,24 +50,13 @@ in
   # We don't declare it here because @import url("file://…") is dropped by
   # Vencord's inline <style> injection, so the full CSS must live at the target.
 
-  # Remove settings.json.bak BEFORE home-manager checks for link-target collisions.
-  # anna replaces the nix-store symlink with a real file on first run; on the
-  # next rebuild home-manager tries to back it up as settings.json.bak, but if that
-  # file already exists from the previous run it aborts. Cleaning it here keeps the
-  # path clear every time.
-  home.activation.cleanVscodeBak = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-    rm -f "$HOME/.config/Code/User/settings.json.bak"
-  '';
-
   # Seed accent.hex / mode.txt on first install, then re-render all template
   # outputs via `anna init`.  Runs after linkGeneration so the nix-store
-  # symlink for settings.json is in place before anna overwrites it.
+  # symlinks are in place before anna overwrites them.
   home.activation.accentSeed =
     lib.hm.dag.entryAfter
       [
         "writeBoundary"
-        "vscodeProfiles"
-        "vscodeRemoteExtensions"
         "linkGeneration"
       ]
       ''
