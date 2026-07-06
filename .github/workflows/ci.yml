@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Annule les runs redondants sur une même branche/PR.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Format + eval
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v30
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+
+      - name: Check formatting (nixfmt)
+        run: git ls-files -z '*.nix' | xargs -0 nix run nixpkgs#nixfmt-rfc-style -- --check
+
+      - name: Flake check (évaluation, sans build)
+        run: nix flake check --no-build
+
+  # Build réel des systèmes. Manuel (workflow_dispatch) car lourd : chaque
+  # hôte prend un runner dédié pour ne pas saturer le disque.
+  build:
+    name: Build ${{ matrix.host }}
+    if: github.event_name == 'workflow_dispatch'
+    needs: check
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host: [zola, gary, kafka, exupery]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Libérer de l'espace disque
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v30
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+
+      - name: Build toplevel
+        run: |
+          nix build --print-build-logs \
+            ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel"

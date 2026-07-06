@@ -41,6 +41,19 @@
   boot.kernelModules = [ "kvm-amd" ]; # AMD-V virtualization (KVM, QEMU, libvirt)
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
+  # ── Surveillance des erreurs matérielles (RAS / MCE) ────────────────────────
+  # rasdaemon journalise les Machine Check Exceptions (erreurs CPU/cache) et les
+  # erreurs mémoire ECC dans une base SQLite persistante. Ajouté après le kernel
+  # panic du 2026-07-03 : double fault par débordement de pile (boucle infinie de
+  # page faults dans irqentry_enter), précédé le même jour d'un MCE *corrigé* sur
+  # le cache d'instructions (MC3 / Decode Unit). La RAM tournait alors sur un
+  # profil XMP — le format d'Intel, inadapté au contrôleur mémoire AMD — depuis
+  # désactivé. rasdaemon permet de confirmer objectivement si les MCE cessent
+  # maintenant que l'overclock mémoire est coupé.
+  #   sudo ras-mc-ctl --summary   # bilan des erreurs enregistrées
+  #   sudo ras-mc-ctl --errors    # détail horodaté de chaque erreur
+  hardware.rasdaemon.enable = true;
+
   # GPU: AMD Radeon RX 7600 XT (RDNA 3 / Navi 33, gfx1102) — amdgpu driver.
   # The Ryzen 7600X also exposes a Raphael RDNA2 iGPU (gfx1036); both are
   # driven by amdgpu, the discrete card handles display + compute.
@@ -52,7 +65,6 @@
   # Hardware-accelerated graphics (Vulkan, OpenGL, VA-API, OpenCL via ROCm)
   hardware.graphics = {
     enable = true;
-    enable32Bit = true; # 32-bit support for Wine/games
     extraPackages = with pkgs; [
       rocmPackages.clr.icd # OpenCL ICD entry for ROCm
     ];

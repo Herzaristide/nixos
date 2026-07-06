@@ -56,6 +56,22 @@
         "type": "github"
       }
     },
+    "karenine": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783334502,
+        "narHash": "sha256-j5ui0DTCVyO1wAVAN7iyj6O/ZPuqXdysVO0/KjW23aE=",
+        "ref": "refs/heads/main",
+        "rev": "0a168d1d93202c8a2e106d17e8986b41726d7ef7",
+        "revCount": 1,
+        "type": "git",
+        "url": "file:///home/aristide/karenine"
+      },
+      "original": {
+        "type": "git",
+        "url": "file:///home/aristide/karenine"
+      }
+    },
     "musnix": {
       "inputs": {
         "nixpkgs": [
@@ -137,6 +153,7 @@
       "inputs": {
         "disko": "disko",
         "home-manager": "home-manager",
+        "karenine": "karenine",
         "musnix": "musnix",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs",

@@ -18,7 +18,7 @@ let
     ./modules/code/vscode/vscode.nix
     ./modules/code/zed.nix
     ./modules/alacritty.nix
-    ../quickshell/quickshell.nix
+    ./modules/quickshell.nix
     ./modules/hyprland/tofi.nix
     ./modules/vesktop.nix
     ./modules/teams.nix

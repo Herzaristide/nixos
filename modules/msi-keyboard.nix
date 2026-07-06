@@ -46,7 +46,10 @@ in
     systemd.services.msi-rgb-boot = {
       description = "Re-apply MSI keyboard RGB at boot";
       wantedBy = [ "multi-user.target" ];
-      after = [ "local-fs.target" "systemd-udev-settle.service" ];
+      after = [
+        "local-fs.target"
+        "systemd-udev-settle.service"
+      ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = false;

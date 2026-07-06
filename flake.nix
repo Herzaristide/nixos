@@ -19,6 +19,15 @@
       url = "git+https://git.outfoxxed.me/quickshell/quickshell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Interface Quickshell (QML/scripts/assets) — dépôt séparé, fichiers bruts.
+    # TEMPORAIRE : chemin local tant que le dépôt GitHub n'est pas poussé.
+    # Une fois `Herzaristide/karenine` créé et poussé, remplacer par :
+    #   url = "github:Herzaristide/karenine";
+    # puis : nix flake lock --update-input karenine
+    karenine = {
+      url = "git+file:///home/aristide/karenine";
+      flake = false;
+    };
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";

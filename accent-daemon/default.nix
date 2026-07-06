@@ -21,11 +21,16 @@ pkgs.rustPlatform.buildRustPackage {
   postInstall = ''
     for bin in paletted palette; do
       wrapProgram $out/bin/$bin \
-        --prefix PATH : ${pkgs.lib.makeBinPath (with pkgs; [
-          hyprland
-          dbus
-          gtk3
-        ])}
+        --prefix PATH : ${
+          pkgs.lib.makeBinPath (
+            with pkgs;
+            [
+              hyprland
+              dbus
+              gtk3
+            ]
+          )
+        }
     done
   '';
 

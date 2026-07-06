@@ -13,6 +13,5 @@ in
 
   # Lien stable vers la banque pour que sfizz/REAPER la retrouvent sans aller
   # fouiller dans /nix/store.
-  xdg.dataFile."sfz/SalamanderGrandPiano".source =
-    "${salamander}/share/sfz/SalamanderGrandPiano";
+  xdg.dataFile."sfz/SalamanderGrandPiano".source = "${salamander}/share/sfz/SalamanderGrandPiano";
 }

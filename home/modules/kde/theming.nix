@@ -41,6 +41,12 @@ let
 
 in
 {
+  # Both Arcanum themes declare `Inherits=…,Adwaita,hicolor` in their
+  # index.theme, so GTK and Qt/KDE (kf.iconthemes) look up Adwaita as a
+  # fallback parent. Without it installed they warn "Icon theme Adwaita not
+  # found" and lose fallback icons — so ship it.
+  home.packages = [ pkgs.adwaita-icon-theme ];
+
   # GTK theme — Slot Dark (Hyprland-compatible GTK theme by L4ki)
   gtk = {
     enable = true;
