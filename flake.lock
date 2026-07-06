@@ -63,17 +63,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1783335927,
-        "narHash": "sha256-y7T4fwz9Wj0m0P8WM3sqrPv9xaj5k+sKAEifbqU7874=",
-        "ref": "refs/heads/main",
-        "rev": "6180aee66279ecf2768464031266c058bb790dbd",
-        "revCount": 3,
-        "type": "git",
-        "url": "file:///home/aristide/karenine"
+        "lastModified": 1783346798,
+        "narHash": "sha256-I8JqEa81Zi6PogLfbNcpMy7s9L/fppIWXUEna2FU5O4=",
+        "owner": "Herzaristide",
+        "repo": "karenine",
+        "rev": "bf73bf3bbb4eb0f9de5c94026a095067940d85a8",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "file:///home/aristide/karenine"
+        "owner": "Herzaristide",
+        "repo": "karenine",
+        "type": "github"
       }
     },
     "musnix": {
@@ -104,11 +104,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781182279,
-        "narHash": "sha256-V5EQQbDnmdiXGQXrEF1PEL7QYsFqfH8N1E89Z5ONwFk=",
+        "lastModified": 1783336371,
+        "narHash": "sha256-ZisTtweyb7JUwPP54HAXE9TypT8m89dIxDI36Ak0hAs=",
         "owner": "nix-community",
         "repo": "NixOS-WSL",
-        "rev": "5675822ba756e6e56f8f6a5a76e90e0da2ece94d",
+        "rev": "a9620cfa43f0c1c30a46c31ae3c6e58cdb124a14",
         "type": "github"
       },
       "original": {
