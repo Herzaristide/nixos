@@ -66,7 +66,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `modules/accent/accent.nix` — installs the anna engine (from the karenine flake) + its templates, systemd user service, and seed activation (see "Theming" below)
 - `modules/shell/` — `fish`, `starship`, `fastfetch`, `micro`, `direnv`, `yazi`
 - `modules/network/` — `git`, `ssh`
-- `modules/code/` — VSCode (`vscode/vscode.nix` headful, `vscode/vscode-server.nix` headless) + AI assistants (`ia/claude.nix`, `ia/copilot.nix`, `ia/mcp.nix`) + language runtimes
+- `modules/code/` — Zed (`zed.nix`, headful only) + AI assistants (`ia/claude.nix`, `ia/copilot.nix`, `ia/mcp.nix`) + language runtimes
 
 ### Quickshell (`/quickshell/`)
 
@@ -192,7 +192,7 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 
 1. **NVIDIA on zola**: `WLR_NO_HARDWARE_CURSORS=1` is mandatory — disabling it kills the cursor on Wayland.
 2. **ROCm on gary**: don't bring back a custom `gpuTargets` overlay — upstream rocBLAS already has `gfx1100` and we map the RX 7600 XT (Navi 33 / gfx1102) onto it via `HSA_OVERRIDE_GFX_VERSION=11.0.0`. Any overlay that touches `gpuTargets` diverges from the Hydra cache and triggers a ~30-minute Tensile kernel regeneration.
-3. **VSCode** on headless hosts uses `vscode-server.nix` (for SSH remote attach), on headful hosts uses `vscode/vscode.nix`. Both are wired automatically by `home/home.nix`.
+3. **VSCode**: fully retired in favor of Zed. Editor config lives solely in `home/modules/code/zed.nix` (headful only), wired by `home/home.nix`.
 4. **Lua Hyprland config** — when editing `home/modules/hyprland.nix`, remember it generates Lua, not the classic `hypr.conf` format. Use `mkLuaInline` for raw Lua, attribute sets for the rest.
 5. **`primaryMonitor` is consumed by Quickshell**: changing the option value rewrites `~/.config/quickshell/shell.qml` via `builtins.replaceStrings`.
 6. **mdadm warning at eval time** (`Neither MAILADDR nor PROGRAM has been set`) is benign — set `boot.swraid.mdadmConf` to silence it.

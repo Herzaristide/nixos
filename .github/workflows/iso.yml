@@ -1,0 +1,95 @@
+name: Build ISO
+
+on:
+  # Publication automatique d'une release à chaque tag « iso-* » ou « v* ».
+  push:
+    tags:
+      - "iso-*"
+      - "v*"
+  # Déclenchement manuel depuis l'onglet Actions.
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Publier l'ISO dans une release GitHub"
+        type: boolean
+        default: false
+
+concurrency:
+  group: iso-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-iso:
+    name: Build ISO installateur
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # nécessaire pour créer/mettre à jour une release
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Libérer de l'espace disque
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v30
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+
+      - name: Build de l'ISO
+        run: |
+          nix build --print-build-logs .#iso
+          # Le résultat est un lien vers le store (lecture seule) : on copie
+          # l'ISO dans le workspace avec un nom propre pour un artefact net.
+          mkdir -p dist
+          iso_store=$(readlink -f result/iso/*.iso)
+          iso_name=$(basename "$iso_store")
+          cp "$iso_store" "dist/$iso_name"
+          chmod u+w "dist/$iso_name"
+          echo "ISO_NAME=$iso_name" >> "$GITHUB_ENV"
+          ls -lh "dist/$iso_name"
+
+      - name: Somme de contrôle
+        working-directory: dist
+        run: |
+          sha256sum "$ISO_NAME" | tee "$ISO_NAME.sha256"
+
+      - name: Upload artefact (rétention 14 jours)
+        uses: actions/upload-artifact@v4
+        with:
+          name: nixos-installer-iso
+          path: |
+            dist/${{ env.ISO_NAME }}
+            dist/${{ env.ISO_NAME }}.sha256
+          retention-days: 14
+          if-no-files-found: error
+          compression-level: 0 # l'ISO est déjà compressée
+
+      # Release publiée sur les tags, ou sur demande manuelle (input release).
+      - name: Publier la release
+        if: startsWith(github.ref, 'refs/tags/') || inputs.release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/${{ env.ISO_NAME }}
+            dist/${{ env.ISO_NAME }}.sha256
+          # Sur workflow_dispatch il n'y a pas de tag : on crée une release
+          # nommée d'après le SHA court du commit.
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('iso-{0}', github.sha) }}
+          name: NixOS Installer ISO (${{ github.ref_name }})
+          body: |
+            Image ISO installateur embarquant le flake NixOS.
+
+            Grave l'image sur une clé USB puis boote dessus :
+            ```
+            sudo dd if=${{ env.ISO_NAME }} of=/dev/sdX bs=4M status=progress conv=fsync
+            ```
+            Une fois booté : `sudo nixos-install-here <hostname>`
+            (hôtes : zola, gary, kafka, exupery).
+          generate_release_notes: true

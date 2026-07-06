@@ -34,7 +34,7 @@ l'environnement utilisateur en même temps que le système.
   templates.
 - `modules/shell/` — `fish`, `starship`, `fastfetch`, `micro`, `direnv`, `yazi`.
 - `modules/network/` — `git`, `ssh`.
-- `modules/code/` — VSCode (headful/headless) + assistants IA (claude, copilot,
+- `modules/code/` — Zed (headful uniquement) + assistants IA (claude, copilot,
   mcp) + runtimes de langages.
 
 ## Chromium & PWAs

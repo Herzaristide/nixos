@@ -658,14 +658,6 @@ in
           float = true;
         }
 
-        # VSCode opacity — l'API Lua attend un string format hyprlang "active inactive".
-        {
-          match = {
-            class = "^(code-url-handler|code|Code)$";
-          };
-          opacity = "0.92 0.82";
-        }
-
         # Minecraft : opacité pleine. `override` est obligatoire — sans lui,
         # la valeur est multipliée par decoration.active_opacity (0.75) → reste transparent.
         {

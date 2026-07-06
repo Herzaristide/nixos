@@ -7,7 +7,7 @@
 
 {
   # MCP (Model Context Protocol) servers — writes ~/.config/mcp/mcp.json
-  # Consumed by Claude Code (via enableMcpIntegration) and VSCode (via userMcp).
+  # Consumed by Claude Code (via enableMcpIntegration).
   programs.mcp = {
     enable = true;
     servers = {

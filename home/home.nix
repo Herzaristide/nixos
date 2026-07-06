@@ -8,14 +8,12 @@ let
     ./modules/network
     ./modules/shell
     ./modules/code
-    ./modules/code/vscode/vscode-server.nix
   ];
 
   headfullModules = [
     ./head.nix
     ./modules/hyprland/hyprland.nix
     ./modules/hyprland/hyprlock.nix
-    ./modules/code/vscode/vscode.nix
     ./modules/code/zed.nix
     ./modules/alacritty.nix
     ./modules/quickshell.nix

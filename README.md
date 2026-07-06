@@ -41,7 +41,7 @@ modules/                   # Modules système partagés (réseau, audio, stockag
 home/                      # Configuration home-manager
   home.nix                #   point d'entrée, modules communs (fish, git, code...)
   head.nix                #   couche GUI utilisateur (dconf, curseur, apps par défaut...)
-  modules/                #   Hyprland, Quickshell, Alacritty, Chromium (PWA), VSCode, IA...
+  modules/                #   Hyprland, Quickshell, Alacritty, Chromium (PWA), Zed, IA...
 quickshell/                # Shell Wayland (barre, panneau latéral, chat Ollama, notes...)
 accent-daemon/             # Démon de theming (Rust/Python), packagé comme `paletted`
 pkgs/                      # Paquets custom supplémentaires
