@@ -44,6 +44,21 @@
         enabled = true;
         mode = "hold";
       };
+      # Hook PreToolUse Bash rtk : réécrit transparemment les commandes (ex:
+      # "git status" -> "rtk git status") avant exécution, sans que l'agent
+      # le sache. Voir ./rtk.nix pour le package.
+      hooks.PreToolUse = [
+        {
+          matcher = "Bash";
+          hooks = [
+            {
+              type = "command";
+              command = "rtk hook claude";
+            }
+          ];
+        }
+      ];
+
       permissions = {
         allow = [
           "Bash(echo *)"

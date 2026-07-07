@@ -69,7 +69,7 @@
 
       # Nix
       nr = "nixos-rebuild";
-      nrs = "sudo nixos-rebuild switch --flake /home/aristide/nixos#(hostname)";
+      nrs = "sudo nixos-rebuild switch --flake github:Herzaristide/nixos#(hostname)";
       nfu = "nix flake update";
       nfc = "nix flake check";
     };

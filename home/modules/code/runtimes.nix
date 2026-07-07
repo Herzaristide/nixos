@@ -48,5 +48,8 @@
 
     # Shell
     shfmt
+
+    # QML (Quickshell — voir ../quickshell.nix)
+    qt6.qtdeclarative # qmllint (lint) + qmlformat (formatter) + qmlls (LSP)
   ];
 }

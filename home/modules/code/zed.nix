@@ -1,6 +1,7 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 let
+  system = pkgs.stdenv.hostPlatform.system;
   # Language servers / formatters fournis par Nix (au lieu des binaires
   # auto-téléchargés par Zed, qui ne tournent pas sur NixOS — linker dynamique).
   nixd = "${pkgs.nixd}/bin/nixd";
@@ -13,6 +14,20 @@ let
   tailwindLs = "${pkgs.tailwindcss-language-server}/bin/tailwindcss-language-server";
   vtsls = "${pkgs.vtsls}/bin/vtsls";
   dockerLs = "${pkgs.dockerfile-language-server-nodejs}/bin/docker-langserver";
+  qmlls = "${pkgs.qt6.qtdeclarative}/bin/qmlls";
+
+  # qmlls ne lit pas QML_IMPORT_PATH sans `-E`, et l'env de Zed ne définit de
+  # toute façon que l'ancien QML2_IMPORT_PATH (ignoré par Qt6). On lui passe donc
+  # les chemins des modules en dur via `-I` : Qt6 (QtQuick, QtQml, QtCore,
+  # QtQuick.Controls/Layouts/Effects — tous dans qtdeclarative) + Quickshell
+  # (tiré comme input de flake). Sans ça, tous les imports QML échouent et le
+  # linter crache des milliers de faux warnings « unqualified access ».
+  qmlImportArgs = [
+    "-I"
+    "${pkgs.qt6.qtdeclarative}/lib/qt-6/qml"
+    "-I"
+    "${inputs.quickshell.packages.${system}.default}/lib/qt-6/qml"
+  ];
 in
 {
   # Binaires aussi sur le PATH (utiles hors Zed : shell, autres outils).
@@ -41,6 +56,11 @@ in
       "mermaid"
       "lilypond"
       "catppuccin-icons"
+      "qml"
+      "sql"
+      "kotlin"
+      "lua"
+      "java"
     ];
 
     userSettings = {
@@ -123,6 +143,11 @@ in
         docker-langserver.binary = {
           path = dockerLs;
           arguments = [ "--stdio" ];
+        };
+        # Extension « qml » (lkroll/zed-qml) : l'id du serveur est « qmljs ».
+        qmljs.binary = {
+          path = qmlls;
+          arguments = qmlImportArgs;
         };
       };
 
