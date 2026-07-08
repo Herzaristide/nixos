@@ -61,6 +61,32 @@
         url = "http://localhost:4401/mcp";
         type = "http";
       };
+      # SonarQube Cloud (lecture des analyses : issues, quality gate, hotspots).
+      # Serveur MCP officiel SonarSource, en conteneur Docker (virtualisation.docker
+      # activé dans common.nix). Le jeton n'est jamais dans le store : {env:SONAR_TOKEN}
+      # est résolu au runtime par le client puis transmis au conteneur via -e.
+      # → exporter SONAR_TOKEN dans l'environnement de la session avant de lancer
+      #   le client (même token que celui utilisé par la CI SonarCloud).
+      sonarqube = {
+        command = "docker";
+        args = [
+          "run"
+          "--init"
+          "--pull=always"
+          "-i"
+          "--rm"
+          "-e"
+          "SONARQUBE_TOKEN"
+          "-e"
+          "SONARQUBE_ORG"
+          "sonarsource/sonarqube-mcp"
+        ];
+        type = "stdio";
+        env = {
+          SONARQUBE_TOKEN = "{env:SONAR_TOKEN}";
+          SONARQUBE_ORG = "herzaristide";
+        };
+      };
     };
   };
 }
