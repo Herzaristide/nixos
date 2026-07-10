@@ -14,6 +14,8 @@
   # directement le fichier de policy par-utilisateur.
   xdg.configFile."chromium/policies/managed/preferences.json".text = builtins.toJSON {
     TranslateEnabled = false;
+    # 2 = aucun site ne peut afficher de notifications (bloque les pubs push).
+    DefaultNotificationsSetting = 2;
   };
 
   xdg.configFile."chromium/policies/managed/bookmarks.json".text = builtins.toJSON {
