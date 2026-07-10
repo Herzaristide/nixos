@@ -25,6 +25,7 @@
 
   # Cursor theme
   home.pointerCursor = {
+    enable = true;
     package = pkgs.phinger-cursors;
     name = if darkMode then "phinger-cursors-dark" else "phinger-cursors";
     size = 32;

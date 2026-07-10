@@ -13,7 +13,7 @@ let
   terraformLs = "${pkgs.terraform-ls}/bin/terraform-ls";
   tailwindLs = "${pkgs.tailwindcss-language-server}/bin/tailwindcss-language-server";
   vtsls = "${pkgs.vtsls}/bin/vtsls";
-  dockerLs = "${pkgs.dockerfile-language-server-nodejs}/bin/docker-langserver";
+  dockerLs = "${pkgs.dockerfile-language-server}/bin/docker-langserver";
   qmlls = "${pkgs.qt6.qtdeclarative}/bin/qmlls";
 
   # qmlls ne lit pas QML_IMPORT_PATH sans `-E`, et l'env de Zed ne définit de
