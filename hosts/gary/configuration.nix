@@ -28,8 +28,9 @@
   # Enable GUI (Hyprland/DMS)
   head = true;
 
-  # Primary monitor: Samsung C27R50x (DP-1)
-  primaryMonitor = "DP-1";
+  # Primary monitor: Samsung C27R50x — branché sur l'iGPU (Raphael), sort en HDMI-A-3.
+  # (auparavant DP-1 quand les écrans étaient sur le dGPU RX 7600 XT.)
+  primaryMonitor = "HDMI-A-3";
 
   # Bootloader (systemd-boot for UEFI; GRUB disabled)
   boot.loader.grub.enable = false;

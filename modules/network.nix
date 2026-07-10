@@ -72,8 +72,9 @@
   networking.firewall = {
     enable = lib.mkDefault true;
     allowedTCPPorts = [
-      22 # SSH
-      80 # HTTP
+      22
+      80
+      9000# HTTP
     ];
     allowedUDPPorts = [
       51820 # WireGuard

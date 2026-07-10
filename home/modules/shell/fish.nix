@@ -19,9 +19,9 @@
       z = "zellij";
       c = "claude";
       cr = "claude --continue";
+      g = "glm";
 
       # Git
-      g = "copilot";
       gs = "git status";
       ga = "git add";
       gaa = "git add --all";

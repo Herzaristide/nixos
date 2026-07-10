@@ -13,24 +13,24 @@
     # exécution (ex: "git status" -> "rtk git status"). Deux clés car VS Code
     # Copilot Chat et Copilot CLI n'utilisent pas la même casse/schéma pour
     # le même fichier. Voir ./rtk.nix pour le package.
-    settings.hooks = {
-      PreToolUse = [
-        {
-          type = "command";
-          command = "rtk hook copilot";
-          cwd = ".";
-          timeout = 5;
-        }
-      ];
-      preToolUse = [
-        {
-          type = "command";
-          bash = "rtk hook copilot";
-          powershell = "rtk hook copilot";
-          cwd = ".";
-          timeoutSec = 5;
-        }
-      ];
-    };
+    # settings.hooks = {
+    #   PreToolUse = [
+    #     {
+    #       type = "command";
+    #       command = "rtk hook copilot";
+    #       cwd = ".";
+    #       timeout = 5;
+    #     }
+    #   ];
+    #   preToolUse = [
+    #     {
+    #       type = "command";
+    #       bash = "rtk hook copilot";
+    #       powershell = "rtk hook copilot";
+    #       cwd = ".";
+    #       timeoutSec = 5;
+    #     }
+    #   ];
+    # };
   };
 }

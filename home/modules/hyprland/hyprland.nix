@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   primaryMonitor ? "HDMI-A-1",
@@ -81,6 +82,22 @@ in
             "1"
           ];
         }
+        # Set explicitly (rather than relying on the login shell's exported
+        # session variables) so the cursor theme is always applied even if
+        # Hyprland is (re)started with a stale shell environment — e.g. right
+        # after `nixos-rebuild switch` but before a fresh login.
+        {
+          _args = [
+            "XCURSOR_THEME"
+            config.home.pointerCursor.name
+          ];
+        }
+        {
+          _args = [
+            "XCURSOR_SIZE"
+            (toString config.home.pointerCursor.size)
+          ];
+        }
       ];
 
       config = {
@@ -141,17 +158,19 @@ in
       ];
 
       monitor = [
-        # gary — HP E24q G5, posé au-dessus de DP-1, retourné 180° (transform 2)
+        # gary — HP E24q G5, posé au-dessus du Samsung (HDMI-A-3), retourné 180° (transform 2).
+        # Branché sur l'iGPU (Raphael) → sort en DP-4 (au lieu de DP-2 sur le dGPU).
         {
-          output = "DP-2";
+          output = "DP-4";
           mode = "2560x1440@75";
           position = "0x0";
           scale = 1.60;
           transform = 2;
         }
-        # gary — Samsung C27R50x, écran principal sous DP-2.
+        # gary — Samsung C27R50x, écran principal sous DP-4.
+        # Branché sur l'iGPU (Raphael) → sort en HDMI-A-3 (au lieu de DP-1 sur le dGPU).
         {
-          output = "DP-1";
+          output = "HDMI-A-3";
           mode = "1920x1080@60";
           position = "0x900";
           scale = 1.25;
@@ -205,7 +224,7 @@ in
         }
         {
           workspace = "9";
-          monitor = "DP-2";
+          monitor = "DP-4";
           default = true;
         }
         # gaps_out: css_gap = soit un int soit { top, right, bottom, left }.
