@@ -1,4 +1,10 @@
-{ pkgs, config, osConfig, lib, ... }:
+{
+  pkgs,
+  config,
+  osConfig,
+  lib,
+  ...
+}:
 
 let
   isHead = osConfig.head or false;

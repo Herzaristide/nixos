@@ -74,7 +74,7 @@
     allowedTCPPorts = [
       22
       80
-      9000# HTTP
+      9000 # HTTP
     ];
     allowedUDPPorts = [
       51820 # WireGuard
