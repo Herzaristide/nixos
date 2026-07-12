@@ -63,6 +63,16 @@
   # Load amdgpu early for seamless KMS (no flicker at boot)
   boot.initrd.kernelModules = [ "amdgpu" ];
 
+  # Render the whole Wayland desktop on the iGPU (Raphael, PCI 0000:13:00.0),
+  # leaving the discrete RX 7600 XT idle and free for ROCm. The monitors are
+  # plugged into the iGPU; without this every client (notably Chromium) grabs
+  # the default node renderD128 = the dGPU, which then wakes to full boost
+  # (2948 MHz / ~116 W) and — being headless with no display to pace DPM —
+  # never clocks back down, even after the client closes. Pinning the
+  # compositor to the iGPU keeps the dGPU at 0 %. head.nix resolves this
+  # by-path symlink to the real cardN node for AQ_DRM_DEVICES.
+  renderDevice = "/dev/dri/by-path/pci-0000:13:00.0-card";
+
   # Hardware-accelerated graphics (Vulkan, OpenGL, VA-API, OpenCL via ROCm)
   hardware.graphics = {
     enable = true;

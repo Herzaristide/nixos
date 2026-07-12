@@ -317,12 +317,6 @@ in
         }
         {
           _args = [
-            "SUPER + P"
-            (mkLuaInline "hl.dsp.window.pseudo()")
-          ];
-        }
-        {
-          _args = [
             "SUPER + J"
             (mkLuaInline ''hl.dsp.layout("togglesplit")'')
           ];

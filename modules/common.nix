@@ -35,6 +35,20 @@
     description = "Use dark color scheme (false = light mode).";
   };
 
+  # Persistent /dev/dri path of the DRM card the Wayland compositor should
+  # render on. When set, head.nix resolves it to its real card node at login
+  # and exports AQ_DRM_DEVICES before exec'ing Hyprland, so aquamarine (and
+  # therefore every Wayland client, incl. Chromium) renders on that GPU.
+  # Used on gary to keep the whole desktop on the iGPU and leave the discrete
+  # RX 7600 XT idle/free for ROCm. null = let aquamarine pick (default).
+  # Must be a stable by-path symlink (aquamarine rejects the symlink itself,
+  # so head.nix passes it through `readlink -f` to a real cardN node).
+  options.renderDevice = lib.mkOption {
+    type = lib.types.nullOr lib.types.str;
+    default = null;
+    description = "by-path of the DRM card to pin the Wayland compositor to (AQ_DRM_DEVICES).";
+  };
+
   config = {
 
     # Plateforme cible — identique sur tous les hôtes

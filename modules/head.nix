@@ -2,6 +2,7 @@
   config,
   pkgs,
   inputs,
+  lib,
   ...
 }:
 
@@ -56,6 +57,15 @@
   # Guarded so it only runs on tty1 and not inside an existing session.
   programs.fish.loginShellInit = ''
     if test -z "$WAYLAND_DISPLAY" -a (tty) = /dev/tty1
+        ${lib.optionalString (config.renderDevice != null) ''
+          # Pin the compositor's render GPU (see modules/common.nix renderDevice).
+          # aquamarine crashes on the by-path symlink, so resolve it to the real
+          # cardN node first. Guard on existence so a missing/renamed device
+          # can't wedge the whole login (Hyprland would just autopick instead).
+          if test -e ${config.renderDevice}
+              set -x AQ_DRM_DEVICES (readlink -f ${config.renderDevice})
+          end
+        ''}
         exec ${config.programs.hyprland.package}/bin/start-hyprland
     end
   '';
