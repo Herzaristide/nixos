@@ -37,6 +37,12 @@
       "youtu.be"
       "youtubekids.com"
       "www.youtubekids.com"
+
+      "twitch.tv"
+      "www.twitch.tv"
+      "m.twitch.tv"
+      "clips.twitch.tv"
+      "go.twitch.tv"
     ];
   };
 
