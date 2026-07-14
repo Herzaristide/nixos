@@ -18,6 +18,7 @@
       y = "yazi";
       z = "zellij";
       c = "claude";
+      ca = "claude agents";
       cr = "claude --continue";
       g = "glm";
 

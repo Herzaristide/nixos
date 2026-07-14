@@ -7,6 +7,8 @@
       { id = "fcoeoabgfenejglbffodgkkbkcdhcgfn"; }
       { id = "ddkjiahejlhfcafbddmgiahcphecmpfh"; }
       { id = "effdbpeggelllpfkjppbokhmmiinhlmg"; }
+      # React Developer Tools
+      { id = "fmkadmapgofadopljbjfkapdkoienihi"; }
     ];
   };
 

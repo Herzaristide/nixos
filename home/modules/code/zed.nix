@@ -1,7 +1,14 @@
-{ pkgs, inputs, ... }:
+{
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 
 let
   system = pkgs.stdenv.hostPlatform.system;
+
+  shortcuts = import ../shortcuts.nix { inherit pkgs; };
   # Language servers / formatters fournis par Nix (au lieu des binaires
   # auto-téléchargés par Zed, qui ne tournent pas sur NixOS — linker dynamique).
   nixd = "${pkgs.nixd}/bin/nixd";
@@ -313,64 +320,22 @@ in
       };
     };
 
-    # Alt+A : commenter / décommenter la ligne ou la sélection.
-    # Alt+P : changer de projet (projets récents).
-    # Alt+O : ouvrir n'importe quel dossier/fichier (nouveau projet, dialogue OS).
-    # Alt+F : sélecteur de fichiers (rechercher / switcher de fichier).
-    # Alt+Z : basculer le retour à la ligne (soft wrap).
-    # Alt+C : focus arborescence de fichiers.
-    # Alt+Q : fermer l'onglet actif.
-    # Alt+R : ouvrir / fermer le panneau git.
-    # Alt+Entrée : ouvrir / fermer le terminal.
-    # Alt+E : bascule preview↔code (markdown) / focus éditeur (depuis le panneau/terminal).
-    userKeymaps = [
-      {
-        context = "Editor";
-        bindings = {
-          "alt-a" = "editor::ToggleComments";
-          "alt-enter" = "terminal_panel::ToggleFocus";
-          "alt-r" = "git_panel::ToggleFocus";
-          "alt-o" = "workspace::Open";
-          "alt-f" = "file_finder::Toggle";
-          "alt-z" = "editor::ToggleSoftWrap";
-          "alt-e" = "markdown::OpenPreview";
-        };
-      }
-      {
-        context = "Workspace";
-        bindings = {
-          "alt-p" = "projects::OpenRecent";
-          "alt-o" = "workspace::Open";
-          "alt-f" = "file_finder::Toggle";
-          "alt-c" = "project_panel::ToggleFocus";
-          "alt-q" = "pane::CloseActiveItem";
-          "alt-r" = "git_panel::ToggleFocus";
-          "alt-enter" = "terminal_panel::ToggleFocus";
-        };
-      }
-      # Alt+E depuis l'arborescence → retour éditeur
-      {
-        context = "ProjectPanel";
-        bindings = {
-          "alt-e" = "workspace::ActivateLastPane";
-        };
-      }
-      # Alt+E depuis le terminal → retour éditeur.
-      # Alt+Entrée depuis le terminal → le referme (symétrie du toggle).
-      {
-        context = "Terminal";
-        bindings = {
-          "alt-e" = "terminal_panel::ToggleFocus";
-          "alt-enter" = "terminal_panel::ToggleFocus";
-        };
-      }
-      # Alt+E depuis la preview markdown → revenir au code (bascule preview↔code).
-      {
-        context = "MarkdownPreview";
-        bindings = {
-          "alt-e" = "pane::ActivatePreviousItem";
-        };
-      }
-    ];
+    # Raccourcis définis dans home/modules/shortcuts.nix (source de vérité
+    # partagée avec Alacritty/Hyprland/zellij/micro). Regroupés par context,
+    # dans l'ordre d'apparition de shortcuts.zed (Editor, Workspace,
+    # ProjectPanel, Terminal, MarkdownPreview).
+    userKeymaps =
+      let
+        contexts = lib.unique (map (e: e.context) shortcuts.zed);
+      in
+      map (ctx: {
+        context = ctx;
+        bindings = builtins.listToAttrs (
+          map (e: {
+            name = e.key;
+            value = e.action;
+          }) (builtins.filter (e: e.context == ctx) shortcuts.zed)
+        );
+      }) contexts;
   };
 }

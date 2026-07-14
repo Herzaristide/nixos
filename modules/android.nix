@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   pkgs,
   ...
@@ -39,9 +38,6 @@ let
   androidSdk = androidComposition.androidsdk;
   sdkRoot = "${androidSdk}/libexec/android-sdk";
 
-  # Devices « dernière génération ». Les ids viennent de `avdmanager list device`
-  # (ajuste/complète librement la liste — chaque entrée devient une commande
-  # `android-emu-<clé>`). platform = niveau d'API de la system image.
   devices = {
     pixel-8 = {
       device = "pixel_8";
@@ -84,8 +80,6 @@ let
     in
     pkgs.writeShellScriptBin "android-emu-${name}" ''
       set -euo pipefail
-      # Le Qt embarqué de l'émulateur ne sait pas s'afficher en Wayland natif
-      # (fenêtre invisible) : on le force sur XWayland.
       export QT_QPA_PLATFORM=xcb
       export ANDROID_HOME="${sdkRoot}"
       export ANDROID_SDK_ROOT="${sdkRoot}"

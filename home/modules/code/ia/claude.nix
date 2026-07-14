@@ -6,10 +6,6 @@
     package = pkgs.claude-code;
     enableMcpIntegration = true;
 
-    # Serveurs LSP pour l'outil LSP intégré de Claude Code (rendu dans .lsp.json).
-    # Approche déclarative équivalente aux plugins LSP du marketplace, mais qui
-    # couvre aussi Nix (hors des 11 langages des plugins officiels). Les binaires
-    # sont pointés directement dans le store — pas de dépendance au PATH.
     lspServers = {
       rust = {
         command = "${pkgs.rust-analyzer}/bin/rust-analyzer";
@@ -36,16 +32,13 @@
     settings = {
       theme = "dark-ansi";
       language = "French";
-      # Pas de tips/suggestions rotatifs pendant le spinner.
+      model = "opus";
       spinnerTipsEnabled = false;
       voiceEnabled = true;
       voice = {
         enabled = true;
         mode = "hold";
       };
-      # Hook PreToolUse Bash rtk : réécrit transparemment les commandes (ex:
-      # "git status" -> "rtk git status") avant exécution, sans que l'agent
-      # le sache. Voir ./rtk.nix pour le package.
       hooks.PreToolUse = [
         {
           matcher = "Bash";
