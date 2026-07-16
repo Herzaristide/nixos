@@ -122,6 +122,12 @@ in
         dock = "bottom";
         default_height = 480;
       };
+      # Le dock du bas (terminal) traverse toute la largeur de la fenêtre,
+      # par-dessus les docks gauche/droit (au lieu d'être coincé entre l'éditeur
+      # et le project_panel/git_panel). Contrepartie : quand le terminal est
+      # ouvert, les docks latéraux perdent un peu de hauteur.
+      # Valeurs : contained | full | left_aligned | right_aligned.
+      bottom_dock_layout = "full";
       # Un panneau (dont le terminal) se referme quand on re-déclenche son
       # ToggleFocus alors qu'il a déjà le focus → Alt+T ouvre/ferme le terminal.
       close_panel_on_toggle = true;

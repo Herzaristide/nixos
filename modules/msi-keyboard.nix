@@ -28,9 +28,13 @@ in
     # interfaces appear and no /dev/hidraw* gets created.
     # The ATTR{bConfigurationValue}!="1" guard skips the write if the kernel
     # already picked the right config (post-resume, repeated add events).
+    # TAG+="uaccess" (not MODE="0666"): grants access via systemd-logind's
+    # per-seat ACL to whoever is in the active local session, instead of
+    # making the raw HID device world-writable to every local user/process.
+    # msi-rgb-boot / resumeCommands still work because they run as root.
     services.udev.extraRules = ''
       ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1038", ATTR{idProduct}=="113a", ATTR{bConfigurationValue}!="1", ATTR{bConfigurationValue}="1"
-      SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1038", ATTRS{idProduct}=="113a", MODE="0666"
+      SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1038", ATTRS{idProduct}=="113a", TAG+="uaccess"
     '';
 
     # Cache file the watcher writes from the user session and the boot/resume

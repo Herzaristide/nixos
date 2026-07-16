@@ -18,7 +18,6 @@ let
     ./modules/alacritty.nix
     ./modules/quickshell.nix
     ./modules/hyprland/tofi.nix
-    ./modules/vesktop.nix
     ./modules/teams.nix
     ./modules/obs.nix
     ./modules/onlyoffice.nix

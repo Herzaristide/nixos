@@ -22,6 +22,20 @@
   services.udisks2.enable = true;
   services.fstrim.enable = true;
 
+  # Durcissement des montages automatiques udisks2 : noexec/nosuid/nodev sur
+  # les systèmes de fichiers typiques d'une clé USB. udisks2 applique déjà
+  # nosuid/nodev par défaut pour les montages utilisateur, mais pas noexec —
+  # sans ça, brancher une clé USB piégée puis lancer un binaire dessus suffit
+  # à exécuter du code arbitraire. On force donc noexec explicitement.
+  environment.etc."udisks2/mount_options.conf".text = ''
+    [defaults]
+    vfat_defaults=uid=$UID,gid=$GID,noexec,nosuid,nodev
+    exfat_defaults=uid=$UID,gid=$GID,noexec,nosuid,nodev
+    ntfs_defaults=uid=$UID,gid=$GID,noexec,nosuid,nodev
+    ext4_defaults=noexec,nosuid,nodev
+    btrfs_defaults=noexec,nosuid,nodev
+  '';
+
   # Crucial P3 (CT1000P3PSSD8) — 1 To NVMe, partition unique btrfs.
   # `nofail` pour rester portable entre hôtes ; options SSD (discard/ssd).
   fileSystems."/mnt/crucial" = {

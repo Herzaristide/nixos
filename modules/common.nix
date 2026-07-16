@@ -149,7 +149,6 @@
       extraGroups = [
         "networkmanager"
         "wheel"
-        "docker"
         "video"
         "render"
         "audio"
@@ -175,8 +174,15 @@
       }
     ];
 
-    # Docker
-    virtualisation.docker.enable = true;
+    # Docker rootless : le démon tourne par utilisateur (pas en root), donc
+    # appartenir à un groupe "docker" n'équivaudrait plus à un accès root sur
+    # l'hôte — d'où l'absence volontaire de ce groupe dans extraGroups ci-dessus.
+    # setSocketVariable exporte DOCKER_HOST pour que le CLI `docker` trouve le
+    # socket rootless sans configuration manuelle.
+    virtualisation.docker.rootless = {
+      enable = true;
+      setSocketVariable = true;
+    };
 
     services.ollama = {
       enable = true;

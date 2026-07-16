@@ -65,6 +65,20 @@
     ];
   };
 
+  # Opens file:// links (Ctrl+click in Alacritty, Claude Code references, …) in
+  # Zed instead of Chromium. Without an explicit x-scheme-handler/file below,
+  # xdg-open falls back to x-scheme-handler/unknown → Chromium, which can only
+  # "download" a local file:// rather than edit it. zeditor expects a path, not
+  # a URL, so the wrapper strips the leading scheme before handing it over.
+  xdg.desktopEntries.zed-url-handler = {
+    name = "Zed (file:// handler)";
+    noDisplay = true;
+    exec = "${pkgs.writeShellScriptBin "zed-open" ''
+      exec zeditor "''${1#file://}"
+    ''}/bin/zed-open %u";
+    mimeType = [ "x-scheme-handler/file" ];
+  };
+
   # Default applications (force overwrites existing mimeapps.list files)
   xdg.configFile."mimeapps.list".force = true;
   xdg.dataFile."applications/mimeapps.list".force = true;
@@ -76,9 +90,10 @@
       "x-scheme-handler/https" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/about" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/unknown" = [ "chromium-browser.desktop" ];
+      "x-scheme-handler/file" = [ "zed-url-handler.desktop" ];
       "x-scheme-handler/figma" = [ "figma.desktop" ];
       "x-terminal-emulator" = [ "Alacritty.desktop" ];
-      "inode/directory" = [ "org.kde.dolphin.desktop" ];
+      "inode/directory" = [ "zed-url-handler.desktop" ];
       "application/pdf" = [ "org.kde.okular.desktop" ];
       "audio/midi" = [ "fluidsynth.desktop" ];
       "audio/x-midi" = [ "fluidsynth.desktop" ];

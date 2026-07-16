@@ -32,11 +32,6 @@
       desc = "Ouvrir Dolphin (fichiers)";
     }
     {
-      keys = "SUPER + D";
-      lua = ''hl.dsp.exec_cmd("vesktop")'';
-      desc = "Ouvrir Vesktop (Discord)";
-    }
-    {
       keys = "SUPER + Y";
       lua = ''hl.dsp.exec_cmd("ytmusic-pwa")'';
       desc = "Ouvrir YouTube Music";

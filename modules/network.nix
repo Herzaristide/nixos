@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   lib,
   ...
@@ -75,17 +74,15 @@
   };
 
   # Firewall configuration
+  # Note: port 22 n'est pas listé ici — services.openssh.openFirewall (true par
+  # défaut) l'ouvre automatiquement uniquement sur les hôtes où SSH est activé.
+  # Aucun port applicatif n'est ouvert par défaut : aucun service HTTP ni
+  # WireGuard n'est configuré dans ce dépôt, donc rien n'est whitelisté ici
+  # tant que ce n'est pas réellement utilisé (surface d'attaque au plus près
+  # du besoin réel). Un hôte qui a besoin d'un port l'ouvre lui-même dans sa
+  # configuration.nix via networking.firewall.allowedTCPPorts/allowedUDPPorts.
   networking.firewall = {
     enable = lib.mkDefault true;
-    allowedTCPPorts = [
-      22
-      80
-      9000 # HTTP
-    ];
-    allowedUDPPorts = [
-      51820 # WireGuard
-      51821 # WireGuard IPv6
-    ];
     trustedInterfaces = [ "lo" ];
   };
 }

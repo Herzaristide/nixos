@@ -72,7 +72,14 @@
       ];
     };
     wireplumber.extraConfig = {
-      # Allow Chrome/BandLab PWA to access microphone and audio
+      # Allow Chrome/BandLab PWA to access microphone and audio.
+      # "rwx" (read/write/execute), not "all" (= "rwxm"): chromium only needs
+      # to enumerate nodes and open its own capture/playback streams, never to
+      # set metadata on the graph (rename/relabel other clients' nodes, change
+      # the system default sink/source). Dropping the "m" bit keeps the same
+      # PWA capability while removing the one permission with system-wide
+      # blast radius. Still matches every chromium process (all PWAs share the
+      # same binary, so a per-app rule isn't possible), not just BandLab.
       "50-chrome-bandlab-access" = {
         "access.rules" = [
           {
@@ -82,7 +89,7 @@
             ];
             actions = {
               "update-props" = {
-                "default_permissions" = "all";
+                "default_permissions" = "rwx";
               };
             };
           }

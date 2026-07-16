@@ -9,11 +9,16 @@
 let
   isHead = osConfig.head or false;
 
-  # Nom du remote rclone (défini une fois via `rclone config`, voir bootstrap plus bas).
-  remote = "gdrive";
+  # Nom du remote rclone. À créer une fois (WebDAV Infomaniak kDrive) :
+  #   rclone config create kdrive webdav url=https://<user>.connect.kdrive.infomaniak.com/1/webdav \
+  #     vendor=other user=<identifiant kDrive> pass=$(rclone obscure "<mot de passe applicatif>")
+  # (mot de passe applicatif à générer dans les paramètres kDrive → Sécurité,
+  # pas le mot de passe du compte Infomaniak). Aucun secret dans ce fichier :
+  # tout vit dans ~/.config/rclone/rclone.conf, hors du repo git.
+  remote = "kdrive";
 
-  # Dossier local synchronisé bidirectionnellement avec la racine du Drive.
-  localDir = "${config.home.homeDirectory}/gdrive";
+  # Dossier local synchronisé bidirectionnellement avec la racine du kDrive.
+  localDir = "${config.home.homeDirectory}/kdrive";
 
   # Fréquence de synchronisation.
   interval = "5m";

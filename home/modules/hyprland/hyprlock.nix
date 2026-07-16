@@ -11,9 +11,12 @@
         disable_loading_bar = true;
       };
 
+      # Palette alignée sur services/Theme.qml (karenine) : bgDeep #0d0d0d,
+      # textPrimary #e0e0ff, textSecondary #8a90b0, accent #5277c3 (défaut
+      # NixOS blue du moteur anna), colorDanger #cc4444.
       background = [
         {
-          color = "rgba(20, 20, 30, 1.0)";
+          color = "rgba(13, 13, 13, 1.0)";
           blur_passes = 0;
         }
       ];
@@ -21,7 +24,7 @@
       label = [
         {
           text = "cmd[update:1000] date +'%H:%M'";
-          color = "rgba(220, 220, 220, 1.0)";
+          color = "rgba(224, 224, 255, 1.0)";
           font_size = 90;
           font_family = "JetBrains Mono";
           position = "0, 160";
@@ -30,7 +33,7 @@
         }
         {
           text = "Bonjour, aristide.";
-          color = "rgba(180, 180, 180, 1.0)";
+          color = "rgba(138, 144, 176, 1.0)";
           font_size = 18;
           font_family = "JetBrains Mono";
           position = "0, 60";
@@ -51,8 +54,10 @@
           fade_on_empty = false;
           placeholder_text = "Mot de passe…";
           hide_input = false;
+          inner_color = "rgba(26, 26, 26, 1.0)";
+          font_color = "rgba(224, 224, 255, 1.0)";
           check_color = "rgba(82, 119, 195, 1.0)";
-          fail_color = "rgba(204, 51, 51, 1.0)";
+          fail_color = "rgba(204, 68, 68, 1.0)";
           fail_text = "Mauvais mot de passe";
         }
       ];

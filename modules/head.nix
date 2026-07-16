@@ -45,30 +45,10 @@
   # X11 (for XWayland) and Hyprland
   services.xserver.enable = true;
 
-  # No display manager / greeter: getty auto-logs in `aristide` on tty1,
-  # and the fish login shell exec's Hyprland directly (see loginShellInit below).
-  # `services.xserver.enable = true` otherwise pulls in lightdm by default, which
-  # would grab the VT and show a graphical login — disable it explicitly.
-  services.displayManager.enable = false;
+  # Écran de login graphique : greetd + regreet (voir modules/greetd.nix).
+  # lightdm reste explicitement désactivé pour éviter tout conflit avec greetd
+  # sur la VT si `services.xserver.enable = true` le proposait par défaut.
   services.xserver.displayManager.lightdm.enable = false;
-  services.getty.autologinUser = "aristide";
-
-  # Launch Hyprland automatically on the first VT right after autologin.
-  # Guarded so it only runs on tty1 and not inside an existing session.
-  programs.fish.loginShellInit = ''
-    if test -z "$WAYLAND_DISPLAY" -a (tty) = /dev/tty1
-        ${lib.optionalString (config.renderDevice != null) ''
-          # Pin the compositor's render GPU (see modules/common.nix renderDevice).
-          # aquamarine crashes on the by-path symlink, so resolve it to the real
-          # cardN node first. Guard on existence so a missing/renamed device
-          # can't wedge the whole login (Hyprland would just autopick instead).
-          if test -e ${config.renderDevice}
-              set -x AQ_DRM_DEVICES (readlink -f ${config.renderDevice})
-          end
-        ''}
-        exec ${config.programs.hyprland.package}/bin/start-hyprland
-    end
-  '';
 
   programs.hyprland.enable = true;
 

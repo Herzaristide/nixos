@@ -48,11 +48,13 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 
 - `nixos.nix` — Nix-level settings (flakes, GC, `nix-ld`, `system.stateVersion`, build parallelism cap)
 - `common.nix` — defines `head` / `primaryMonitor` / `darkMode` options; locale/keyboard FR; user `aristide` (immutable, hashed pwd); docker; ollama; wires home-manager into the system
-- `network.nix` — NetworkManager + SSH (password auth) + firewall
+- `network.nix` — NetworkManager + SSH (**key-only**: `PasswordAuthentication = false`, `PermitRootLogin = "no"`, `MaxAuthTries = 3`) + firewall (no ports opened by default — a host opts in explicitly if it needs one; port 22 is opened automatically by `services.openssh.openFirewall` only where SSH is enabled). gary and zola both set `services.openssh.enable = lib.mkForce false`, so kafka is the only host reachable over SSH.
 - `power.nix` — UPower, logind suspend rules, USB wakeup
-- `storage.nix` — mdadm RAID, fstrim, NTFS support, and the cross-host whitelist of external/internal mounts (`/mnt/maxtor`, `/mnt/samsung`, `/mnt/raid` — all with `nofail` so disks remain portable between hosts)
-- `head.nix` — GUI layer: getty autologin (`aristide` on tty1) → fish `loginShellInit` exec's Hyprland directly (no greeter), XDG portal (hyprland + kde), fonts (JetBrains Mono only), printing
-- `audio.nix` — musnix, PipeWire (ALSA/JACK/Pulse), echo-cancel module, WirePlumber rule allowing chromium full audio permissions
+- `security.nix` — kernel sysctl hardening (kptr_restrict, dmesg_restrict, ptrace_scope, TCP/IP anti-spoofing), AppArmor, auditd (rules currently disabled — see comment in the file for the upstream bug tracking this), fail2ban on sshd, LUKS auto-unlock via USB keyfile (`/dev/disk/by-partlabel/LUKSKEY`, 20s timeout then falls back to the passphrase prompt — note this trades some at-rest protection for convenience if the keyfile USB stick travels with the machine)
+- `storage.nix` — mdadm RAID, fstrim, NTFS support, udisks2 auto-mount hardened with `noexec,nosuid,nodev`. The cross-host whitelist of external/internal mounts (`/mnt/maxtor`, `/mnt/samsung`, `/mnt/raid`) is currently commented out pending a disk changeover; only `/mnt/crucial` (uuid-pinned, `nofail`) is active
+- `greetd.nix` — login screen: greetd + regreet running in `cage` (minimal Wayland kiosk compositor), reskinned to match the Quickshell palette. Replaces the old getty-autologin flow — a password prompt is now required at every boot/logout
+- `head.nix` — GUI layer: declares the Hyprland session entry consumed by greetd, XDG portal (hyprland + kde), fonts (JetBrains Mono only), printing
+- `audio.nix` — musnix, PipeWire (ALSA/JACK/Pulse), echo-cancel module, WirePlumber rule granting chromium `rwx` audio permissions (read/write/execute, deliberately not the `m` metadata bit) so the BandLab PWA can record — the rule matches on binary name, so it applies to every chromium process (all PWAs + regular browsing share the same binary), not just BandLab
 
 ### Home-manager config (`/home/`)
 
@@ -61,7 +63,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `modules/hyprland.nix` — Hyprland config in **Lua** mode (`configType = "lua"`), keybinds, monitor setup, special workspaces. Has a lid-closed-layout helper script for zola.
 - `modules/alacritty.nix` — terminal config
 - `modules/hyprland/tofi.nix` — tofi application launcher (config rendue par anna, voir Theming)
-- `modules/chromium.nix` — chromium package + PWA wrappers (`gemini-pwa`, `claude-pwa`, `bandlab-pwa`) sharing `~/.config/chromium-$(hostname)` profile
+- `modules/chromium.nix` — chromium package + PWA wrappers (`gemini-pwa`, `claude-pwa`, `bandlab-pwa`, `ytmusic-pwa`) sharing `~/.config/chromium` profile
 - `modules/kde.nix` — minimal KDE/Qt theming (for xdg-portal-kde + appearance protocol)
 - `modules/accent/accent.nix` — installs the anna engine (from the karenine flake) + its templates, systemd user service, and seed activation (see "Theming" below)
 - `modules/shell/` — `fish`, `starship`, `fastfetch`, `micro`, `direnv`, `yazi`
@@ -147,7 +149,7 @@ LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — wri
 
 - Imports `nixos-wsl.nixosModules.default`, `wsl.enable = true`
 - No bootloader, NetworkManager disabled (uses Windows host networking)
-- SSL env vars set globally (corporate cert situations); `GIT_SSL_NO_VERIFY=true` is intentional
+- `SSL_CERT_FILE`/`NIX_SSL_CERT_FILE` point curl/wget/Nix at `/etc/ssl/certs/ca-bundle.crt`. **No TLS verification is disabled** — a prior `GIT_SSL_NO_VERIFY=true` / `NODE_TLS_REJECT_UNAUTHORIZED=0` pair was removed (2026-07-16): it blanket-disabled certificate checking for every git/Node process on the host instead of trusting a specific corporate CA. If a corporate proxy MITMs TLS again, add its root CA to the system trust store instead of disabling verification.
 
 ## Hyprland configuration notes
 
@@ -164,29 +166,33 @@ LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — wri
 - musnix with `alsaSeq.enable = true` (MIDI); `kernel.realtime = false` (RT kernel disabled by default, flip for ultra-low latency)
 - PipeWire with ALSA + Pulse + **JACK** support (for pro audio apps)
 - Echo cancellation module loaded (webrtc-aec) — exposes `echo-cancel-source` / `echo-cancel-sink` virtual nodes. Originally added to fix the voice-assistant feedback loop where piper TTS was being transcribed back by whisper.
-- WirePlumber rule: chromium gets `default_permissions = "all"` so BandLab PWA can record audio
+- WirePlumber rule: chromium gets `default_permissions = "rwx"` (not `"all"`/`"rwxm"` — the `m` metadata bit is withheld) so the BandLab PWA can record audio
 - Voice assistant tooling preinstalled: `whisper-cpp`, `piper-tts`, `sox`, `aubio`
 
 ## Chromium PWAs (`home/modules/chromium.nix`)
 
-Three PWA wrappers, all sharing `~/.config/chromium-$(hostname)`:
+Four PWA wrappers, all sharing `~/.config/chromium`:
 
 - `gemini-pwa` → gemini.google.com (also has a desktop entry; Super+G special workspace auto-launches it)
 - `claude-pwa` → claude.ai
 - `bandlab-pwa` → bandlab.com
+- `ytmusic-pwa` → music.youtube.com (Super+Y)
 
 All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 
 ## User and security
 
 - `users.mutableUsers = false` — passwords are SHA-512 hashes baked into `modules/common.nix`. `passwd`/`useradd` do nothing; create/change users only via Nix.
-- `aristide` is in groups: `networkmanager wheel docker video render audio storage greeter gamemode`
+- `aristide` is in groups: `networkmanager wheel video render audio storage greeter` (plus `kvm` on hosts importing `modules/android.nix`, for the emulator's KVM acceleration)
+- **No `docker` group membership** — Docker runs rootless (`virtualisation.docker.rootless.enable`), so the daemon isn't running as root and group membership wouldn't grant a root-equivalent escape path anyway; deliberately left out
 - Sudo NOPASSWD allowlist: `smartctl`, `dmidecode` (read-only hardware queries)
+- Git identity commits as signed (`gpg.format = "ssh"`, `commit.gpgSign = true`, key `~/.ssh/siddhartha.pub`); credentials for HTTPS remotes go through `git-credential-manager` backed by GNOME Keyring/secretservice on headful hosts, or an in-memory cache on headless hosts — no plaintext credential store
 
 ## Custom packages (`packages.x86_64-linux`)
 
-- `install-nixos` — clones the flake to `/etc/nixos`, regenerates `hardware-configuration.nix`, runs `nixos-rebuild`. Entry point: `install.sh`. `nix run .#install-nixos -- <git-url> <hostname>`.
 - `anna` — re-export of `inputs.karenine.packages.x86_64-linux.anna` (the unified theming + hwstats engine; see "Theming")
+- `iso` — bootable installer image (`hosts/iso/configuration.nix`) that embeds a read-only copy of this flake under `/etc/nixos` (via `environment.etc."nixos".source = inputs.self`). Build with `nix build .#iso`. Boots into a live NixOS with `nixos-install-here <hostname>` on the PATH, which runs disko (partition + LUKS + btrfs) from `/tmp/disko-luks-passphrase` (prompted interactively if absent) and then `nixos-install --flake`.
+  - **Security note**: the ISO enables SSH with `PermitRootLogin = "yes"` and an empty root password, for convenience during headless/remote installs. Don't leave a booted installer connected to an untrusted network — anyone on the same segment can `ssh root@<ip>` with no password until the target host's own SSH config (key-only, see `network.nix`) takes over post-install.
 
 ## Important quirks
 
@@ -208,5 +214,5 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 ## Repo metadata
 
 - Git user: `Herzaristide` &lt;aristide.pichereau@gmail.com&gt;
-- Git credential helper: `store` (plaintext)
+- Git credential helper: `git-credential-manager` (secretservice/GNOME Keyring on headful hosts, in-memory cache on headless hosts — see `home/modules/network/git.nix`)
 - All `system.stateVersion` and `home.stateVersion` pinned to **25.11**

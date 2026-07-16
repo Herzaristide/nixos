@@ -16,6 +16,7 @@
     ../../modules/power.nix
     ../../modules/storage.nix
     ../../modules/head.nix
+    ../../modules/greetd.nix
     ../../modules/audio.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix
@@ -24,6 +25,9 @@
 
   # Hostname
   networking.hostName = "gary";
+
+  # SSH désactivé : seul kafka (serveur local) reste accessible en SSH.
+  services.openssh.enable = lib.mkForce false;
 
   # Enable GUI (Hyprland/DMS)
   head = true;

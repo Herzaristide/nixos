@@ -16,6 +16,7 @@
     ../../modules/power.nix
     ../../modules/storage.nix
     ../../modules/head.nix
+    ../../modules/greetd.nix
     ../../modules/audio.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix
@@ -64,6 +65,16 @@
 
   # Hostname
   networking.hostName = "zola";
+
+  # SSH désactivé : seul kafka (serveur local) reste accessible en SSH.
+  services.openssh.enable = lib.mkForce false;
+
+  # Fermer le capot suspend réellement la machine (modules/power.nix l'ignore
+  # par défaut, pertinent seulement ici — zola est le seul hôte avec un capot).
+  # hypridle (home/modules/hyprland/hyprlock.nix) verrouille déjà l'écran via
+  # before_sleep_cmd avant toute mise en veille, donc fermer le capot verrouille
+  # aussi la session, pas seulement l'écran.
+  services.logind.settings.Login.HandleLidSwitch = lib.mkForce "suspend";
 
   # Head configuration
   head = true;
