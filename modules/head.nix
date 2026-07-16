@@ -26,6 +26,14 @@
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.login.enableGnomeKeyring = true;
 
+  # PAM service for the Quickshell lockscreen (karenine's lock.qml, via
+  # PamContext { config: "quickshell" }). Without this file the lock has no way
+  # to validate the password and every attempt fails with a PAM start error.
+  # The stock NixOS stack (unix auth) is what we want here — same as a console
+  # login. `enableGnomeKeyring` mirrors the login service so unlocking the
+  # session also unlocks the keyring git-credential-manager stores into.
+  security.pam.services.quickshell.enableGnomeKeyring = true;
+
   # XDG Portal (for file picker, screen sharing in Hyprland)
   # xdg-desktop-portal-kde exposes color-scheme (dark mode) to Chrome/Gemini, etc.
   # via kdeglobals — no GNOME/GTK infrastructure required.
@@ -44,11 +52,6 @@
 
   # X11 (for XWayland) and Hyprland
   services.xserver.enable = true;
-
-  # Écran de login graphique : greetd + regreet (voir modules/greetd.nix).
-  # lightdm reste explicitement désactivé pour éviter tout conflit avec greetd
-  # sur la VT si `services.xserver.enable = true` le proposait par défaut.
-  services.xserver.displayManager.lightdm.enable = false;
 
   programs.hyprland.enable = true;
 

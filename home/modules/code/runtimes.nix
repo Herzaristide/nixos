@@ -13,7 +13,7 @@
     prettier # JS/TS/JSON/YAML/Markdown/HTML/CSS
 
     # Java
-    jdk21 # OpenJDK 21 LTS (javac, java, jar, jshell)
+    jdk25 # OpenJDK 25 LTS (javac, java, jar, jshell)
     maven
     gradle
     google-java-format

@@ -42,8 +42,6 @@ in
 
       terminal.shell.program = "fish";
 
-      # Raccourcis définis dans home/modules/shortcuts.nix (source de vérité
-      # partagée avec Hyprland/zellij/Zed/micro).
       keyboard.bindings = map (
         {
           key,

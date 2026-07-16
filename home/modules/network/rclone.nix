@@ -9,19 +9,52 @@
 let
   isHead = osConfig.head or false;
 
-  # Nom du remote rclone. À créer une fois (WebDAV Infomaniak kDrive) :
-  #   rclone config create kdrive webdav url=https://<user>.connect.kdrive.infomaniak.com/1/webdav \
-  #     vendor=other user=<identifiant kDrive> pass=$(rclone obscure "<mot de passe applicatif>")
-  # (mot de passe applicatif à générer dans les paramètres kDrive → Sécurité,
-  # pas le mot de passe du compte Infomaniak). Aucun secret dans ce fichier :
-  # tout vit dans ~/.config/rclone/rclone.conf, hors du repo git.
-  remote = "kdrive";
+  # Nom du remote rclone. À créer une fois (Google Drive, OAuth interactif) :
+  #   rclone config create gdrive drive scope=drive --all
+  # Le flag --all lance le flux OAuth dans le navigateur ; sur un hôte sans
+  # navigateur, faire `rclone authorize "drive"` sur une machine graphique et
+  # coller le token. Aucun secret dans ce fichier : le token vit dans
+  # ~/.config/rclone/rclone.conf, hors du repo git.
+  remote = "gdrive";
 
-  # Dossier local synchronisé bidirectionnellement avec la racine du kDrive.
-  localDir = "${config.home.homeDirectory}/kdrive";
+  # Dossier local synchronisé bidirectionnellement avec la racine du Drive.
+  localDir = "${config.home.homeDirectory}/gdrive";
 
   # Fréquence de synchronisation.
   interval = "5m";
+
+  # Dossiers régénérables : des dizaines de milliers de petits fichiers, sans
+  # valeur une fois hors de leur machine. Drive facture la latence au fichier et
+  # non à l'octet, donc les exclure change tout sur la durée d'un passage.
+  # Syntaxe rclone : un motif sans « / » initial matche à n'importe quelle
+  # profondeur, et « dir/** » exclut le contenu du dossier partout où il apparaît.
+  filters = pkgs.writeText "rclone-filters-${remote}" ''
+    # Environnements et dépendances (réinstallables)
+    - .venv/**
+    - venv/**
+    - node_modules/**
+    - vendor/**
+    # Caches de build et d'outillage
+    - __pycache__/**
+    - .mypy_cache/**
+    - .pytest_cache/**
+    - .ruff_cache/**
+    - .direnv/**
+    - target/**
+    - dist/**
+    - build/**
+    - .cache/**
+    # Dépôts git : l'historique a déjà un remote, le dupliquer ici n'aide personne
+    - .git/**
+    # Liens de build Nix (pointent vers /nix/store, inutilisables ailleurs)
+    - result
+    - result-*
+    # Bruit d'OS et fichiers compilés
+    - .DS_Store
+    - Thumbs.db
+    - *.pyc
+    - *.pyo
+  '';
 
   # Wrapper bisync : au tout premier lancement il n'existe aucun état de référence,
   # rclone refuse alors de tourner sans --resync. On détecte ce cas et on établit
@@ -43,6 +76,10 @@ let
       --conflict-resolve newer
       --transfers 8
       --log-level INFO
+      # Les Docs/Sheets/Slides natifs n'ont pas de contenu téléchargeable :
+      # bisync échouerait dessus à chaque passage.
+      --drive-skip-gdocs
+      --filter-from ${filters}
     )
 
     # La baseline existe-t-elle déjà pour cette paire ?
