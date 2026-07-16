@@ -1,5 +1,3 @@
-# Modules kernel/initrd + firmware partagés par tous les hôtes physiques
-# (zola, gary, kafka). Pas exupery — WSL n'utilise pas d'initrd réel.
 { ... }:
 
 {
@@ -26,7 +24,5 @@
     "usbhid"
   ];
 
-  # Initrd systemd : requis par le déverrouillage LUKS via keyfile USB
-  # (systemd-cryptsetup résout le symlink by-partlabel/LUKSKEY — voir security.nix).
   boot.initrd.systemd.enable = true;
 }

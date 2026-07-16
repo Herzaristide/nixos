@@ -45,12 +45,6 @@
     ];
   };
 
-  # Wake-on-LAN : arme toutes les interfaces Ethernet filaires au boot.
-  # Why: permet de réveiller kafka/gary/zola à distance via un magic packet
-  # (la NIC reste alimentée et écoute même machine éteinte, si autorisé BIOS).
-  # How to apply: oneshot systemd qui appelle `ethtool -s <iface> wol g` sur
-  # chaque interface réelle. Skip auto les loopback/virtual/wireless et les
-  # NIC qui ne supportent pas WoL (cas WSL) — donc safe à activer partout.
   systemd.services.wake-on-lan = {
     description = "Enable Wake-on-LAN on all wired interfaces";
     wantedBy = [ "multi-user.target" ];
@@ -73,14 +67,6 @@
     '';
   };
 
-  # Firewall configuration
-  # Note: port 22 n'est pas listé ici — services.openssh.openFirewall (true par
-  # défaut) l'ouvre automatiquement uniquement sur les hôtes où SSH est activé.
-  # Aucun port applicatif n'est ouvert par défaut : aucun service HTTP ni
-  # WireGuard n'est configuré dans ce dépôt, donc rien n'est whitelisté ici
-  # tant que ce n'est pas réellement utilisé (surface d'attaque au plus près
-  # du besoin réel). Un hôte qui a besoin d'un port l'ouvre lui-même dans sa
-  # configuration.nix via networking.firewall.allowedTCPPorts/allowedUDPPorts.
   networking.firewall = {
     enable = lib.mkDefault true;
     trustedInterfaces = [ "lo" ];
