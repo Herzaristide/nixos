@@ -65,7 +65,10 @@
   # diffèrent (cf. hosts/gary pour RAM + ventilateurs).
   services.hardware.openrgb.enable = true;
 
-  # Fonts — JetBrains Mono for text/UI, Noto Color Emoji for emoji glyphs
+  # Fonts — JetBrains Mono for text/UI, Noto Color Emoji for emoji glyphs.
+  # terminus_font_ttf est la variante TrueType de la police du TTY
+  # (console.font = "ter-v32n", cf. modules/common.nix) : le paquet
+  # terminus_font n'expose que des bitmaps PSF, que fontconfig ignore.
   fonts = {
     enableDefaultPackages = false;
     fontconfig = {
@@ -81,6 +84,7 @@
       jetbrains-mono
       monocraft
       noto-fonts-color-emoji
+      terminus_font_ttf
     ];
   };
 

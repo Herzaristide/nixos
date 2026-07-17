@@ -19,6 +19,23 @@
     };
   };
 
+  # Secret Service daemon (git-credential-manager, Zed, Copilot CLI, Chromium).
+  #
+  # pam_gnome_keyring starts a daemon at login and unlocks it with the session
+  # password, but that daemon is supervised by nothing: once it dies, the D-Bus
+  # service file activates a replacement with `--start`, which finds no control
+  # socket to inherit from and comes up *locked* — hence the password prompt in
+  # Zed/Chromium mid-session. Starting here (graphical-session-pre) hands the
+  # daemon to systemd while the PAM one is still alive, so it inherits the
+  # unlocked state and holds org.freedesktop.secrets for the whole session.
+  #
+  # `secrets` only: ssh-agent is handled in modules/network/ssh.nix, and
+  # gnome-keyring's own agent rejects ed25519 keys.
+  services.gnome-keyring = {
+    enable = true;
+    components = [ "secrets" ];
+  };
+
   # Cursor theme
   home.pointerCursor = {
     enable = true;

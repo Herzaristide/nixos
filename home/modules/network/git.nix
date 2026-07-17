@@ -5,6 +5,8 @@ let
 
   # Head hosts (zola, gary) have GNOME Keyring as session daemon → secretservice.
   # Headless hosts (kafka, exupery) fall back to in-memory cache (re-prompt after timeout).
+  # The keyring is started as a systemd user service from home/head.nix, not left
+  # to D-Bus activation — see the comment there.
   credentialStore = if isHead then "secretservice" else "cache";
 in
 {

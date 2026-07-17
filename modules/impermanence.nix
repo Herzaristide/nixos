@@ -83,6 +83,13 @@ in
   # Tout ce qui n'est PAS ici disparaît au prochain boot.
   environment.persistence."/keep" = {
     hideMounts = true;
+
+    # Le module suppose une racine éphémère et avertit que /var/lib/nixos n'est
+    # pas persisté (uid/gid réattribués au reboot). Faux positif ici : seul
+    # @home est wipé, / vit sur @ qui n'est jamais touché — donc /var/lib/nixos
+    # et ses uid-map/gid-map survivent normalement.
+    # À réactiver si un jour l'impermanence s'étend à / (cf. « étape 1 »).
+    enableWarnings = false;
     users.aristide = {
       files = [
         ".claude.json"

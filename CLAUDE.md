@@ -61,7 +61,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 
 - `home.nix` — entry point. Imports headless modules (network/shell/code) unconditionally; adds the headful modules when `head = true`. Sets `EDITOR=micro`, `BROWSER=chromium`, `TERMINAL=alacritty`.
 - `head.nix` — GUI user layer: dconf (color-scheme), cursor theme, fontconfig cache refresh, default mime apps, custom `file-explorer` desktop entry
-- `modules/hyprland.nix` — Hyprland config in **Lua** mode (`configType = "lua"`), keybinds, monitor setup, special workspaces. Has a lid-closed-layout helper script for zola.
+- `modules/hyprland/hyprland.nix` — Hyprland config in **Lua** mode (`configType = "lua"`), keybinds, monitor setup, special workspaces. Has a lid-closed-layout helper script for zola.
 - `modules/alacritty.nix` — terminal config
 - `modules/hyprland/tofi.nix` — tofi application launcher (config rendue par anna, voir Theming)
 - `modules/chromium.nix` — chromium package + PWA wrappers (`gemini-pwa`, `claude-pwa`, `bandlab-pwa`, `ytmusic-pwa`) sharing `~/.config/chromium` profile
@@ -188,6 +188,7 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 - **No `docker` group membership** — Docker runs rootless (`virtualisation.docker.rootless.enable`), so the daemon isn't running as root and group membership wouldn't grant a root-equivalent escape path anyway; deliberately left out
 - Sudo NOPASSWD allowlist: `smartctl`, `dmidecode` (read-only hardware queries)
 - Git identity commits as signed (`gpg.format = "ssh"`, `commit.gpgSign = true`, key `~/.ssh/siddhartha.pub`); credentials for HTTPS remotes go through `git-credential-manager` backed by GNOME Keyring/secretservice on headful hosts, or an in-memory cache on headless hosts — no plaintext credential store
+- **GNOME Keyring** is the Secret Service store for `git-credential-manager` (HTTPS remotes), Zed, Copilot CLI and Chromium ("Chromium Safe Storage"). It is unlocked by `pam_gnome_keyring` at the greetd login, and started as a systemd user service from `home/head.nix` (`services.gnome-keyring`, `secrets` component only — ssh-agent lives in `home/modules/network/ssh.nix`). Do **not** rely on D-Bus activation alone: an activated daemon comes up locked and prompts for a password mid-session. Note the default keyring is `Default_Keyring`, unlocked by chaining from `login` — PAM only ever unlocks `login` directly
 
 ## Custom packages (`packages.x86_64-linux`)
 
@@ -200,7 +201,7 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 1. **NVIDIA on zola**: `WLR_NO_HARDWARE_CURSORS=1` is mandatory — disabling it kills the cursor on Wayland.
 2. **ROCm on gary**: don't bring back a custom `gpuTargets` overlay — upstream rocBLAS already has `gfx1100` and we map the RX 7600 XT (Navi 33 / gfx1102) onto it via `HSA_OVERRIDE_GFX_VERSION=11.0.0`. Any overlay that touches `gpuTargets` diverges from the Hydra cache and triggers a ~30-minute Tensile kernel regeneration.
 3. **VSCode**: fully retired in favor of Zed. Editor config lives solely in `home/modules/code/zed.nix` (headful only), wired by `home/home.nix`.
-4. **Lua Hyprland config** — when editing `home/modules/hyprland.nix`, remember it generates Lua, not the classic `hypr.conf` format. Use `mkLuaInline` for raw Lua, attribute sets for the rest.
+4. **Lua Hyprland config** — when editing `home/modules/hyprland/hyprland.nix`, remember it generates Lua, not the classic `hypr.conf` format. Use `mkLuaInline` for raw Lua, attribute sets for the rest.
 5. **`primaryMonitor` is consumed by Quickshell**: changing the option value rewrites `~/.config/quickshell/shell.qml` via `builtins.replaceStrings`.
 6. **mdadm warning at eval time** (`Neither MAILADDR nor PROGRAM has been set`) is benign — set `boot.swraid.mdadmConf` to silence it.
 

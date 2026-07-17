@@ -15,7 +15,7 @@
     # Java
     jdk25 # OpenJDK 25 LTS (javac, java, jar, jshell)
     maven
-    gradle
+    gradleg
     google-java-format
 
     # Python

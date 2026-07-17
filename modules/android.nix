@@ -22,10 +22,9 @@ let
     cmdLineToolsVersion = "latest";
     platformToolsVersion = "latest";
     buildToolsVersions = [ "latest" ];
-    platformVersions = [
-      "34"
-      "35"
-    ];
+    # Chaque version tire son image système complète (~4 Go). N'en garder
+    # qu'une : l'API 34 coûtait 4,5 Go pour une cible qu'on ne vise plus.
+    platformVersions = [ "35" ];
     includeEmulator = true;
     emulatorVersion = "latest";
     includeSystemImages = true;
