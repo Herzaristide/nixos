@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Migration unique vers le home déclaratif (voir modules/impermanence.nix).
 #
-# Ne copie ni ne supprime rien : renomme @home en @keep et crée le
-# subvolume vierge @home-blank. Le rollback recréera @home au prochain boot.
+# Ne copie ni ne supprime rien : renomme @home en @keep. Le service
+# rollback-home recréera un @home vide au prochain boot.
 #
 #   sudo ./scripts/impermanence-migrate.sh
 #   sudo nixos-rebuild boot --flake .#zola
@@ -50,9 +50,6 @@ fi
 echo "== Renommage @home -> @keep =="
 mv "$TMP/@home" "$TMP/@keep"
 
-echo "== Création du subvolume vierge @home-blank =="
-btrfs subvolume create "$TMP/@home-blank"
-
 echo
 echo "== Nouvel état =="
 btrfs subvolume list "$TMP" | sed 's/^/  /'
@@ -60,9 +57,8 @@ echo
 cat <<'EOF'
 Migration OK. Rien n'a été supprimé.
 
-  @keep     ← ton ancien home, intégral (Steam et orphelins compris)
-  @home-blank  ← le gabarit vide
-  @home        ← sera recréé au prochain boot par rollback-home
+  @keep  ← ton ancien home, intégral (Steam et orphelins compris)
+  @home  ← sera recréé vide au prochain boot par rollback-home
 
 Suite :
   sudo nixos-rebuild boot --flake .#zola

@@ -21,6 +21,7 @@
     ../../modules/bluetooth.nix
     ../../modules/security.nix
     ../../modules/android.nix
+    ../../modules/impermanence.nix
   ];
 
   # Hostname

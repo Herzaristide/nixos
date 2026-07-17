@@ -32,7 +32,7 @@ in
   fileSystems."/home".neededForBoot = true;
 
   boot.initrd.systemd.services.rollback-home = {
-    description = "Rollback @home vers un snapshot vierge";
+    description = "Recrée @home vide";
     wantedBy = [ "initrd.target" ];
     after = [ "systemd-cryptsetup@cryptroot.service" ];
     before = [
@@ -44,6 +44,15 @@ in
     script = ''
       mkdir -p /btrfs_tmp
       mount -t btrfs -o subvolid=5 ${cryptDevice} /btrfs_tmp
+
+      # Garde-fou : @keep est le signal que la migration a eu lieu. Sans lui,
+      # /keep/home ne peut pas se monter et déplacer @home ne ferait que
+      # priver l'hôte de son home. On ne touche à rien.
+      if [ ! -e /btrfs_tmp/@keep ]; then
+        echo "rollback-home: @keep absent, migration non faite — abandon" >&2
+        umount /btrfs_tmp
+        exit 0
+      fi
 
       # Archivé, pas supprimé : un oubli dans la liste se répare pendant 30 jours.
       if [ -e /btrfs_tmp/@home ]; then
@@ -65,7 +74,7 @@ in
         delete_subvolume_recursively "$i"
       done
 
-      btrfs subvolume snapshot /btrfs_tmp/@home-blank /btrfs_tmp/@home
+      btrfs subvolume create /btrfs_tmp/@home
 
       umount /btrfs_tmp
     '';

@@ -63,6 +63,12 @@
                       "ssd"
                     ];
                   };
+                  # Home déclaratif (modules/impermanence.nix) : stockage
+                  # persistant de ce qui survit au wipe de @home. Sans
+                  # mountpoint — c'est le module qui le monte sur /keep/home,
+                  # avec le neededForBoot qu'exige impermanence. Son absence
+                  # sert aussi de garde-fou au service rollback-home.
+                  "@keep" = { };
                 };
               };
             };
