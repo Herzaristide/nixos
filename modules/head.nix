@@ -1,8 +1,5 @@
 {
-  config,
   pkgs,
-  inputs,
-  lib,
   ...
 }:
 
@@ -62,6 +59,11 @@
 
   # Printing
   services.printing.enable = true;
+
+  # OpenRGB — contrôle RGB. Le `motherboard` (chemin SMBus à charger) et les
+  # règles d'application de l'accent restent par hôte : les périphériques
+  # diffèrent (cf. hosts/gary pour RAM + ventilateurs).
+  services.hardware.openrgb.enable = true;
 
   # Fonts — JetBrains Mono for text/UI, Noto Color Emoji for emoji glyphs
   fonts = {
