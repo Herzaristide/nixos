@@ -80,9 +80,21 @@
   # Head configuration
   head = true;
 
-  # MSI laptop RGB keyboard (SteelSeries KLC 1038:113a) — kernel doesn't
-  # configure this controller, so udev/boot/resume scripts re-apply the color.
-  msiKeyboard.enable = true;
+  # MSI laptop RGB keyboard (SteelSeries KLC 1038:113a) — désactivé.
+  #
+  # Le firmware allume le clavier à la mise sous tension ; c'est le chargement
+  # de ce module qui l'éteint, et toute tentative de le rallumer échoue (les
+  # touches clignotent puis s'éteignent). Le protocole HID est du reverse
+  # engineering et les écritures partent en EPROTO/ETIMEDOUT de façon non
+  # déterministe, jusqu'à faire décrocher le contrôleur du bus (usb 3-9,
+  # récupérable seulement par un suspend/resume).
+  #
+  # `enable = false` retire tout : la règle udev qui force
+  # bConfigurationValue=1 (le SET_CONFIGURATION qu'elle déclenche est le
+  # suspect n°1 de l'extinction), le service msi-rgb-boot, le hook de resume
+  # et le watcher qui reflétait l'accent anna. Plus rien n'écrit dans le
+  # contrôleur : on laisse le clavier tel que le firmware l'a allumé.
+  msiKeyboard.enable = false;
 
   # Primary monitor: built-in screen (laptop)
   primaryMonitor = "eDP-1";

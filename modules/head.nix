@@ -52,6 +52,16 @@
 
   programs.hyprland.enable = true;
 
+  # `start-hyprland` (le lanceur utilisé par la session utilisateur comme par
+  # celle du greeter, cf. modules/greetd.nix) délègue à uwsm. Sans ce module ses
+  # unités systemd user (wayland-session-bindpid@, wayland-wm@) n'existent pas :
+  # uwsm échoue avec « returned non-zero exit status 5 » et la session meurt
+  # aussitôt, renvoyant sur l'écran de login.
+  # `enable` seul n'installe que le paquet et ses unités ; on ne veut PAS
+  # `programs.hyprland.withUWSM`, qui ajouterait une entrée hyprland-uwsm.desktop
+  # concurrente de la nôtre (celle-ci porte le pinning GPU AQ_DRM_DEVICES).
+  programs.uwsm.enable = true;
+
   services.xserver.xkb = {
     layout = "fr";
     variant = "";
@@ -63,7 +73,13 @@
   # OpenRGB — contrôle RGB. Le `motherboard` (chemin SMBus à charger) et les
   # règles d'application de l'accent restent par hôte : les périphériques
   # diffèrent (cf. hosts/gary pour RAM + ventilateurs).
-  services.hardware.openrgb.enable = true;
+  #
+  # Désactivé ici le temps des tests sur le clavier de zola : sur ce laptop
+  # OpenRGB ne détecte aucun contrôleur (`--list-devices` → 0, aucune chaîne
+  # SteelSeries dans le binaire : le KLC 1038:113a n'a pas de driver amont) et
+  # ne sert donc à rien tant qu'on n'en aura pas écrit un. Activé chez gary,
+  # seul hôte qui a des périphériques reconnus.
+  # services.hardware.openrgb.enable = true;
 
   # Fonts — JetBrains Mono for text/UI, Noto Color Emoji for emoji glyphs.
   # terminus_font_ttf est la variante TrueType de la police du TTY

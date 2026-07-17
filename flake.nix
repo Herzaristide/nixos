@@ -54,6 +54,16 @@
         iso = self.nixosConfigurations.iso.config.system.build.isoImage;
       };
 
+      # Shell de travail sur ce dépôt : `nix develop`.
+      # python3 sert aux scripts utilitaires du dépôt (msi-rgb/msi_rgb_set.py),
+      # qui ne sont pas dans le PATH ambiant hors du paquet qui les installe.
+      devShells.${system}.default = pkgs.mkShell {
+        packages = [
+          pkgs.python3
+          pkgs.nixfmt
+        ];
+      };
+
       homeConfigurations = {
         "aristide" = inputs.home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
