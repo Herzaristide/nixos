@@ -122,6 +122,16 @@ in
         ".ollama"
         ".local/share/direnv" # allow-list ; sans elle, tout devDir redemande `direnv allow`
         ".local/state/wireplumber" # volumes et routage audio par périphérique
+        ".local/share/zed" # extensions + historique de l'éditeur
+        ".local/share/PrismLauncher" # instances/ = les mondes Minecraft
+        ".config/penpot-desktop"
+        ".local/share/onlyoffice"
+
+        # Gros téléchargements — régénérables mais lents (SDK Android 4,6 Go,
+        # modèles whisper), et le cache d'uv, seul runtime dont l'état pèse.
+        ".local/share/android"
+        ".local/share/whisper"
+        ".local/share/uv"
 
         # Docker rootless : le data-root est dans le home, pas /var/lib/docker.
         ".local/share/docker"
