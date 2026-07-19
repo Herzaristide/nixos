@@ -1,10 +1,7 @@
 {
-  pkgs,
   lib,
   anna,
   darkMode ? true,
-  msiKeyboardEnabled ? false,
-  msiRgbSet ? null,
   ...
 }:
 
@@ -22,7 +19,7 @@ let
 in
 {
   home.packages = [
-    anna # provides the unified `anna` binary (daemon + client + init + msi)
+    anna # provides the unified `anna` binary (daemon + client + init)
   ];
 
   # Templates installed read-only under ~/.config/accent/templates/.
@@ -101,24 +98,6 @@ in
         # user service does not otherwise inherit the graphical session's PATH.
         Environment = [
           "PATH=/run/wrappers/bin:/etc/profiles/per-user/aristide/bin:/run/current-system/sw/bin"
-        ];
-        Restart = "on-failure";
-        RestartSec = "2s";
-      };
-      Install.WantedBy = [ "graphical-session.target" ];
-    };
-  }
-  // lib.optionalAttrs msiKeyboardEnabled {
-    msi-rgb-watcher = {
-      Unit = {
-        Description = "Reflect the anna accent color onto the MSI RGB keyboard";
-        After = [ "anna.service" ];
-        PartOf = [ "graphical-session.target" ];
-      };
-      Service = {
-        ExecStart = "${anna}/bin/anna msi-rgb-watch";
-        Environment = [
-          "MSI_RGB_SET=${msiRgbSet}/bin/msi-rgb-set"
         ];
         Restart = "on-failure";
         RestartSec = "2s";

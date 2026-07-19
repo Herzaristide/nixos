@@ -33,7 +33,7 @@ nixfmt **/*.nix
 ## Structure du dépôt
 
 ```
-flake.nix                 # Inputs (nixpkgs, home-manager, nixos-wsl, musnix, quickshell,
+flake.nix                 # Inputs (nixpkgs, home-manager, nixos-wsl, quickshell,
                            # karenine, disko) et définition des nixosConfigurations
 hosts/<hostname>/          # configuration.nix (spécifique au host) + hardware-configuration.nix
                            # (générée par nixos-generate-config, ne pas éditer à la main)

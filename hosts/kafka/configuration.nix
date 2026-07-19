@@ -1,6 +1,5 @@
 {
   config,
-  pkgs,
   inputs,
   lib,
   ...
@@ -17,6 +16,7 @@
     ../../modules/storage.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix
+    ../../modules/print.nix
   ];
 
   # Hostname

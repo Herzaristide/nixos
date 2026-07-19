@@ -22,6 +22,7 @@
     ../../modules/security.nix
     # ../../modules/android.nix  # test : déplacement vers un devShell par projet
     ../../modules/impermanence.nix
+    ../../modules/print.nix # CUPS + avahi (découverte réseau) + GUI d'ajout d'imprimante
   ];
 
   # Hostname
@@ -47,6 +48,13 @@
   services.xserver.videoDrivers = [ "amdgpu" ];
   boot.initrd.kernelModules = [ "amdgpu" ];
   renderDevice = "/dev/dri/by-path/pci-0000:13:00.0-card";
+
+  # Le compositeur reste sur l'iGPU Raphael (13:00.0, cf. renderDevice) ; les
+  # applications lourdes ciblent la RX 7600 XT (03:00.0) via DRI_PRIME.
+  dgpu = {
+    vendor = "amd";
+    driPrime = "pci-0000_03_00_0";
+  };
   hardware.graphics = {
     enable = true;
     extraPackages = with pkgs; [

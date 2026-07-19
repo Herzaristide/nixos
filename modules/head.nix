@@ -57,9 +57,6 @@
     variant = "";
   };
 
-  # Printing
-  services.printing.enable = true;
-
   # OpenRGB — contrôle RGB. Le `motherboard` (chemin SMBus à charger) et les
   # règles d'application de l'accent restent par hôte : les périphériques
   # diffèrent (cf. hosts/gary pour RAM + ventilateurs).

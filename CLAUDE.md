@@ -39,7 +39,6 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `nixpkgs` — nixos-unstable channel
 - `home-manager` — user environment, integrated as NixOS module
 - `nixos-wsl` — WSL2 support (exupery only)
-- `musnix` — low-latency audio (RT-friendly kernel tweaks, ALSA seq)
 - `quickshell` — Wayland shell / bar runtime (replaces Waybar/DMS)
 - `karenine` — the Quickshell interface (QML layout) **and** the `anna` engine (Rust: accent/palette theming + hardware stats). `github:Herzaristide/karenine`
 - `explorer` — custom file manager (`github:Herzaristide/Explorer`)
@@ -50,12 +49,12 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `common.nix` — defines `head` / `primaryMonitor` / `darkMode` options; locale/keyboard FR; user `aristide` (immutable, hashed pwd); docker; ollama; wires home-manager into the system
 - `network.nix` — NetworkManager + SSH (**key-only**: `PasswordAuthentication = false`, `PermitRootLogin = "no"`, `MaxAuthTries = 3`) + firewall (no ports opened by default — a host opts in explicitly if it needs one; port 22 is opened automatically by `services.openssh.openFirewall` only where SSH is enabled). gary and zola both set `services.openssh.enable = lib.mkForce false`, so kafka is the only host reachable over SSH.
 - `power.nix` — UPower, logind suspend rules, USB wakeup
-- `security.nix` — kernel sysctl hardening (kptr_restrict, dmesg_restrict, ptrace_scope, TCP/IP anti-spoofing), AppArmor, auditd (rules currently disabled — see comment in the file for the upstream bug tracking this), fail2ban on sshd, LUKS auto-unlock via USB keyfile (`/dev/disk/by-partlabel/LUKSKEY`, 20s timeout then falls back to the passphrase prompt — note this trades some at-rest protection for convenience if the keyfile USB stick travels with the machine)
+- `security.nix` — kernel sysctl hardening (kptr_restrict, dmesg_restrict, ptrace_scope, TCP/IP anti-spoofing), AppArmor, auditd (rules re-enabled 2026-07-19 after the `auditctl -R` / `-b` regression in the 4.1.2 snapshot; revert to `enable = false` if `audit-rules-nixos.service` fails again), fail2ban on sshd, LUKS auto-unlock via USB keyfile (`/dev/disk/by-partlabel/LUKSKEY`, 20s timeout then falls back to the passphrase prompt — note this trades some at-rest protection for convenience if the keyfile USB stick travels with the machine)
 - `storage.nix` — mdadm RAID, fstrim, NTFS support, udisks2 auto-mount hardened with `noexec,nosuid,nodev`. The cross-host whitelist of external/internal mounts (`/mnt/maxtor`, `/mnt/samsung`, `/mnt/raid`) is currently commented out pending a disk changeover; only `/mnt/crucial` (uuid-pinned, `nofail`) is active
 - `greetd.nix` — login screen: greetd + regreet, reskinned (CSS + wallpaper + clock widget) to match the Quickshell palette. Replaces the old getty-autologin flow — a password prompt is now required at every boot/logout. The greeter's compositor is **Hyprland**, not `cage`: cage exposes no output configuration (no rotation, no positioning), which left gary's upside-down DP-4 rendering inverted at login. The greeter reads the same monitor list as the session (`modules/monitors.nix`) and applies the same `renderDevice` GPU pinning
 - `monitors.nix` — the monitor list (output/mode/position/scale/transform), shared verbatim between the user's Hyprland session (`home/modules/hyprland/hyprland.nix`, Lua attrsets) and the greeter's Hyprland (`modules/greetd.nix`, rendered to classic `monitor=` lines). All hosts' outputs are listed together; each host only matches its own
 - `head.nix` — GUI layer: declares the Hyprland session entry consumed by greetd, XDG portal (hyprland + kde), fonts (JetBrains Mono only), printing
-- `audio.nix` — musnix, PipeWire (ALSA/JACK/Pulse), echo-cancel module, WirePlumber rule granting chromium `rwx` audio permissions (read/write/execute, deliberately not the `m` metadata bit) so the BandLab PWA can record — the rule matches on binary name, so it applies to every chromium process (all PWAs + regular browsing share the same binary), not just BandLab
+- `audio.nix` — low-latency tweaks (`threadirqs`, ALSA seq modules, `@audio` PAM limits, plugin search paths), PipeWire (ALSA/JACK/Pulse), echo-cancel module, WirePlumber rule granting chromium `rwx` audio permissions (read/write/execute, deliberately not the `m` metadata bit) so the BandLab PWA can record — the rule matches on binary name, so it applies to every chromium process (all PWAs + regular browsing share the same binary), not just BandLab
 
 ### Home-manager config (`/home/`)
 
@@ -95,7 +94,7 @@ QuickShell is the Wayland shell (bottom bar + side panel + Ollama chat + notes +
 
 The theming daemon now lives in the **`karenine`** repo as part of the unified Rust engine **`anna`** (`karenine/anna/`), exposed as `inputs.karenine.packages.x86_64-linux.anna` and re-exported here as `packages.x86_64-linux.anna`. It replaces the former local `accent-daemon` (binaries `paletted` + `palette`).
 
-- Single binary `anna` dispatching on its first argument: `anna` (daemon), `anna init` (one-shot render), `anna set "#rrggbb"` / `anna mode` / `anna palette-color` / `anna get` / `anna watch` (CLI client), `anna msi-rgb-watch` (MSI keyboard mirror)
+- Single binary `anna` dispatching on its first argument: `anna` (daemon), `anna init` (one-shot render), `anna set "#rrggbb"` / `anna mode` / `anna palette-color` / `anna get` / `anna watch` (CLI client)
 - Runtime socket: `$XDG_RUNTIME_DIR/anna.sock`. State/fragments stay under `~/.config/accent/` (accent.hex, mode.txt, state.json, fragments/) — this path is still referenced by many app configs and gary's OpenRGB service
 - Templates ship inside the anna package (`$out/share/anna/templates/`) and are installed read-only under `~/.config/accent/templates/`; rendered fragments land under `~/.config/accent/fragments/`
 - Apps that support color includes (Hyprland, Alacritty, …) source the fragment directly from their declarative Nix config
@@ -162,9 +161,9 @@ LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — wri
 - Special workspace `gemini` (scratchpad) auto-launches `gemini-pwa` via `on_created_empty`
 - On zola, `hypr-closed-lid-layout` shell script moves workspaces 1-5 to `HDMI-A-1` and disables `eDP-1` when the lid is closed and the external monitor is present
 
-## Audio (musnix + PipeWire)
+## Audio (PipeWire)
 
-- musnix with `alsaSeq.enable = true` (MIDI); `kernel.realtime = false` (RT kernel disabled by default, flip for ultra-low latency)
+- **No RT kernel, and no musnix** (removed 2026-07-19). The proprietary NVIDIA driver refuses to build against `CONFIG_PREEMPT_RT` (needs `IGNORE_PREEMPT_RT_PRESENCE=1`, unsupported upstream), which rules it out on zola; and PipeWire + rtkit + `threadirqs` already give 3-6 ms at a 128-256 frame buffer, well under the perception threshold for this (non-professional) usage. musnix also forced `powerManagement.cpuFreqGovernor = "performance"` **without `mkDefault`**, silently overriding zola's `powersave`. What it actually contributed is now inlined in `audio.nix`: `threadirqs`, `snd-seq`/`snd-rawmidi` (MIDI), `vm.swappiness = 10`, `@audio` PAM limits (rtprio/memlock), udev rules for `rtc0`/`hpet`/`cpu_dma_latency`, and the LV2/VST3/CLAP plugin search paths. If clicks ever appear, raise the buffer size first — an RT kernel is for cases where a dropout has an external consequence (live performance, motion control), not for home practice.
 - PipeWire with ALSA + Pulse + **JACK** support (for pro audio apps)
 - Echo cancellation module loaded (webrtc-aec) — exposes `echo-cancel-source` / `echo-cancel-sink` virtual nodes. Originally added to fix the voice-assistant feedback loop where piper TTS was being transcribed back by whisper.
 - WirePlumber rule: chromium gets `default_permissions = "rwx"` (not `"all"`/`"rwxm"` — the `m` metadata bit is withheld) so the BandLab PWA can record audio

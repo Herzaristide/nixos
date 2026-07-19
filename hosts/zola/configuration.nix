@@ -22,6 +22,7 @@
     ../../modules/security.nix
     # ../../modules/android.nix  # test : déplacement vers un devShell par projet
     ../../modules/impermanence.nix
+    ../../modules/print.nix
   ];
 
   # --- Battery / CPU power management (laptop, Intel) ---
@@ -80,12 +81,12 @@
   # Head configuration
   head = true;
 
-  # MSI laptop RGB keyboard (SteelSeries KLC 1038:113a) — kernel doesn't
-  # configure this controller, so udev/boot/resume scripts re-apply the color.
-  msiKeyboard.enable = true;
-
   # Primary monitor: built-in screen (laptop)
   primaryMonitor = "eDP-1";
+
+  # PRIME offload : l'iGPU Intel reste le GPU par défaut, les applications
+  # lourdes (Blender) basculent sur la NVIDIA via les variables __NV_*.
+  dgpu.vendor = "nvidia";
 
   # Bootloader (systemd-boot for UEFI; GRUB disabled)
   boot.loader.grub.enable = false;

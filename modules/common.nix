@@ -11,7 +11,6 @@
   # Hardware autodetection helper (was duplicated in every hardware-configuration.nix)
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
-    ./msi-keyboard.nix
   ];
 
   # Option for head (GUI) configuration
@@ -47,6 +46,27 @@
     type = lib.types.nullOr lib.types.str;
     default = null;
     description = "by-path of the DRM card to pin the Wayland compositor to (AQ_DRM_DEVICES).";
+  };
+
+  # GPU discret de l'hôte, utilisé par les applications qui doivent y être
+  # épinglées (Blender, cf. home/modules/blender.nix) alors que le compositeur
+  # tourne ailleurs (cf. renderDevice). null = pas de GPU discret.
+  options.dgpu = {
+    vendor = lib.mkOption {
+      type = lib.types.nullOr (
+        lib.types.enum [
+          "nvidia"
+          "amd"
+        ]
+      );
+      default = null;
+      description = "Vendeur du GPU discret (sélectionne le mécanisme d'offload).";
+    };
+    driPrime = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Valeur DRI_PRIME du GPU discret (Mesa/AMD), ex. \"pci-0000_03_00_0\".";
+    };
   };
 
   config = {
@@ -198,9 +218,8 @@
         head = config.head;
         darkMode = config.darkMode;
         primaryMonitor = config.primaryMonitor;
+        dgpu = config.dgpu;
         anna = inputs.karenine.packages.${pkgs.stdenv.hostPlatform.system}.anna;
-        msiKeyboardEnabled = config.msiKeyboard.enable;
-        msiRgbSet = pkgs.callPackage ../msi-rgb { };
       };
       users.aristide = import ../home/home.nix;
     };

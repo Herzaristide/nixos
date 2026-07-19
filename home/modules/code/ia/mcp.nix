@@ -57,6 +57,14 @@
         type = "http";
         headers.Authorization = "Bearer {env:TAVILY_API_KEY}";
       };
+      # Pilotage de Blender : le serveur parle à l'add-on BlenderMCP (socket
+      # 9876, déposé par home/modules/blender.nix) — Blender doit tourner et
+      # l'add-on être connecté pour que les outils répondent.
+      blender = {
+        command = "${pkgs.uv}/bin/uvx";
+        args = [ "blender-mcp" ];
+        type = "stdio";
+      };
       penpot = {
         url = "http://localhost:4401/mcp";
         type = "http";

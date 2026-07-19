@@ -17,7 +17,7 @@ links: [architecture, build, filesystem, packages]
 | `nixpkgs` | `nixos-unstable` | Canal principal des paquets. |
 | `home-manager` | nix-community | Environnement utilisateur, intégré comme module NixOS. |
 | `nixos-wsl` | nix-community | Support WSL2 (hôte [exupery](#exupery)). |
-| `musnix` | musnix | Réglages audio basse latence (voir [Audio](#audio)). |
+
 | `quickshell` | git.outfoxxed.me | Shell Wayland (voir [Quickshell](#quickshell)). |
 | `karenine` | `github:Herzaristide/karenine` | Projet personnel intégré. |
 | `disko` | nix-community | Partitionnement déclaratif (voir [Système de fichiers](#filesystem)). |

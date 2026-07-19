@@ -11,10 +11,6 @@
       url = "github:nix-community/NixOS-WSL";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    musnix = {
-      url = "github:musnix/musnix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     quickshell = {
       url = "git+https://git.outfoxxed.me/quickshell/quickshell";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -89,7 +85,7 @@
           modules = [
             { nixpkgs.hostPlatform = system; }
             inputs.disko.nixosModules.disko
-            ./modules/disko.nix
+            ./hosts/zola/disko.nix
             ./hosts/zola/configuration.nix
           ];
           specialArgs = { inherit inputs; };
@@ -99,7 +95,7 @@
           modules = [
             { nixpkgs.hostPlatform = system; }
             inputs.disko.nixosModules.disko
-            ./modules/disko.nix
+            ./hosts/gary/disko.nix
             ./hosts/gary/configuration.nix
           ];
           specialArgs = { inherit inputs; };
@@ -117,8 +113,6 @@
           modules = [
             { nixpkgs.hostPlatform = system; }
             inputs.disko.nixosModules.disko
-            # Disko dédié : ESP sur clé USB (relais de boot), NVMe = LUKS+btrfs.
-            # Le firmware du T3610 ne sait pas booter le NVMe.
             ./hosts/kafka/disko.nix
             ./hosts/kafka/configuration.nix
           ];

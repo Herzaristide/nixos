@@ -543,14 +543,62 @@
   ];
 
   # ── micro (éditeur en terminal) ──────────────────────────────────────────
+  # Couche Alt alignée sur celle de Zed ci-dessus (alt-a commenter, alt-q
+  # fermer, alt-f rechercher, alt-o ouvrir…). Ces entrées *ajoutent* une couche
+  # par-dessus les raccourcis Ctrl natifs de micro, qui restent tous actifs.
+  #
+  # Volontairement non réassignés — micro y a déjà des défauts Alt utiles :
+  # Alt-n/m/p/c/x (multicurseur), Alt-,/. (onglets), Alt-g (menu d'aide),
+  # Alt-b/f (mot précédent/suivant, ici Alt-f est repris pour la recherche),
+  # Alt-↑/↓ (déplacer la ligne).
   micro = [
     {
-      key = "CtrlE";
+      key = "Alt-q";
+      action = "Quit";
+      desc = "Quitter";
+    }
+    {
+      key = "Alt-a";
       action = "lua:comment.comment";
       desc = "Commenter (plugin comment)";
     }
     {
       key = "Alt-f";
+      action = "Find";
+      desc = "Rechercher";
+    }
+    {
+      key = "Alt-s";
+      action = "Save";
+      desc = "Enregistrer";
+    }
+    {
+      key = "Alt-o";
+      action = "OpenFile";
+      desc = "Ouvrir un fichier";
+    }
+    {
+      key = "Alt-z";
+      action = "Undo";
+      desc = "Annuler";
+    }
+    {
+      key = "Alt-y";
+      action = "Redo";
+      desc = "Rétablir";
+    }
+    {
+      key = "Alt-r";
+      action = "command-edit:replace ";
+      desc = "Remplacer";
+    }
+    {
+      key = "Alt-t";
+      action = "AddTab";
+      desc = "Nouvel onglet";
+    }
+    {
+      key = "Alt-l";
       action = "command:format";
       desc = "Formater (plugin autofmt)";
     }

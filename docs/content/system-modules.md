@@ -17,7 +17,7 @@ Les modules partagés qui composent la couche **système** de tous les hôtes.
 | `power.nix` | UPower, règles de veille logind, réveil USB. |
 | `storage.nix` | RAID mdadm, fstrim, support NTFS, et la liste blanche de montages externes/internes (`/mnt/maxtor`, `/mnt/samsung`, `/mnt/raid`, tous en `nofail`). |
 | `head.nix` | Couche GUI : autologin getty (`aristide` sur tty1) → fish exécute directement Hyprland (pas de greeter), portail XDG (hyprland + kde), polices (JetBrains Mono), impression. |
-| `audio.nix` | musnix, PipeWire, module echo-cancel, règle WirePlumber (voir [Audio](#audio)). |
+| `audio.nix` | PipeWire, module echo-cancel, règle WirePlumber (voir [Audio](#audio)). |
 
 ## À retenir
 
