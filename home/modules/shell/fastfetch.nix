@@ -2,7 +2,17 @@
 
 let
   # Chemin du logo résolu à l'évaluation Nix (store path littéral).
-  logoPath = toString ../../../src/nixos_logo.txt;
+  #
+  # `builtins.path` (et pas `toString ../../../src/nixos_logo.txt`) : ce dernier
+  # pointait à l'intérieur de l'arbre source du flake, dont le hash change à
+  # chaque modification du dépôt — n'importe quel commit sans rapport faisait
+  # donc muter le chemin du logo, et avec lui les configs fastfetch générées.
+  # Ici le fichier est importé seul : son store path ne dépend que de son
+  # contenu, et reste stable tant que le logo lui-même ne change pas.
+  logoPath = builtins.path {
+    path = ../../../src/nixos_logo.txt;
+    name = "nixos_logo.txt";
+  };
 
   fastfetchSchema = "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json";
 

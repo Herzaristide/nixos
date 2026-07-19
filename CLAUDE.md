@@ -94,7 +94,7 @@ QuickShell is the Wayland shell (bottom bar + side panel + Ollama chat + notes +
 
 The theming daemon now lives in the **`karenine`** repo as part of the unified Rust engine **`anna`** (`karenine/anna/`), exposed as `inputs.karenine.packages.x86_64-linux.anna` and re-exported here as `packages.x86_64-linux.anna`. It replaces the former local `accent-daemon` (binaries `paletted` + `palette`).
 
-- Single binary `anna` dispatching on its first argument: `anna` (daemon), `anna init` (one-shot render), `anna set "#rrggbb"` / `anna mode` / `anna palette-color` / `anna get` / `anna watch` (CLI client)
+- Single binary `anna` dispatching on its first argument: `anna` (daemon), `anna init` (one-shot render), `anna set "#rrggbb"` / `anna mode` / `anna palette-color` / `anna get` / `anna watch` (CLI client). (`anna msi-rgb-watch` existe toujours en amont mais n'est plus câblé ici — la rétro-ingénierie du clavier MSI vit dans le projet `gpoc`, `~/ghub/gpoc`.)
 - Runtime socket: `$XDG_RUNTIME_DIR/anna.sock`. State/fragments stay under `~/.config/accent/` (accent.hex, mode.txt, state.json, fragments/) — this path is still referenced by many app configs and gary's OpenRGB service
 - Templates ship inside the anna package (`$out/share/anna/templates/`) and are installed read-only under `~/.config/accent/templates/`; rendered fragments land under `~/.config/accent/fragments/`
 - Apps that support color includes (Hyprland, Alacritty, …) source the fragment directly from their declarative Nix config
