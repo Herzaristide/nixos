@@ -1,4 +1,4 @@
-{ pkgs, osConfig, ... }:
+{ pkgs, ... }:
 
 let
   prism = pkgs.prismlauncher.override {
@@ -9,26 +9,9 @@ let
       jdk25
     ];
   };
-
-  dgpuPciId = "pci-0000_03_00_0";
-
-  useDgpu = (osConfig.networking.hostName or "") == "gary";
 in
 {
-  home.packages = [
-    (
-      if !useDgpu then
-        prism
-      else
-        pkgs.symlinkJoin {
-          name = "prismlauncher-dgpu";
-          paths = [ prism ];
-          nativeBuildInputs = [ pkgs.makeWrapper ];
-          postBuild = ''
-            wrapProgram $out/bin/prismlauncher \
-              --set DRI_PRIME ${dgpuPciId}
-          '';
-        }
-    )
-  ];
+  # Pas d'épinglage sur le GPU discret : PrismLauncher a sa propre case
+  # « Use discrete GPU », par instance.
+  home.packages = [ prism ];
 }

@@ -1,13 +1,18 @@
 {
   pkgs,
-  inputs,
-  config,
+  lib,
   ...
 }:
 
 {
   # MCP (Model Context Protocol) servers — writes ~/.config/mcp/mcp.json
   # Consumed by Claude Code (via enableMcpIntegration).
+  #
+  # Les serveurs stdio packagés dans nixpkgs sont lancés depuis le store, pas
+  # via `npx`/`uvx` : ces derniers résolvent et téléchargent le paquet à chaque
+  # démarrage du serveur, donc du code non épinglé, hors flake.lock, exécuté
+  # avec tous les droits de l'utilisateur. Le passage au store fige la version
+  # dans le lock et supprime tout accès réseau à l'exécution.
   programs.mcp = {
     enable = true;
     servers = {
@@ -21,8 +26,7 @@
         type = "http";
       };
       playwright = {
-        command = "${pkgs.nodejs_22}/bin/npx";
-        args = [ "@playwright/mcp@latest" ];
+        command = lib.getExe pkgs.playwright-mcp;
         type = "stdio";
       };
       linear = {
@@ -33,21 +37,22 @@
         url = "https://mcp.figma.com/mcp";
         type = "http";
       };
+      # Périmètre limité aux dossiers de travail, et surtout PAS à /home/aristide
+      # entier : la racine du home donne accès à ~/.ssh, ~/.aws et
+      # ~/.config/rclone, tous persistés par impermanence. Leur mode 0700 ne
+      # protège de rien face à un process tournant sous le même uid.
+      # Ajouter un dossier ici est une décision explicite (~/gdrive, ~/musique…).
       filesystem = {
-        command = "${pkgs.nodejs_22}/bin/npx";
+        command = lib.getExe pkgs.mcp-server-filesystem;
         args = [
-          "-y"
-          "@modelcontextprotocol/server-filesystem"
-          "/home/aristide"
+          "/home/aristide/ghub"
+          "/home/aristide/gpoc"
+          "/home/aristide/glab"
         ];
         type = "stdio";
       };
       sequential-thinking = {
-        command = "${pkgs.nodejs_22}/bin/npx";
-        args = [
-          "-y"
-          "@modelcontextprotocol/server-sequential-thinking"
-        ];
+        command = lib.getExe pkgs.mcp-server-sequential-thinking;
         type = "stdio";
       };
       # Remote hébergé Tavily : clé passée en header Authorization, résolue au
@@ -60,6 +65,10 @@
       # Pilotage de Blender : le serveur parle à l'add-on BlenderMCP (socket
       # 9876, déposé par home/modules/blender.nix) — Blender doit tourner et
       # l'add-on être connecté pour que les outils répondent.
+      # Seul serveur stdio encore lancé par un résolveur externe : blender-mcp
+      # n'est pas packagé dans nixpkgs. `uvx` le télécharge donc à chaque
+      # démarrage, sans épinglage — à figer sur une version exacte
+      # (`blender-mcp==x.y.z`) ou à packager quand l'occasion se présente.
       blender = {
         command = "${pkgs.uv}/bin/uvx";
         args = [ "blender-mcp" ];

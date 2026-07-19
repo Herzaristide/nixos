@@ -68,9 +68,6 @@
   # Hostname
   networking.hostName = "zola";
 
-  # SSH désactivé : seul kafka (serveur local) reste accessible en SSH.
-  services.openssh.enable = lib.mkForce false;
-
   # Fermer le capot suspend réellement la machine (modules/power.nix l'ignore
   # par défaut, pertinent seulement ici — zola est le seul hôte avec un capot).
   # hypridle (home/modules/hyprland/hyprlock.nix) verrouille déjà l'écran via
@@ -83,10 +80,6 @@
 
   # Primary monitor: built-in screen (laptop)
   primaryMonitor = "eDP-1";
-
-  # PRIME offload : l'iGPU Intel reste le GPU par défaut, les applications
-  # lourdes (Blender) basculent sur la NVIDIA via les variables __NV_*.
-  dgpu.vendor = "nvidia";
 
   # Bootloader (systemd-boot for UEFI; GRUB disabled)
   boot.loader.grub.enable = false;
@@ -125,6 +118,19 @@
   # NVIDIA proprietary drivers
   nixpkgs.config = {
     nvidia.acceptLicense = true;
+
+    # Hôte à GPU NVIDIA : backend CUDA partout où un paquet le propose, pendant
+    # exact du `rocmSupport` de gary. Sert de valeur par défaut au paramètre
+    # `cudaSupport` des dérivations qui l'honorent (~125 dans nixpkgs) — c'est
+    # aussi ce qui donne à `services.ollama.package` (common.nix) son
+    # accélération, via le repli `acceleration = null` de la dérivation ollama.
+    #
+    # Contrepartie mesurée, plus lourde que sur gary : ~29 dérivations compilées
+    # localement (blender, opencv, obs-studio, openusd, openimagedenoise…), que
+    # cuda-maintainers.cachix.org ne couvre pas. Elles repartent en compilation
+    # à chaque `nix flake update`. Vérifier avant un rebuild :
+    #   nixos-rebuild dry-build --flake .#zola
+    cudaSupport = true;
   };
 
   hardware = {
@@ -189,13 +195,18 @@
     ];
   };
 
-  # Ollama GPU acceleration — Prime Offload mode requires explicit NVIDIA env vars
-  # Without these, the ollama systemd service runs on the Intel iGPU by default.
-  services.ollama.package = pkgs.ollama-cuda;
+  # PRIME offload : sans ces variables le service ollama tourne sur l'iGPU
+  # Intel, qui reste le GPU par défaut. Ce sont exactement celles qu'exporte le
+  # wrapper `nvidia-offload` de nixpkgs (nixos/modules/hardware/video/nvidia.nix)
+  # — noter le casse mixte de `__VK_LAYER_NV_optimus`, seule graphie reconnue
+  # par le driver.
+  #
+  # Le paquet, lui, vient de common.nix : le `cudaSupport` ci-dessus suffit à
+  # lui donner l'accélération CUDA, plus besoin de l'épingler ici.
   services.ollama.environmentVariables = {
     __NV_PRIME_RENDER_OFFLOAD = "1";
     __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    __VK_LAYER_NV_OPTIMUS = "NVIDIA_only";
+    __VK_LAYER_NV_optimus = "NVIDIA_only";
   };
 }

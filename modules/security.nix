@@ -19,10 +19,41 @@
     "net.ipv4.conf.all.log_martians" = 1;
   };
 
-  security.apparmor = {
-    enable = true;
-    killUnconfinedConfinables = false;
-  };
+  # AppArmor retiré (2026-07-19) : il ne confinait rien ici. Les profils
+  # upstream (pkgs.apparmor-profiles, chargés par défaut par le module NixOS)
+  # s'attachent à des chemins /usr/bin et /usr/lib — inexistants sur NixOS, où
+  # les binaires vivent dans /nix/store. Vérifié sur gary : 0 des 202 profils
+  # chargés référençait le store, donc aucun processus n'était confiné, et 76
+  # d'entre eux sont de toute façon des stubs `flags=(unconfined)` (le profil
+  # `chromium` en fait partie : il sert à *réaccorder* `userns` sous le
+  # durcissement Ubuntu, pas à restreindre).
+  #
+  # Rien d'autre n'en dépendait : aucune unité systemd n'utilise
+  # `AppArmorProfile=`, et Docker tourne en rootless (`Security Options:
+  # seccomp` seul — le démon non-root ne peut pas charger `docker-default`,
+  # apparmor_parser exigeant root).
+  #
+  # Le confinement effectif vient donc d'ailleurs : sandbox propre de Chromium
+  # (user namespaces + seccomp-bpf), seccomp pour les conteneurs, et les LSM
+  # restants dans `lsm=` — dont yama, qui porte le ptrace_scope ci-dessus.
+  #
+  # Pour le rétablir un jour, il faudra des profils écrits à la main avec les
+  # chemins du store interpolés depuis Nix (security.apparmor.policies), et un
+  # reboot : `enable` remet `apparmor` dans la ligne de commande du noyau.
+
+  # Seuls les membres de `wheel` peuvent exécuter le binaire setuid `sudo`
+  # (permissions 4750 root:wheel au lieu de 4755). Un compte de service
+  # compromis ne peut même plus l'invoquer pour tenter une escalade.
+  # Sans effet sur l'usage : `aristide` est le seul utilisateur humain, et il
+  # est dans wheel (cf. modules/common.nix).
+  security.sudo.execWheelOnly = true;
+
+  # Interdit le remplacement à chaud de l'image du noyau (kexec_load) : sans ça,
+  # root peut démarrer un noyau arbitraire sans repasser par le bootloader, ce
+  # qui contourne `systemd-boot.editor = false` ci-dessous.
+  # Contrepartie : désactive aussi l'hibernation. Sans conséquence ici — zola,
+  # seul hôte à capot, fait `HandleLidSwitch = "suspend"` et non "hibernate".
+  security.protectKernelImage = true;
 
   # --- auditd: trace privilege escalations and config changes ---
   security.auditd.enable = true;

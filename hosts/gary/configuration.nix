@@ -22,14 +22,11 @@
     ../../modules/security.nix
     # ../../modules/android.nix  # test : déplacement vers un devShell par projet
     ../../modules/impermanence.nix
-    ../../modules/print.nix # CUPS + avahi (découverte réseau) + GUI d'ajout d'imprimante
+    ../../modules/print.nix
   ];
 
   # Hostname
   networking.hostName = "gary";
-
-  # SSH désactivé : seul kafka (serveur local) reste accessible en SSH.
-  services.openssh.enable = lib.mkForce false;
 
   # Enable GUI (Hyprland/DMS)
   head = true;
@@ -48,13 +45,8 @@
   services.xserver.videoDrivers = [ "amdgpu" ];
   boot.initrd.kernelModules = [ "amdgpu" ];
   renderDevice = "/dev/dri/by-path/pci-0000:13:00.0-card";
+  nixpkgs.config.rocmSupport = true;
 
-  # Le compositeur reste sur l'iGPU Raphael (13:00.0, cf. renderDevice) ; les
-  # applications lourdes ciblent la RX 7600 XT (03:00.0) via DRI_PRIME.
-  dgpu = {
-    vendor = "amd";
-    driPrime = "pci-0000_03_00_0";
-  };
   hardware.graphics = {
     enable = true;
     extraPackages = with pkgs; [
@@ -71,15 +63,10 @@
     zenmonitor
   ];
 
-  # /opt/rocm symlink — PyTorch/TensorFlow look for ROCm here by default
-  systemd.tmpfiles.rules = [
-    "L+    /opt/rocm   -    -    -     -    ${pkgs.rocmPackages.clr}"
-  ];
-
-  # ROCM_PATH — points ML frameworks to the ROCm installation
-  environment.variables.ROCM_PATH = "${pkgs.rocmPackages.clr}";
-
-  services.ollama.package = pkgs.ollama-rocm;
+  # Vérité matérielle de la machine, pas une préférence de projet : la RX 7600 XT
+  # est gfx1102, mais rocBLAS ne livre ses kernels Tensile que pour gfx1100.
+  # ROCM_PATH et /opt/rocm, eux, ont été retirés — c'est aux devShells des
+  # projets pip/Docker de déclarer où ils trouvent ROCm.
   environment.variables.HSA_OVERRIDE_GFX_VERSION = "11.0.0";
 
   services.ollama.environmentVariables = {
@@ -91,42 +78,5 @@
   boot.kernelParams = [ "acpi_enforce_resources=lax" ];
   # enable vient de modules/head.nix ; seul le chemin SMBus est spécifique.
   services.hardware.openrgb.motherboard = "amd"; # loads the AMD SMBus (i2c-piix4) path
-
-  systemd.services.openrgb-accent = {
-    description = "Apply the accent colour to the OpenRGB RAM + case fans";
-    after = [ "openrgb.service" ];
-    wants = [ "openrgb.service" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = pkgs.writeShellScript "openrgb-accent" ''
-        set -u
-        hexfile=/home/aristide/.config/accent/accent.hex
-        [ -r "$hexfile" ] || { echo "openrgb-accent: no accent.hex yet, skipping" >&2; exit 0; }
-        hex=$(${pkgs.coreutils}/bin/tr -d '#[:space:]' < "$hexfile")
-        case "$hex" in
-          [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]) ;;
-          *) echo "openrgb-accent: invalid accent '$hex', skipping" >&2; exit 0 ;;
-        esac
-        # The server may not have finished device detection right after start.
-        for _ in 1 2 3 4 5; do
-          if ${config.services.hardware.openrgb.package}/bin/openrgb \
-               -d "Corsair Dominator Platinum" -m direct -c "$hex" \
-               -d "B650 GAMING X AX V2" -z 1 -sz 30 -m static -c "$hex"; then
-            exit 0
-          fi
-          ${pkgs.coreutils}/bin/sleep 2
-        done
-        echo "openrgb-accent: apply failed after retries" >&2
-        exit 0
-      '';
-    };
-  };
-
-  systemd.paths.openrgb-accent = {
-    description = "Re-apply the OpenRGB RGB colour when the accent changes";
-    pathConfig.PathModified = "/home/aristide/.config/accent/accent.hex";
-    wantedBy = [ "multi-user.target" ];
-  };
 
 }

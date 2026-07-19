@@ -1,7 +1,5 @@
 {
-  config,
   pkgs,
-  lib,
   inputs,
   primaryMonitor ? "HDMI-A-1",
   ...

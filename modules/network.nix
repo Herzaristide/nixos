@@ -45,8 +45,15 @@
     ];
   };
 
-  systemd.services.wake-on-lan = {
-    description = "Enable Wake-on-LAN on all wired interfaces";
+  # Wake-on-LAN désactivé explicitement sur toutes les interfaces filaires.
+  # Un magic packet n'est pas authentifié : n'importe qui sur le segment réseau
+  # peut rallumer la machine. Ne pas se contenter de retirer l'activation —
+  # le réglage `wol` vit dans le NIC et survit à un simple reboot une fois posé,
+  # donc on force `wol d` au boot pour désarmer les cartes déjà configurées.
+  # (Le firmware peut aussi l'activer de son côté : à couper dans le BIOS/UEFI
+  # pour une désactivation complète.)
+  systemd.services.disable-wake-on-lan = {
+    description = "Disable Wake-on-LAN on all wired interfaces";
     wantedBy = [ "multi-user.target" ];
     after = [ "network-pre.target" ];
     serviceConfig = {
@@ -61,7 +68,7 @@
         [ -d "$sys/wireless" ] && continue
         [ ! -e "$sys/device" ] && continue
         if ethtool "$name" 2>/dev/null | grep -q 'Supports Wake-on:.*g'; then
-          ethtool -s "$name" wol g || true
+          ethtool -s "$name" wol d || true
         fi
       done
     '';

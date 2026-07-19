@@ -35,7 +35,7 @@
   };
 
   # Persistent /dev/dri path of the DRM card the Wayland compositor should
-  # render on. When set, head.nix resolves it to its real card node at login
+  # render on. When set, greetd.nix resolves it to its real card node at login
   # and exports AQ_DRM_DEVICES before exec'ing Hyprland, so aquamarine (and
   # therefore every Wayland client, incl. Chromium) renders on that GPU.
   # Used on gary to keep the whole desktop on the iGPU and leave the discrete
@@ -46,27 +46,6 @@
     type = lib.types.nullOr lib.types.str;
     default = null;
     description = "by-path of the DRM card to pin the Wayland compositor to (AQ_DRM_DEVICES).";
-  };
-
-  # GPU discret de l'hôte, utilisé par les applications qui doivent y être
-  # épinglées (Blender, cf. home/modules/blender.nix) alors que le compositeur
-  # tourne ailleurs (cf. renderDevice). null = pas de GPU discret.
-  options.dgpu = {
-    vendor = lib.mkOption {
-      type = lib.types.nullOr (
-        lib.types.enum [
-          "nvidia"
-          "amd"
-        ]
-      );
-      default = null;
-      description = "Vendeur du GPU discret (sélectionne le mécanisme d'offload).";
-    };
-    driPrime = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = "Valeur DRI_PRIME du GPU discret (Mesa/AMD), ex. \"pci-0000_03_00_0\".";
-    };
   };
 
   config = {
@@ -177,23 +156,6 @@
       ];
     };
 
-    # Allow aristide to query disk temperatures and RAM info without password (read-only, safe)
-    security.sudo.extraRules = [
-      {
-        users = [ "aristide" ];
-        commands = [
-          {
-            command = "${pkgs.smartmontools}/bin/smartctl";
-            options = [ "NOPASSWD" ];
-          }
-          {
-            command = "${pkgs.dmidecode}/bin/dmidecode";
-            options = [ "NOPASSWD" ];
-          }
-        ];
-      }
-    ];
-
     # Docker rootless : le démon tourne par utilisateur (pas en root), donc
     # appartenir à un groupe "docker" n'équivaudrait plus à un accès root sur
     # l'hôte — d'où l'absence volontaire de ce groupe dans extraGroups ci-dessus.
@@ -207,6 +169,7 @@
     services.ollama = {
       enable = true;
       host = "127.0.0.1";
+      package = pkgs.ollama;
     };
 
     # Home Manager
@@ -218,7 +181,6 @@
         head = config.head;
         darkMode = config.darkMode;
         primaryMonitor = config.primaryMonitor;
-        dgpu = config.dgpu;
         anna = inputs.karenine.packages.${pkgs.stdenv.hostPlatform.system}.anna;
       };
       users.aristide = import ../home/home.nix;
