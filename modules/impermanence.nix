@@ -93,7 +93,7 @@ in
     users.aristide = {
       files = [
         ".claude.json"
-        ".npmrc"
+        #".npmrc"
         # Fichier isolé : le dossier parent contient generated_completions/,
         # régénéré par home-manager à chaque activation.
         ".local/share/fish/fish_history"

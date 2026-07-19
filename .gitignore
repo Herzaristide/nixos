@@ -1,3 +1,11 @@
 secrets/
 result
 result/
+
+# direnv — liens vers /nix/store, propres à la machine (cf. .envrc + devShell du flake)
+.direnv/
+.envrc
+
+# Python — msi-rgb/
+__pycache__/
+*.pyc
