@@ -149,12 +149,10 @@ in
     };
   };
 
-  # Voice assistant (whisper STT + piper TTS)
+  # Backends d'enregistrement micro pour la dictée vocale de Claude Code
+  # (rec/arecord), appelés au runtime par le binaire claude.
   environment.systemPackages = with pkgs; [
     sox
-    whisper-cpp
-    piper-tts
     alsa-utils
-    aubio
   ];
 }
