@@ -112,27 +112,31 @@ in
       };
       toolbar = {
         quick_actions = false;
+        # Masque le fil d'Ariane (chemin/nom du fichier) en haut de l'éditeur.
+        breadcrumbs = false;
       };
       status_bar = {
         "experimental.show" = false;
       };
 
-      # Terminal ancré sous l'éditeur, hauteur par défaut augmentée (défaut ~320).
+      # Terminal ancré dans le dock de gauche (l'éditeur au centre, arborescence
+      # et git à droite). Sur un dock latéral c'est `default_width` qui compte
+      # (default_height ne s'applique qu'au dock du bas).
       terminal = {
-        dock = "bottom";
-        default_height = 480;
+        dock = "left";
+        default_width = 640;
       };
-      # Le dock du bas (terminal) traverse toute la largeur de la fenêtre,
-      # par-dessus les docks gauche/droit (au lieu d'être coincé entre l'éditeur
-      # et le project_panel/git_panel). Contrepartie : quand le terminal est
-      # ouvert, les docks latéraux perdent un peu de hauteur.
-      # Valeurs : contained | full | left_aligned | right_aligned.
-      bottom_dock_layout = "full";
-      # Un panneau (dont le terminal) se referme quand on re-déclenche son
-      # ToggleFocus alors qu'il a déjà le focus → Alt+T ouvre/ferme le terminal.
-      close_panel_on_toggle = true;
+      # `false` (défaut Zed) : re-déclencher le ToggleFocus d'un panneau déjà
+      # focus rend le focus à l'éditeur SANS fermer le dock. Indispensable au
+      # flux « tout est du focus » : le dock droit (arborescence + git, deux
+      # onglets) reste toujours ouvert, et Alt+E / Alt+G ne font que déplacer le
+      # focus entre l'éditeur et l'onglet voulu — jamais fermer. Avec `true`,
+      # passer de git à l'arborescence via Alt+E fermait le dock (Zed voyant le
+      # dock « déjà focus ») au lieu de basculer d'onglet.
+      close_panel_on_toggle = false;
 
-      # Panneau git à droite (il cohabite dans le dock droit avec project_panel).
+      # Panneau git à droite (il cohabite dans le dock droit avec project_panel,
+      # comme deux onglets d'un même dock).
       git_panel = {
         dock = "right";
       };
@@ -184,6 +188,10 @@ in
         enabled = false;
       };
 
+      # Retour à la ligne activé par défaut, calé sur la largeur de l'éditeur.
+      # (alt-z bascule toujours ce comportement au cas par cas — voir shortcuts.nix.)
+      soft_wrap = "editor_width";
+
       multi_cursor_modifier = "cmd_or_ctrl";
       cursor_shape = "bar";
       cursor_blink = false;
@@ -227,12 +235,12 @@ in
         restore_unsaved_buffers = false;
       };
       trust_all_worktrees = true;
-      # git = {
-      #   git_gutter = "hide";
-      #   inline_blame = {
-      #     enabled = false;
-      #   };
-      # };
+      git = {
+        git_gutter = "hide";
+        inline_blame = {
+          enabled = false;
+        };
+      };
       # centered_layout = {
       #   right_padding = 0.15;
       #   left_padding = 0.15;

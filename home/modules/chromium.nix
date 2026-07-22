@@ -43,7 +43,7 @@
     (writeShellScriptBin "gemini-pwa" "chromium --app=https://gemini.google.com --user-data-dir=$HOME/.config/chromium")
     (writeShellScriptBin "claude-pwa" "chromium --app=https://claude.ai --user-data-dir=$HOME/.config/chromium")
     (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium")
-    (writeShellScriptBin "ytmusic-pwa" "chromium --app=https://music.youtube.com --user-data-dir=$HOME/.config/chromium")
+    (writeShellScriptBin "deezer-pwa" "chromium --app=https://www.deezer.com --user-data-dir=$HOME/.config/chromium")
   ];
 
   xdg.desktopEntries.claude-chrome = {
@@ -68,12 +68,12 @@
     startupNotify = true;
   };
 
-  # YouTube Music PWA
-  xdg.desktopEntries.ytmusic-chrome = {
-    name = "YouTube Music";
-    comment = "YouTube Music in a Chromium PWA";
-    exec = "ytmusic-pwa";
-    icon = "youtube-music";
+  # Deezer PWA
+  xdg.desktopEntries.deezer-chrome = {
+    name = "Deezer";
+    comment = "Deezer music streaming in a Chromium PWA";
+    exec = "deezer-pwa";
+    icon = "deezer";
     categories = [
       "Audio"
       "AudioVideo"

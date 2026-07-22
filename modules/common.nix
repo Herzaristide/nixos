@@ -172,6 +172,12 @@
       package = lib.mkDefault pkgs.ollama; # zola surcharge par ollama-cuda
     };
 
+    # Périphériques Logitech sans fil (clavier MX Keys Mini via récepteur Logi Bolt) :
+    # installe Solaar + les règles udev qui donnent l'accès aux /dev/hidraw du récepteur
+    # (sinon 0600 root → « No supported device found ». La batterie remonte alors sans sudo.
+    hardware.logitech.wireless.enable = true;
+    hardware.logitech.wireless.enableGraphical = true; # applet/GUI Solaar
+
     # Home Manager
     home-manager = {
       useUserPackages = true; # Install HM packages to /etc/profiles/per-user/$USER

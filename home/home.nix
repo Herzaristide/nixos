@@ -19,6 +19,7 @@ let
     ./modules/quickshell.nix
     ./modules/hyprland/tofi.nix
     ./modules/teams.nix
+    ./modules/discord.nix
     ./modules/obs.nix
     ./modules/onlyoffice.nix
     ./modules/penpot.nix

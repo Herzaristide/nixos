@@ -32,9 +32,9 @@
       desc = "Ouvrir Dolphin (fichiers)";
     }
     {
-      keys = "SUPER + Y";
-      lua = ''hl.dsp.exec_cmd("ytmusic-pwa")'';
-      desc = "Ouvrir YouTube Music";
+      keys = "SUPER + D";
+      lua = ''hl.dsp.exec_cmd("deezer-pwa")'';
+      desc = "Ouvrir Deezer";
     }
     {
       keys = "SUPER + space";
@@ -92,6 +92,27 @@
       keys = "SUPER + down";
       lua = ''hl.dsp.focus({ direction = "down" })'';
       desc = "Focus fenêtre bas";
+    }
+
+    {
+      keys = "SUPER + SHIFT + left";
+      lua = ''hl.dsp.window.move({ direction = "left" })'';
+      desc = "Déplacer fenêtre à gauche";
+    }
+    {
+      keys = "SUPER + SHIFT + right";
+      lua = ''hl.dsp.window.move({ direction = "right" })'';
+      desc = "Déplacer fenêtre à droite";
+    }
+    {
+      keys = "SUPER + SHIFT + up";
+      lua = ''hl.dsp.window.move({ direction = "up" })'';
+      desc = "Déplacer fenêtre en haut";
+    }
+    {
+      keys = "SUPER + SHIFT + down";
+      lua = ''hl.dsp.window.move({ direction = "down" })'';
+      desc = "Déplacer fenêtre en bas";
     }
     {
       keys = "SUPER + bracketleft";
@@ -300,7 +321,7 @@
   zed = [
     {
       context = "Editor";
-      key = "alt-a";
+      key = "alt-c";
       action = "editor::ToggleComments";
       desc = "Commenter/décommenter";
     }
@@ -312,7 +333,7 @@
     }
     {
       context = "Editor";
-      key = "alt-r";
+      key = "alt-g";
       action = "git_panel::ToggleFocus";
       desc = "Basculer le panneau git";
     }
@@ -336,9 +357,9 @@
     }
     {
       context = "Editor";
-      key = "alt-e";
+      key = "alt-a";
       action = "project_panel::ToggleFocus";
-      desc = "Focus panneau de droite (arborescence)";
+      desc = "Focus arborescence de fichiers";
     }
     {
       context = "Editor";
@@ -443,11 +464,24 @@
       action = "file_finder::Toggle";
       desc = "Sélecteur de fichiers";
     }
+    # Contexte Workspace = actif partout (éditeur, panneaux, terminal). Indispensable
+    # pour pouvoir focus l'arborescence même quand on est DANS le panneau git : là,
+    # le contexte "Editor" ne s'applique pas, seul "Workspace" est présent dans la
+    # pile. Sans ce binding, Alt+A ne répondrait plus une fois dans le git panel.
     {
       context = "Workspace";
-      key = "alt-c";
+      key = "alt-a";
       action = "project_panel::ToggleFocus";
       desc = "Focus arborescence de fichiers";
+    }
+    # Alt+E = focus l'éditeur, depuis n'importe quel panneau (git, terminal…).
+    # ActivateLastPane réactive le dernier pane d'édition utilisé. Placé en
+    # Workspace pour couvrir les contextes sans binding alt-e propre (ex. GitPanel).
+    {
+      context = "Workspace";
+      key = "alt-e";
+      action = "workspace::ActivateLastPane";
+      desc = "Focus éditeur";
     }
     {
       context = "Workspace";
@@ -457,7 +491,7 @@
     }
     {
       context = "Workspace";
-      key = "alt-r";
+      key = "alt-g";
       action = "git_panel::ToggleFocus";
       desc = "Basculer le panneau git";
     }
