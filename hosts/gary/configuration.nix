@@ -14,6 +14,7 @@
     ../../modules/kernel.nix
     ../../modules/network.nix
     ../../modules/power.nix
+    ../../modules/zram.nix
     ../../modules/storage.nix
     ../../modules/head.nix
     ../../modules/greetd.nix

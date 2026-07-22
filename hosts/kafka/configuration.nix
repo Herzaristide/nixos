@@ -13,6 +13,7 @@
     ../../modules/kernel.nix
     ../../modules/network.nix
     ../../modules/power.nix
+    ../../modules/zram.nix
     ../../modules/storage.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix
