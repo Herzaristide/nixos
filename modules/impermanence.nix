@@ -130,7 +130,6 @@ in
         ".local/share/direnv" # allow-list ; sans elle, tout devDir redemande `direnv allow`
         ".local/state/wireplumber" # volumes et routage audio par périphérique
         ".local/share/zed" # extensions + historique de l'éditeur
-        ".local/share/PrismLauncher" # instances/ = les mondes Minecraft
         ".config/penpot-desktop"
         ".local/share/onlyoffice"
 

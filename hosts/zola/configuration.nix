@@ -119,18 +119,19 @@
   nixpkgs.config = {
     nvidia.acceptLicense = true;
 
-    # Hôte à GPU NVIDIA : backend CUDA partout où un paquet le propose, pendant
-    # exact du `rocmSupport` de gary. Sert de valeur par défaut au paramètre
-    # `cudaSupport` des dérivations qui l'honorent (~125 dans nixpkgs) — c'est
-    # aussi ce qui donne à `services.ollama.package` (common.nix) son
-    # accélération, via le repli `acceleration = null` de la dérivation ollama.
+    # PAS de `cudaSupport = true` global ici. Ce flag, pendant du `rocmSupport`
+    # de gary, sert de défaut au paramètre `cudaSupport` de ~125 dérivations —
+    # mais contrairement à ROCm côté AMD (dont les binaires sont dans le cache
+    # Hydra), cuda-maintainers.cachix.org ne couvre pas ~29 de ces paquets
+    # (blender, opencv, obs-studio, openusd, openimagedenoise…) : ils repartaient
+    # en compilation locale à chaque `nix flake update`, pour des dizaines de
+    # minutes. On préfère les binaires pré-buildés du cache.
     #
-    # Contrepartie mesurée, plus lourde que sur gary : ~29 dérivations compilées
-    # localement (blender, opencv, obs-studio, openusd, openimagedenoise…), que
-    # cuda-maintainers.cachix.org ne couvre pas. Elles repartent en compilation
-    # à chaque `nix flake update`. Vérifier avant un rebuild :
-    #   nixos-rebuild dry-build --flake .#zola
-    cudaSupport = true;
+    # L'accélération CUDA d'ollama — le seul consommateur CUDA qu'on tienne à
+    # garder accéléré — est désormais assurée explicitement par
+    # `services.ollama.package = pkgs.ollama-cuda` (voir plus bas), un paquet qui
+    # active CUDA indépendamment de ce flag et qui EST fourni pré-buildé par
+    # cuda-maintainers.cachix.org.
   };
 
   hardware = {
@@ -201,8 +202,12 @@
   # — noter le casse mixte de `__VK_LAYER_NV_optimus`, seule graphie reconnue
   # par le driver.
   #
-  # Le paquet, lui, vient de common.nix : le `cudaSupport` ci-dessus suffit à
-  # lui donner l'accélération CUDA, plus besoin de l'épingler ici.
+  # Le paquet vient de common.nix (`pkgs.ollama`) ; on le remplace ici par la
+  # variante CUDA pré-buildée. Depuis le retrait du `cudaSupport` global (voir
+  # nixpkgs.config plus haut), c'est ce paquet — et non le flag — qui porte
+  # l'accélération GPU d'ollama, et il arrive tout compilé du cache
+  # cuda-maintainers.cachix.org.
+  services.ollama.package = pkgs.ollama-cuda;
   services.ollama.environmentVariables = {
     __NV_PRIME_RENDER_OFFLOAD = "1";
     __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";

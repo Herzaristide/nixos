@@ -169,7 +169,9 @@
     services.ollama = {
       enable = true;
       host = "127.0.0.1";
-      package = pkgs.ollama;
+      # mkDefault : zola surcharge par `pkgs.ollama-cuda` (accélération GPU
+      # pré-buildée) dans son configuration.nix.
+      package = lib.mkDefault pkgs.ollama;
     };
 
     # Home Manager

@@ -337,34 +337,57 @@
     {
       context = "Editor";
       key = "alt-e";
+      action = "project_panel::ToggleFocus";
+      desc = "Focus panneau de droite (arborescence)";
+    }
+    {
+      context = "Editor";
+      key = "alt-shift-e";
       action = "markdown::OpenPreview";
       desc = "Preview markdown";
     }
-    # Alt + déplacement du curseur = sélection. Remplace le déplacement de
-    # ligne Alt+↑/Alt+↓ du keymap VS Code par défaut de Zed.
+    # Ctrl + déplacement du curseur = sélection (remplace le défaut Zed où
+    # Ctrl+←/→ déplace mot par mot). Alt+↑/↓ est réservé à la navigation dans
+    # l'arborescence (voir le contexte ProjectPanel plus bas).
     {
       context = "Editor";
-      key = "alt-up";
+      key = "ctrl-up";
       action = "editor::SelectUp";
       desc = "Sélectionner vers le haut";
     }
     {
       context = "Editor";
-      key = "alt-down";
+      key = "ctrl-down";
       action = "editor::SelectDown";
       desc = "Sélectionner vers le bas";
     }
     {
       context = "Editor";
-      key = "alt-left";
+      key = "ctrl-left";
       action = "editor::SelectLeft";
       desc = "Sélectionner vers la gauche";
     }
     {
       context = "Editor";
-      key = "alt-right";
+      key = "ctrl-right";
       action = "editor::SelectRight";
       desc = "Sélectionner vers la droite";
+    }
+    # Alt+↑/↓ dans l'éditeur → focus l'arborescence (au lieu du défaut Zed
+    # editor::MoveLineUp/Down). Une fois le panneau focus, ces mêmes touches
+    # passent dans le contexte ProjectPanel et déplacent la sélection : donc
+    # la 1re pression amorce le focus, les suivantes naviguent.
+    {
+      context = "Editor";
+      key = "alt-up";
+      action = "project_panel::ToggleFocus";
+      desc = "Focus arborescence (puis navigue)";
+    }
+    {
+      context = "Editor";
+      key = "alt-down";
+      action = "project_panel::ToggleFocus";
+      desc = "Focus arborescence (puis navigue)";
     }
     {
       context = "Editor";
@@ -451,6 +474,19 @@
       key = "alt-e";
       action = "workspace::ActivateLastPane";
       desc = "Retour éditeur";
+    }
+    # Alt+Haut/Bas dans l'arborescence → naviguer dans la liste des fichiers.
+    {
+      context = "ProjectPanel";
+      key = "alt-up";
+      action = "menu::SelectPrevious";
+      desc = "Fichier précédent (arborescence)";
+    }
+    {
+      context = "ProjectPanel";
+      key = "alt-down";
+      action = "menu::SelectNext";
+      desc = "Fichier suivant (arborescence)";
     }
 
     # Alt+E / Alt+Entrée depuis le terminal → retour éditeur / fermer (symétrie).
@@ -540,6 +576,16 @@
       action = "SearchForward";
       desc = "Recherche dans le scrollback";
     }
+    # Ctrl+V = coller au prompt du shell (remplace le « quoted insert », rarement
+    # utilisé). Ctrl+C n'est PAS rebindé : il reste SIGINT (interrompre un
+    # programme). Copier au terminal = Ctrl+Shift+C, ou la sélection souris qui
+    # copie automatiquement (selection.save_to_clipboard = true).
+    {
+      key = "V";
+      mods = "Control";
+      action = "Paste";
+      desc = "Coller";
+    }
   ];
 
   # ── micro (éditeur en terminal) ──────────────────────────────────────────
@@ -601,6 +647,43 @@
       key = "Alt-l";
       action = "command:format";
       desc = "Formater (plugin autofmt)";
+    }
+    # Ctrl+flèche = sélection, comme dans Zed (ctrl-up/down/left/right →
+    # SelectUp/Down/Left/Right). Les noms de touches micro pour ctrl+flèche
+    # sont « CtrlUp/CtrlDown/CtrlLeft/CtrlRight » (sans tiret, contrairement à
+    # « Alt-x »). Le déplacement par mot reste sur Alt-b/Alt-f (défauts micro).
+    {
+      key = "CtrlUp";
+      action = "SelectUp";
+      desc = "Sélectionner vers le haut";
+    }
+    {
+      key = "CtrlDown";
+      action = "SelectDown";
+      desc = "Sélectionner vers le bas";
+    }
+    {
+      key = "CtrlLeft";
+      action = "SelectLeft";
+      desc = "Sélectionner vers la gauche";
+    }
+    {
+      key = "CtrlRight";
+      action = "SelectRight";
+      desc = "Sélectionner vers la droite";
+    }
+    # Ctrl+C / Ctrl+V = copier/coller (déjà les défauts micro, rendus explicites).
+    # micro tourne en mode brut : il reçoit Ctrl+C comme touche (copier), pas
+    # comme SIGINT — donc ça fonctionne aussi lancé dans Alacritty.
+    {
+      key = "CtrlC";
+      action = "Copy";
+      desc = "Copier";
+    }
+    {
+      key = "CtrlV";
+      action = "Paste";
+      desc = "Coller";
     }
   ];
 }

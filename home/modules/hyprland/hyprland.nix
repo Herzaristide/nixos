@@ -318,15 +318,6 @@ in
           float = true;
         }
 
-        # Minecraft : opacité pleine. `override` est obligatoire — sans lui,
-        # la valeur est multipliée par decoration.active_opacity (0.75) → reste transparent.
-        {
-          match = {
-            class = "^(Minecraft).*";
-          };
-          opacity = "1.0 override 1.0 override";
-        }
-
         # Misc dialogs
         {
           match = {
