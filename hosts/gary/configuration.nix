@@ -13,6 +13,7 @@
     ../../modules/common.nix
     ../../modules/kernel.nix
     ../../modules/network.nix
+    ../../modules/tailscale.nix
     ../../modules/power.nix
     ../../modules/zram.nix
     ../../modules/storage.nix
