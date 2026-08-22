@@ -43,7 +43,9 @@ in
       general = {
         lock_cmd = "${lockSession}/bin/lock-session";
         before_sleep_cmd = "loginctl lock-session";
-        after_sleep_cmd = "hyprctl dispatch dpms on";
+        # Syntaxe Lua : la session est en config Lua, où `hyprctl dispatch dpms on`
+        # (forme hyprlang) est rejeté par le parseur.
+        after_sleep_cmd = ''hyprctl dispatch 'hl.dsp.dpms("on")' '';
       };
 
       listener = [
@@ -53,8 +55,8 @@ in
         }
         {
           timeout = 1860;
-          on-timeout = "hyprctl dispatch dpms off";
-          on-resume = "hyprctl dispatch dpms on";
+          on-timeout = ''hyprctl dispatch 'hl.dsp.dpms("off")' '';
+          on-resume = ''hyprctl dispatch 'hl.dsp.dpms("on")' '';
         }
       ];
     };

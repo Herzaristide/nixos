@@ -77,6 +77,17 @@
     OLLAMA_KEEP_ALIVE = "0";
   };
 
+  # Wifi MediaTek MT7922 (mt7921e, PCI 09:00.0) — bug matériel/firmware connu et
+  # intermittent : après un reboot à chaud, le chip reste parfois bloqué dans un
+  # état d'où l'hôte ne peut pas reprendre la « propriété » du firmware. Le boot
+  # échoue alors avec « driver own failed » puis « probe failed with error -5 »,
+  # et aucune interface wlp9s0 n'est créée → pas de wifi ce boot-là.
+  #   - Fréquence observée : ~1 boot sur 10 réellement KO (2026-07-24) ; se résout
+  #     tout seul au boot suivant (cold boot ou simple retry du driver).
+  #   - Diagnostic : `journalctl -b -1 -k | grep -iE 'driver own|mt7921'`.
+  #   - Rien d'activé pour l'instant (occurrence isolée, pas de régression config).
+  #     Si ça devient récurrent, la mitigation habituelle est de couper l'ASPM PCIe :
+  #     ajouter "pcie_aspm=off" (global, ↑conso) ou "pci=noaspm" aux kernelParams.
   boot.kernelParams = [ "acpi_enforce_resources=lax" ];
   # `enable` était dans modules/head.nix ; rapatrié ici (zola n'a aucun
   # périphérique qu'OpenRGB reconnaisse, cf. le commentaire là-bas).

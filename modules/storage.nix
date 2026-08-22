@@ -3,6 +3,11 @@
 {
   # Filesystem drivers
   boot.supportedFilesystems = [ "ntfs" ];
+  # On n'utilise pas ZFS (racine btrfs via disko). Le module ZFS de nixpkgs est
+  # tout de même évalué et avertit sur la valeur par défaut de forceImportRoot ;
+  # on adopte explicitement la valeur recommandée (défaut à partir de 26.11) pour
+  # taire le warning.
+  boot.zfs.forceImportRoot = false;
   environment.systemPackages = [ pkgs.nvme-cli ];
   boot.swraid.enable = true;
   boot.swraid.mdadmConf = ''

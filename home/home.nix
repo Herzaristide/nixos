@@ -15,6 +15,7 @@ let
     ./modules/hyprland/hyprland.nix
     ./modules/hyprland/lock.nix
     ./modules/code/zed.nix
+    ./modules/code/vscode.nix
     ./modules/alacritty.nix
     ./modules/quickshell.nix
     ./modules/hyprland/tofi.nix

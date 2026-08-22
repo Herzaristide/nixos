@@ -176,7 +176,7 @@
     # installe Solaar + les règles udev qui donnent l'accès aux /dev/hidraw du récepteur
     # (sinon 0600 root → « No supported device found ». La batterie remonte alors sans sudo.
     hardware.logitech.wireless.enable = true;
-    hardware.logitech.wireless.enableGraphical = true; # applet/GUI Solaar
+    programs.solaar.enable = true; # applet/GUI Solaar (ex hardware.logitech.wireless.enableGraphical)
 
     # Home Manager
     home-manager = {

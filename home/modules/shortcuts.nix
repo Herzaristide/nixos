@@ -72,6 +72,16 @@
       lua = "hl.dsp.exit()";
       desc = "Quitter Hyprland";
     }
+    {
+      keys = "SUPER + Delete";
+      lua = ''hl.dsp.exec_cmd("systemctl poweroff")'';
+      desc = "Éteindre le PC";
+    }
+    {
+      keys = "SUPER + Escape";
+      lua = ''hl.dsp.exec_cmd("systemctl suspend")'';
+      desc = "Mettre le PC en veille";
+    }
 
     {
       keys = "SUPER + left";
@@ -116,12 +126,12 @@
     }
     {
       keys = "SUPER + bracketleft";
-      lua = ''hl.dsp.exec_cmd("hyprctl dispatch focusmonitor -1")'';
+      lua = ''hl.dsp.focus({ monitor = "-1" })'';
       desc = "Focus moniteur précédent";
     }
     {
       keys = "SUPER + bracketright";
-      lua = ''hl.dsp.exec_cmd("hyprctl dispatch focusmonitor +1")'';
+      lua = ''hl.dsp.focus({ monitor = "+1" })'';
       desc = "Focus moniteur suivant";
     }
 
@@ -308,7 +318,13 @@
     }
     {
       keys = "switch:off:Lid Switch";
-      lua = ''hl.dsp.exec_cmd("hyprctl keyword monitor 'eDP-1,preferred,auto-left,1.33'")'';
+      # `hyprctl keyword` ne marche plus avec le parseur Lua (« keyword can't work
+      # with non-legacy parsers »), et un bind Lua accepte une fonction : on
+      # reconfigure le moniteur directement, sans passer par hyprctl.
+      lua = ''
+        function()
+          hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto-left", scale = 1.33 })
+        end'';
       opts = {
         locked = true;
       };

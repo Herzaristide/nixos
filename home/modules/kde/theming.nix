@@ -15,7 +15,7 @@ let
       pkgs.fetchurl {
         url = "https://codeberg.org/StormRosenaa/Arcanum/raw/branch/main/Arcanum%20-%20Red.tar.xz";
         name = "arcanum-red.tar.xz";
-        hash = "sha256-3vZPao6T0saE5RiQGyYEZVts3FLZeGirRxU9hepSGgM=";
+        hash = "sha256-6rHeZNKEAZRW2wjNCNjeCZLUYBhfgm9d2NQ17RPyi0I=";
       }
     } -C "$out/share/icons"
   '';

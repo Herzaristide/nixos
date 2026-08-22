@@ -28,11 +28,15 @@ let
     if ! hyprctl monitors -j 2>/dev/null | grep -q HDMI-A-1; then
       exit 0
     fi
+    # Syntaxe Lua obligatoire : avec le parseur Lua, `hyprctl dispatch <nom> <args>`
+    # est refusé (« dispatch in lua is a shorthand for hl.dispatch(...) ») et
+    # `hyprctl keyword` ne fonctionne plus du tout — d'où `hyprctl eval` pour la
+    # reconfiguration du moniteur.
     for i in 1 2 3 4 5; do
-      hyprctl dispatch moveworkspacetomonitor "$i" HDMI-A-1
+      hyprctl dispatch "hl.dsp.workspace.move({ workspace = \"$i\", monitor = \"HDMI-A-1\" })"
     done
-    hyprctl keyword monitor "eDP-1,disable"
-    hyprctl dispatch focusmonitor HDMI-A-1
+    hyprctl eval 'hl.monitor({ output = "eDP-1", disabled = true })'
+    hyprctl dispatch 'hl.dsp.focus({ monitor = "HDMI-A-1" })'
   '';
 
   wallpaperPng = ../../../src/nix-wallpaper-binary-black_2k.png;
@@ -384,8 +388,9 @@ in
       -- Accent color fragment rewritten by anna on every change.
       -- Loaded at top-level so it applies on every config reload (hyprctl reload)
       -- AND at startup. The fragment returns a table of colors.
-      -- Live updates during the session are pushed directly by the anna daemon
-      -- via `hyprctl keyword` (see karenine anna/src/appctl.rs::reload_hyprland).
+      -- Live updates during the session are applied by the anna daemon running
+      -- `hyprctl reload` (karenine anna/src/appctl.rs::reload_hyprland) — et non
+      -- `hyprctl keyword`, qui ne fonctionne plus avec le parseur Lua.
       do
         local ok, colors = pcall(dofile, os.getenv("HOME") .. "/.config/accent/fragments/hyprland-colors.lua")
         if ok and type(colors) == "table" and colors.accent_rgba then

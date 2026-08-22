@@ -42,13 +42,15 @@ let
       providedSessions = [ "hyprland" ];
     };
 
-  # Même description des moniteurs que la session utilisateur, rendue au format
-  # `monitor=output,mode,position,scale[,transform,N]` (config Hyprland classique,
-  # pas Lua : le greeter n'a pas besoin du mode Lua).
-  monitorLine =
+  # Même description des moniteurs que la session utilisateur, rendue en appels
+  # `hl.monitor{}` : le greeter est en config Lua comme la session (cf.
+  # greeterHyprlandLua plus bas pour la raison).
+  monitorLua =
     m:
-    "monitor=${m.output},${m.mode},${m.position},${toString m.scale}"
-    + lib.optionalString (m ? transform) ",transform,${toString m.transform}";
+    "hl.monitor({ output = ${builtins.toJSON m.output}, mode = ${builtins.toJSON m.mode}, "
+    + "position = ${builtins.toJSON m.position}, scale = ${toString m.scale}"
+    + lib.optionalString (m ? transform) ", transform = ${toString m.transform}"
+    + " })";
 
   wallpaperPng = ../src/nix-wallpaper-binary-black_2k.png;
 
@@ -65,50 +67,64 @@ let
     ipc = off
   '';
 
-  greeterHyprlandConf = pkgs.writeText "greetd-hyprland.conf" ''
-    ${lib.concatMapStringsSep "\n" monitorLine (import ./monitors.nix)}
+  # Config Lua, et non hyprlang (`.conf`) : depuis 0.55 hyprlang est déprécié, et
+  # 0.56 affiche à l'écran « You are using the .conf config format, support for
+  # which will be removed in Hyprland 0.57. » — sur le greeter, donc en travers de
+  # l'écran de login. Hyprland choisit son parseur sur l'extension du fichier
+  # (src/config/ConfigManager.cpp) : le nom en `.lua` est ce qui bascule sur le
+  # gestionnaire Lua, il n'y a pas d'option pour le forcer.
+  greeterHyprlandLua = pkgs.writeText "greetd-hyprland.lua" ''
+    ${lib.concatMapStringsSep "\n" monitorLua (import ./monitors.nix)}
 
-    input {
-      kb_layout = fr
-    }
+    hl.config({
+      input = {
+        kb_layout = "fr",
+      },
 
-    animations {
-      enabled = false
-    }
+      animations = {
+        enabled = false,
+      },
 
-    misc {
-      disable_hyprland_logo = true
-      disable_splash_rendering = true
-      force_default_wallpaper = 0
-      # La config est dans le store, immuable : le watcher de rechargement n'a
-      # rien à surveiller et on lui retire toute occasion de recharger la config
-      # sous le nez du greeter.
-      disable_autoreload = true
+      misc = {
+        disable_hyprland_logo = true,
+        disable_splash_rendering = true,
+        force_default_wallpaper = 0,
+        -- La config est dans le store, immuable : le watcher de rechargement n'a
+        -- rien à surveiller et on lui retire toute occasion de recharger la config
+        -- sous le nez du greeter.
+        disable_autoreload = true,
 
-      # Sans ça, le greeter est inutilisable : regreet bloque sa boucle GTK le
-      # temps des échanges PAM avec greetd (plusieurs secondes), rate les pings
-      # d'Hyprland, et l'ANR ouvre `hyprland-dialog` — une fenêtre qui prend le
-      # focus clavier, donc plus moyen de taper son mot de passe. Le dialogue
-      # « Terminer / Attendre » n'a de toute façon aucun sens sur un écran de
-      # login : un seul client, et personne pour lui répondre. cage n'avait pas
-      # cette détection, d'où la régression au passage à Hyprland.
-      enable_anr_dialog = false
-    }
+        -- Sans ça, le greeter est inutilisable : regreet bloque sa boucle GTK le
+        -- temps des échanges PAM avec greetd (plusieurs secondes), rate les pings
+        -- d'Hyprland, et l'ANR ouvre `hyprland-dialog` — une fenêtre qui prend le
+        -- focus clavier, donc plus moyen de taper son mot de passe. Le dialogue
+        -- « Terminer / Attendre » n'a de toute façon aucun sens sur un écran de
+        -- login : un seul client, et personne pour lui répondre. cage n'avait pas
+        -- cette détection, d'où la régression au passage à Hyprland.
+        enable_anr_dialog = false,
+      },
 
-    debug {
-      # Hyprland coupe ses propres logs par défaut, et son log fichier vit dans
-      # $XDG_RUNTIME_DIR/hypr/ (donc /run/user/999, en 0700, illisible et effacé
-      # avec la session). On réactive les logs et on les bascule sur stdout, que
-      # le script du greeter redirige vers /var/log/greeter/hyprland.log.
-      disable_logs = false
-      enable_stdout_logs = true
-    }
+      debug = {
+        -- Hyprland coupe ses propres logs par défaut, et son log fichier vit dans
+        -- $XDG_RUNTIME_DIR/hypr/ (donc /run/user/999, en 0700, illisible et effacé
+        -- avec la session). On réactive les logs et on les bascule sur stdout, que
+        -- le script du greeter redirige vers /var/log/greeter/hyprland.log.
+        disable_logs = false,
+        enable_stdout_logs = true,
+      },
+    })
 
-    exec-once = ${lib.getExe pkgs.hyprpaper} -c ${hyprpaperConf}
+    -- Remplace `exec-once` : en mode Lua l'autostart passe par l'événement
+    -- `hyprland.start` (même mécanique que la session, cf. home/modules/hyprland).
+    hl.on("hyprland.start", function()
+      hl.exec_cmd("${lib.getExe pkgs.hyprpaper} -c ${hyprpaperConf}")
 
-    # regreet rend la main quand la session est choisie ; on ferme alors le
-    # compositeur pour que greetd enchaîne sur la session utilisateur.
-    exec-once = ${lib.getExe config.programs.regreet.package}; ${config.programs.hyprland.package}/bin/hyprctl dispatch exit
+      -- regreet rend la main quand la session est choisie ; on ferme alors le
+      -- compositeur pour que greetd enchaîne sur la session utilisateur.
+      -- `hyprctl dispatch exit` (forme hyprlang) est rejeté par le parseur Lua :
+      -- dispatch y est un raccourci pour hl.dispatch(...), il faut le dispatcher.
+      hl.exec_cmd("${lib.getExe config.services.displayManager.regreet.package}; ${config.programs.hyprland.package}/bin/hyprctl dispatch 'hl.dsp.exit()'")
+    end)
   '';
 
   # Le greeter doit être épinglé sur le même GPU que la session : sur gary les
@@ -126,7 +142,7 @@ let
     # utilisateur ci-dessus. Lancer `Hyprland` directement affichait la bannière
     # « Hyprland was started without start-hyprland » (src/i18n/Engine.cpp) sur
     # l'écran de login. Tout ce qui suit `--` est passé à Hyprland.
-    exec ${config.programs.hyprland.package}/bin/start-hyprland -- --config ${greeterHyprlandConf} \
+    exec ${config.programs.hyprland.package}/bin/start-hyprland -- --config ${greeterHyprlandLua} \
       > /var/log/greeter/hyprland.log 2>&1
   '';
 in
@@ -153,7 +169,7 @@ in
   # Ce n'est pas un rendu QML identique (regreet est du GTK4) — cf. discussion :
   # un greeter Quickshell natif est un développement bien plus lourd, écarté
   # au profit d'un logiciel mature reskinné.
-  programs.regreet = {
+  services.displayManager.regreet = {
     enable = true;
 
     font = {

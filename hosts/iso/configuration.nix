@@ -31,6 +31,11 @@
   # (plus rapide à générer, image plus légère).
   isoImage.squashfsCompression = "zstd -Xcompression-level 6";
 
+  # L'installateur active le support ZFS (all-hardware), ce qui déclenche le
+  # warning sur la valeur par défaut de forceImportRoot. La racine du live n'est
+  # pas ZFS ; on adopte explicitement la valeur recommandée pour taire le warning.
+  boot.zfs.forceImportRoot = false;
+
   networking.hostName = "nixos-installer";
   # Réseau filaire par défaut (NetworkManager pour le Wi-Fi si besoin).
   networking.networkmanager.enable = true;
