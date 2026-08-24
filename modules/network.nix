@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   lib,
   ...
@@ -37,24 +36,24 @@
       "youtu.be"
       "youtubekids.com"
       "www.youtubekids.com"
-      "twitch.tv"
-      "www.twitch.tv"
-      "m.twitch.tv"
-      "clips.twitch.tv"
-      "player.twitch.tv"
-      "go.twitch.tv"
-      "safety.twitch.tv"
+
+      # "twitch.tv"
+      # "www.twitch.tv"
+      # "m.twitch.tv"
+      # "clips.twitch.tv"
+      # "go.twitch.tv"
     ];
   };
 
-  # Wake-on-LAN : arme toutes les interfaces Ethernet filaires au boot.
-  # Why: permet de réveiller kafka/gary/zola à distance via un magic packet
-  # (la NIC reste alimentée et écoute même machine éteinte, si autorisé BIOS).
-  # How to apply: oneshot systemd qui appelle `ethtool -s <iface> wol g` sur
-  # chaque interface réelle. Skip auto les loopback/virtual/wireless et les
-  # NIC qui ne supportent pas WoL (cas WSL) — donc safe à activer partout.
-  systemd.services.wake-on-lan = {
-    description = "Enable Wake-on-LAN on all wired interfaces";
+  # Wake-on-LAN désactivé explicitement sur toutes les interfaces filaires.
+  # Un magic packet n'est pas authentifié : n'importe qui sur le segment réseau
+  # peut rallumer la machine. Ne pas se contenter de retirer l'activation —
+  # le réglage `wol` vit dans le NIC et survit à un simple reboot une fois posé,
+  # donc on force `wol d` au boot pour désarmer les cartes déjà configurées.
+  # (Le firmware peut aussi l'activer de son côté : à couper dans le BIOS/UEFI
+  # pour une désactivation complète.)
+  systemd.services.disable-wake-on-lan = {
+    description = "Disable Wake-on-LAN on all wired interfaces";
     wantedBy = [ "multi-user.target" ];
     after = [ "network-pre.target" ];
     serviceConfig = {
@@ -69,23 +68,14 @@
         [ -d "$sys/wireless" ] && continue
         [ ! -e "$sys/device" ] && continue
         if ethtool "$name" 2>/dev/null | grep -q 'Supports Wake-on:.*g'; then
-          ethtool -s "$name" wol g || true
+          ethtool -s "$name" wol d || true
         fi
       done
     '';
   };
 
-  # Firewall configuration
   networking.firewall = {
     enable = lib.mkDefault true;
-    allowedTCPPorts = [
-      22 # SSH
-      80 # HTTP
-    ];
-    allowedUDPPorts = [
-      51820 # WireGuard
-      51821 # WireGuard IPv6
-    ];
     trustedInterfaces = [ "lo" ];
   };
 }

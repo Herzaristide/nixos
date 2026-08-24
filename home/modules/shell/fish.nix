@@ -18,10 +18,11 @@
       y = "yazi";
       z = "zellij";
       c = "claude";
+      ca = "claude agents";
       cr = "claude --continue";
+      g = "glm";
 
       # Git
-      g = "copilot";
       gs = "git status";
       ga = "git add";
       gaa = "git add --all";
@@ -69,7 +70,7 @@
 
       # Nix
       nr = "nixos-rebuild";
-      nrs = "sudo nixos-rebuild switch --flake /home/aristide/nixos#(hostname)";
+      nrs = "sudo nixos-rebuild switch --flake github:Herzaristide/nixos#(hostname)";
       nfu = "nix flake update";
       nfc = "nix flake check";
     };
@@ -77,6 +78,19 @@
     interactiveShellInit = ''
       # Disable fish greeting message
       set -U fish_greeting ""
+
+      # ── Mémorisation du dernier dossier (variable universelle) ─────────
+      # `set -U` est persisté nativement par Fish (~/.config/fish/fish_variables),
+      # partagé entre tous les shells et synchronisé en temps réel. Au démarrage
+      # d'un shell interactif on se repositionne dans le dernier dossier visité,
+      # MAIS uniquement si on démarre dans $HOME — ainsi un shell lancé dans un
+      # dossier précis (ex: `alacritty --working-directory /tmp`) n'est pas écrasé.
+      function __remember_pwd --on-variable PWD
+          set -U last_pwd $PWD
+      end
+      if set -q last_pwd; and test -d $last_pwd; and test "$PWD" = "$HOME"
+          cd $last_pwd
+      end
 
       # ── Live accent-color reload ────────────────────────────────────────
       # Re-source `starship init fish` when ~/.config/accent/accent.hex changes,

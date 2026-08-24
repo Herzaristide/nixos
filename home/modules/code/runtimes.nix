@@ -7,21 +7,22 @@
   home.packages = with pkgs; [
     # JavaScript / TypeScript
     nodejs_22
-    corepack_22 # pnpm / yarn à la demande (corepack enable)
+
     bun
     deno
     prettier # JS/TS/JSON/YAML/Markdown/HTML/CSS
 
     # Java
-    jdk21 # OpenJDK 21 LTS (javac, java, jar, jshell)
+    jdk25 # OpenJDK 25 LTS (javac, java, jar, jshell)
     maven
-    gradle
+    gradleg
     google-java-format
 
     # Python
     python3
     uv # gestionnaire de paquets / venv rapide (remplace pip+venv+pipx)
     ruff # linter + formatter (remplace black)
+    pyright # LSP Python (langserver) — utilisé par le plugin LSP de Claude Code + Zed
 
     # Go
     go
@@ -43,8 +44,12 @@
 
     # Nix
     nixfmt
+    nixd # LSP Nix (langserver)
 
     # Shell
     shfmt
+
+    # QML (Quickshell — voir ../quickshell.nix)
+    qt6.qtdeclarative # qmllint (lint) + qmlformat (formatter) + qmlls (LSP)
   ];
 }

@@ -10,6 +10,18 @@
     ];
     max-jobs = 2;
     cores = 6;
+
+    # Qui peut parler au daemon Nix. Le défaut est `*` : n'importe quel compte
+    # local peut lui soumettre des dérivations, donc faire construire et
+    # exécuter du code par le daemon. On restreint aux deux seuls comptes qui
+    # en ont l'usage — les comptes de service (greeter, ollama…) n'en ont pas.
+    # NB : distinct de `trusted-users`, qu'on laisse à root seul : être
+    # `allowed` autorise à construire, pas à contourner le bac à sable ni à
+    # imposer des substituters.
+    allowed-users = [
+      "root"
+      "aristide"
+    ];
   };
 
   # Automatic garbage collection
@@ -18,24 +30,6 @@
     dates = "weekly";
     options = "--delete-older-than 7d";
   };
-
-  # Periodic rebuild from git — daily at 10:00, no reboot.
-  # Suit le flake.lock commité dans le repo (pas de --update-input) : on évite
-  # qu'une régression nixos-unstable casse un boot silencieusement. Pour
-  # bumper les inputs : `nix flake update` + commit + push manuellement.
-  # Désactivé : le repo GitHub est privé et autoUpgrade tourne en root, qui n'a
-  # pas d'accès authentifié à l'API GitHub (le fetcher `github:` interroge l'API
-  # en anonyme → 404). À réactiver une fois l'auth root réglée (PAT via
-  # nix.settings.access-tokens, ou git+ssh + deploy key).
-  # system.autoUpgrade = {
-  #   enable = true;
-  #   flake = "github:Herzaristide/nixos";
-  #   flags = [ "-L" ];
-  #   dates = "10:00";
-  #   randomizedDelaySec = "30min";
-  #   persistent = true;
-  #   allowReboot = false;
-  # };
 
   # nix-ld for running unpatched dynamic executables on NixOS
   programs.nix-ld.enable = true;

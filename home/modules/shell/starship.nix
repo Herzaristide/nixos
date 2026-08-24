@@ -11,7 +11,9 @@
     settings = {
       "$schema" = "https://starship.rs/config-schema.json";
 
-      format = "\${custom.disk} ◆ $directory$git_status$git_metrics$git_branch$character ";
+      # `\n` avant $character → prompt sur deux lignes : les infos en haut, la
+      # saisie (et le symbole ✦) sur la ligne du dessous.
+      format = "\${custom.disk} ◆ $directory$git_status$git_metrics$git_branch\n$character ";
 
       directory = {
         format = "[$path]($style) ";

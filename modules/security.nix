@@ -1,45 +1,64 @@
-{ pkgs, ... }:
+{ ... }:
 
 {
   # --- Kernel hardening (sysctl) ---
   boot.kernel.sysctl = {
-    # Hide kernel pointers from /proc — defeats kASLR leak via /proc/kallsyms
     "kernel.kptr_restrict" = 2;
-    # Restrict dmesg to root — exfil source for kernel addresses, hardware info
     "kernel.dmesg_restrict" = 1;
-    # ptrace_scope=1: a non-root process can only ptrace its descendants.
-    # Blocks an attacker who compromises one user-process from dumping memory
-    # of other user processes (e.g. ssh-agent, browser session keys).
     "kernel.yama.ptrace_scope" = 1;
-
-    # TCP/IP hardening
-    "net.ipv4.tcp_syncookies" = 1; # SYN flood mitigation (default-on on recent kernels, declared for clarity)
-    "net.ipv4.conf.all.rp_filter" = 1; # Strict reverse-path (anti-spoofing)
+    "net.ipv4.tcp_syncookies" = 1;
+    "net.ipv4.conf.all.rp_filter" = 1;
     "net.ipv4.conf.default.rp_filter" = 1;
-    "net.ipv4.conf.all.accept_redirects" = 0; # Ignore ICMP redirects
+    "net.ipv4.conf.all.accept_redirects" = 0;
     "net.ipv4.conf.default.accept_redirects" = 0;
     "net.ipv4.conf.all.send_redirects" = 0;
     "net.ipv6.conf.all.accept_redirects" = 0;
     "net.ipv6.conf.default.accept_redirects" = 0;
-    "net.ipv4.conf.all.accept_source_route" = 0; # Drop source-routed packets
+    "net.ipv4.conf.all.accept_source_route" = 0;
     "net.ipv6.conf.all.accept_source_route" = 0;
-    "net.ipv4.conf.all.log_martians" = 1; # Log spoofed packets to dmesg
+    "net.ipv4.conf.all.log_martians" = 1;
   };
 
-  security.apparmor = {
-    enable = true;
-    killUnconfinedConfinables = false;
-  };
+  # AppArmor retiré (2026-07-19) : il ne confinait rien ici. Les profils
+  # upstream (pkgs.apparmor-profiles, chargés par défaut par le module NixOS)
+  # s'attachent à des chemins /usr/bin et /usr/lib — inexistants sur NixOS, où
+  # les binaires vivent dans /nix/store. Vérifié sur gary : 0 des 202 profils
+  # chargés référençait le store, donc aucun processus n'était confiné, et 76
+  # d'entre eux sont de toute façon des stubs `flags=(unconfined)` (le profil
+  # `chromium` en fait partie : il sert à *réaccorder* `userns` sous le
+  # durcissement Ubuntu, pas à restreindre).
+  #
+  # Rien d'autre n'en dépendait : aucune unité systemd n'utilise
+  # `AppArmorProfile=`, et Docker tourne en rootless (`Security Options:
+  # seccomp` seul — le démon non-root ne peut pas charger `docker-default`,
+  # apparmor_parser exigeant root).
+  #
+  # Le confinement effectif vient donc d'ailleurs : sandbox propre de Chromium
+  # (user namespaces + seccomp-bpf), seccomp pour les conteneurs, et les LSM
+  # restants dans `lsm=` — dont yama, qui porte le ptrace_scope ci-dessus.
+  #
+  # Pour le rétablir un jour, il faudra des profils écrits à la main avec les
+  # chemins du store interpolés depuis Nix (security.apparmor.policies), et un
+  # reboot : `enable` remet `apparmor` dans la ligne de commande du noyau.
+
+  # Seuls les membres de `wheel` peuvent exécuter le binaire setuid `sudo`
+  # (permissions 4750 root:wheel au lieu de 4755). Un compte de service
+  # compromis ne peut même plus l'invoquer pour tenter une escalade.
+  # Sans effet sur l'usage : `aristide` est le seul utilisateur humain, et il
+  # est dans wheel (cf. modules/common.nix).
+  security.sudo.execWheelOnly = true;
+
+  # Interdit le remplacement à chaud de l'image du noyau (kexec_load) : sans ça,
+  # root peut démarrer un noyau arbitraire sans repasser par le bootloader, ce
+  # qui contourne `systemd-boot.editor = false` ci-dessous.
+  # Contrepartie : désactive aussi l'hibernation. Sans conséquence ici — zola,
+  # seul hôte à capot, fait `HandleLidSwitch = "suspend"` et non "hibernate".
+  security.protectKernelImage = true;
 
   # --- auditd: trace privilege escalations and config changes ---
   security.auditd.enable = true;
   security.audit = {
-    # NOTE: désactivé temporairement — audit-userspace 4.1.2-unstable-2025-09-06
-    # (snapshot pris par nixos-unstable) régressé : `auditctl -R` échoue sur la
-    # directive `-b N` du rules file, audit-rules-nixos.service ne démarre plus.
-    # auditd reste actif (logging kernel-side). Réactiver à `true` une fois le
-    # package stabilisé upstream.
-    enable = false;
+    enable = true;
     rules = [
       # Watch authentication / authorization config
       "-w /etc/sudoers -p wa -k sudoers"
@@ -55,9 +74,6 @@
     ];
   };
 
-  # --- fail2ban: SSH brute-force protection ---
-  # Still relevant even after disabling password auth: it deals with the constant
-  # noise of scanners hitting :22 and the few key-auth attempts they try.
   services.fail2ban = {
     enable = true;
     maxretry = 5;
@@ -67,7 +83,6 @@
       multipliers = "1 2 4 8 16 32 64";
       maxtime = "168h"; # 1 week
     };
-    # Pre-built jail for sshd, enabled by default in NixOS when fail2ban is enabled.
   };
 
   # --- LUKS auto-unlock via USB keyfile ---

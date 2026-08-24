@@ -1,7 +1,5 @@
 {
-  config,
   pkgs,
-  inputs,
   ...
 }:
 
@@ -25,6 +23,14 @@
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.login.enableGnomeKeyring = true;
 
+  # PAM service for the Quickshell lockscreen (karenine's lock.qml, via
+  # PamContext { config: "quickshell" }). Without this file the lock has no way
+  # to validate the password and every attempt fails with a PAM start error.
+  # The stock NixOS stack (unix auth) is what we want here — same as a console
+  # login. `enableGnomeKeyring` mirrors the login service so unlocking the
+  # session also unlocks the keyring git-credential-manager stores into.
+  security.pam.services.quickshell.enableGnomeKeyring = true;
+
   # XDG Portal (for file picker, screen sharing in Hyprland)
   # xdg-desktop-portal-kde exposes color-scheme (dark mode) to Chrome/Gemini, etc.
   # via kdeglobals — no GNOME/GTK infrastructure required.
@@ -44,32 +50,38 @@
   # X11 (for XWayland) and Hyprland
   services.xserver.enable = true;
 
-  # No display manager / greeter: getty auto-logs in `aristide` on tty1,
-  # and the fish login shell exec's Hyprland directly (see loginShellInit below).
-  # `services.xserver.enable = true` otherwise pulls in lightdm by default, which
-  # would grab the VT and show a graphical login — disable it explicitly.
-  services.displayManager.enable = false;
-  services.xserver.displayManager.lightdm.enable = false;
-  services.getty.autologinUser = "aristide";
-
-  # Launch Hyprland automatically on the first VT right after autologin.
-  # Guarded so it only runs on tty1 and not inside an existing session.
-  programs.fish.loginShellInit = ''
-    if test -z "$WAYLAND_DISPLAY" -a (tty) = /dev/tty1
-        exec ${config.programs.hyprland.package}/bin/start-hyprland
-    end
-  '';
-
   programs.hyprland.enable = true;
+
+  # `start-hyprland` (le lanceur utilisé par la session utilisateur comme par
+  # celle du greeter, cf. modules/greetd.nix) délègue à uwsm. Sans ce module ses
+  # unités systemd user (wayland-session-bindpid@, wayland-wm@) n'existent pas :
+  # uwsm échoue avec « returned non-zero exit status 5 » et la session meurt
+  # aussitôt, renvoyant sur l'écran de login.
+  # `enable` seul n'installe que le paquet et ses unités ; on ne veut PAS
+  # `programs.hyprland.withUWSM`, qui ajouterait une entrée hyprland-uwsm.desktop
+  # concurrente de la nôtre (celle-ci porte le pinning GPU AQ_DRM_DEVICES).
+  programs.uwsm.enable = true;
+
   services.xserver.xkb = {
     layout = "fr";
     variant = "";
   };
 
-  # Printing
-  services.printing.enable = true;
+  # OpenRGB — contrôle RGB. Le `motherboard` (chemin SMBus à charger) et les
+  # règles d'application de l'accent restent par hôte : les périphériques
+  # diffèrent (cf. hosts/gary pour RAM + ventilateurs).
+  #
+  # Désactivé ici le temps des tests sur le clavier de zola : sur ce laptop
+  # OpenRGB ne détecte aucun contrôleur (`--list-devices` → 0, aucune chaîne
+  # SteelSeries dans le binaire : le KLC 1038:113a n'a pas de driver amont) et
+  # ne sert donc à rien tant qu'on n'en aura pas écrit un. Activé chez gary,
+  # seul hôte qui a des périphériques reconnus.
+  # services.hardware.openrgb.enable = true;
 
-  # Fonts — JetBrains Mono for text/UI, Noto Color Emoji for emoji glyphs
+  # Fonts — JetBrains Mono for text/UI, Noto Color Emoji for emoji glyphs.
+  # terminus_font_ttf est la variante TrueType de la police du TTY
+  # (console.font = "ter-v32n", cf. modules/common.nix) : le paquet
+  # terminus_font n'expose que des bitmaps PSF, que fontconfig ignore.
   fonts = {
     enableDefaultPackages = false;
     fontconfig = {
@@ -85,6 +97,7 @@
       jetbrains-mono
       monocraft
       noto-fonts-color-emoji
+      terminus_font_ttf
     ];
   };
 

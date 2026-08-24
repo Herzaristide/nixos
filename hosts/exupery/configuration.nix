@@ -1,8 +1,5 @@
 {
-  config,
-  pkgs,
   inputs,
-  lib,
   ...
 }:
 
@@ -43,7 +40,5 @@
   environment.variables = {
     SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
     NIX_SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
-    NODE_TLS_REJECT_UNAUTHORIZED = "0";
-    GIT_SSL_NO_VERIFY = "true";
   };
 }

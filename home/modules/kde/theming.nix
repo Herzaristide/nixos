@@ -15,7 +15,7 @@ let
       pkgs.fetchurl {
         url = "https://codeberg.org/StormRosenaa/Arcanum/raw/branch/main/Arcanum%20-%20Red.tar.xz";
         name = "arcanum-red.tar.xz";
-        hash = "sha256-3vZPao6T0saE5RiQGyYEZVts3FLZeGirRxU9hepSGgM=";
+        hash = "sha256-6rHeZNKEAZRW2wjNCNjeCZLUYBhfgm9d2NQ17RPyi0I=";
       }
     } -C "$out/share/icons"
   '';
@@ -41,6 +41,12 @@ let
 
 in
 {
+  # Both Arcanum themes declare `Inherits=…,Adwaita,hicolor` in their
+  # index.theme, so GTK and Qt/KDE (kf.iconthemes) look up Adwaita as a
+  # fallback parent. Without it installed they warn "Icon theme Adwaita not
+  # found" and lose fallback icons — so ship it.
+  home.packages = [ pkgs.adwaita-icon-theme ];
+
   # GTK theme — Slot Dark (Hyprland-compatible GTK theme by L4ki)
   gtk = {
     enable = true;
@@ -50,7 +56,7 @@ in
       package = if darkMode then slot-gtk-theme else pkgs.kdePackages.breeze-gtk;
     };
     iconTheme = {
-      # Arcanum-Accent is generated at activation time by paletted:
+      # Arcanum-Accent is generated at activation time by anna:
       # it copies all SVGs from "Arcanum - Red" and recolors #ff6666/#5a0d0d
       # to match the current accent hue. Falls back to "Arcanum - Red" via Inherits.
       name = "Arcanum-Accent";
@@ -69,7 +75,7 @@ in
       extraConfig = {
         "gtk-application-prefer-dark-theme" = darkMode;
       };
-      # Pulls in the libadwaita color tokens fragment rewritten by paletted
+      # Pulls in the libadwaita color tokens fragment rewritten by anna
       # on every accent change. The rest of the GTK4 config stays declarative.
       extraCss = ''
         @import url("file://${config.home.homeDirectory}/.config/accent/fragments/gtk4-colors.css");

@@ -1,5 +1,8 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 
+let
+  shortcuts = import ./shortcuts.nix { inherit pkgs; };
+in
 {
   programs.alacritty = {
     enable = true;
@@ -39,18 +42,17 @@
 
       terminal.shell.program = "fish";
 
-      keyboard.bindings = [
+      keyboard.bindings = map (
         {
-          key = "E";
-          mods = "Alt";
-          action = "CreateNewWindow";
-        }
+          key,
+          mods,
+          action,
+          ...
+        }:
         {
-          key = "T";
-          mods = "Control|Shift";
-          action = "SpawnNewInstance";
+          inherit key mods action;
         }
-      ];
+      ) shortcuts.alacritty;
     };
   };
 }

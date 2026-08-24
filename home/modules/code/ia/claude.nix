@@ -5,17 +5,52 @@
     enable = true;
     package = pkgs.claude-code;
     enableMcpIntegration = true;
+
+    lspServers = {
+      rust = {
+        command = "${pkgs.rust-analyzer}/bin/rust-analyzer";
+        extensionToLanguage = {
+          ".rs" = "rust";
+        };
+      };
+      python = {
+        command = "${pkgs.pyright}/bin/pyright-langserver";
+        args = [ "--stdio" ];
+        extensionToLanguage = {
+          ".py" = "python";
+          ".pyi" = "python";
+        };
+      };
+      nix = {
+        command = "${pkgs.nixd}/bin/nixd";
+        extensionToLanguage = {
+          ".nix" = "nix";
+        };
+      };
+    };
+
     settings = {
       theme = "dark-ansi";
       language = "French";
       model = "opus";
-      # Pas de tips/suggestions rotatifs pendant le spinner.
       spinnerTipsEnabled = false;
       voiceEnabled = true;
       voice = {
         enabled = true;
         mode = "hold";
       };
+      hooks.PreToolUse = [
+        {
+          matcher = "Bash";
+          hooks = [
+            {
+              type = "command";
+              command = "rtk hook claude";
+            }
+          ];
+        }
+      ];
+
       permissions = {
         allow = [
           "Bash(echo *)"

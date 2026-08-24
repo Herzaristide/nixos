@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   primaryMonitor ? "HDMI-A-1",
@@ -27,14 +28,23 @@ let
     if ! hyprctl monitors -j 2>/dev/null | grep -q HDMI-A-1; then
       exit 0
     fi
+    # Syntaxe Lua obligatoire : avec le parseur Lua, `hyprctl dispatch <nom> <args>`
+    # est refusé (« dispatch in lua is a shorthand for hl.dispatch(...) ») et
+    # `hyprctl keyword` ne fonctionne plus du tout — d'où `hyprctl eval` pour la
+    # reconfiguration du moniteur.
     for i in 1 2 3 4 5; do
-      hyprctl dispatch moveworkspacetomonitor "$i" HDMI-A-1
+      hyprctl dispatch "hl.dsp.workspace.move({ workspace = \"$i\", monitor = \"HDMI-A-1\" })"
     done
-    hyprctl keyword monitor "eDP-1,disable"
-    hyprctl dispatch focusmonitor HDMI-A-1
+    hyprctl eval 'hl.monitor({ output = "eDP-1", disabled = true })'
+    hyprctl dispatch 'hl.dsp.focus({ monitor = "HDMI-A-1" })'
   '';
 
   wallpaperPng = ../../../src/nix-wallpaper-binary-black_2k.png;
+
+  shortcuts = import ../shortcuts.nix {
+    inherit pkgs;
+    lidLayoutPath = toString hyprClosedLidLayout;
+  };
 in
 {
   wayland.windowManager.hyprland = {
@@ -81,6 +91,22 @@ in
             "1"
           ];
         }
+        # Set explicitly (rather than relying on the login shell's exported
+        # session variables) so the cursor theme is always applied even if
+        # Hyprland is (re)started with a stale shell environment — e.g. right
+        # after `nixos-rebuild switch` but before a fresh login.
+        {
+          _args = [
+            "XCURSOR_THEME"
+            config.home.pointerCursor.name
+          ];
+        }
+        {
+          _args = [
+            "XCURSOR_SIZE"
+            (toString config.home.pointerCursor.size)
+          ];
+        }
       ];
 
       config = {
@@ -99,7 +125,7 @@ in
           gaps_in = 8;
           gaps_out = 12;
           "col.inactive_border" = "rgba(44444433)";
-          # col.active_border is set by the paletted fragment
+          # col.active_border is set by the anna fragment
           # (~/.config/accent/fragments/hyprland-colors.lua) loaded below.
         };
 
@@ -140,57 +166,8 @@ in
         }
       ];
 
-      monitor = [
-        # gary — HP E24q G5, posé au-dessus de DP-1, retourné 180° (transform 2)
-        {
-          output = "DP-3";
-          mode = "2560x1440@75";
-          position = "0x0";
-          scale = 1.60;
-          transform = 2;
-        }
-        # gary — Samsung C27R50x, écran principal sous DP-3.
-        # Bord gauche aligné sur x=0 pour rejoindre le bord droit de DP-2.
-        {
-          output = "DP-1";
-          mode = "1920x1080@60";
-          position = "0x900";
-          scale = 1.25;
-        }
-        # gary — Dell U2413, portrait à gauche.
-        # Mode 1920×1200, scale 1.25 → 1536×960, puis transform=1 (90°) → 960×1536 logique.
-        # Position : bord droit collé à DP-3 (x = -960), top à y=0.
-        # → couvre toute la hauteur de DP-3 (900) + haut de DP-1 (jusqu'à y=1536).
-        # Les 228 derniers pixels en bas de DP-1 (y=1536→1764) n'ont pas de voisin
-        # à gauche — conséquence du scale 1.25 (à scale 1.0 on couvrait les 1764).
-        {
-          output = "DP-2";
-          mode = "1920x1200@60";
-          position = "-960x0";
-          scale = 1.25;
-          transform = 1;
-        }
-        # zola — moniteur externe optionnel
-        {
-          output = "HDMI-A-1";
-          mode = "1920x1080@60";
-          position = "49x900";
-          scale = 1.25;
-        }
-        # zola — écran intégré
-        {
-          output = "eDP-1";
-          mode = "preferred";
-          position = "auto-left";
-          scale = 1.25;
-        }
-        {
-          output = "";
-          mode = "preferred";
-          position = "auto";
-          scale = 1.25;
-        }
-      ];
+      # Liste partagée avec le greeter (cf. modules/monitors.nix).
+      monitor = import ../../../modules/monitors.nix;
 
       # Runs on every config load (le script Lua entier est ré-exécuté à chaque reload).
       exec_cmd = [ "${hyprClosedLidLayout}" ];
@@ -218,13 +195,8 @@ in
           monitor = primaryMonitor;
         }
         {
-          workspace = "6";
-          monitor = "DP-2";
-          default = true;
-        }
-        {
           workspace = "9";
-          monitor = "DP-3";
+          monitor = "DP-4";
           default = true;
         }
         # gaps_out: css_gap = soit un int soit { top, right, bottom, left }.
@@ -251,342 +223,15 @@ in
         }
       ];
 
-      bind = [
-        # Apps
-        {
-          _args = [
-            "SUPER + Return"
-            (mkLuaInline ''hl.dsp.exec_cmd("alacritty")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + Z"
-            (mkLuaInline ''hl.dsp.exec_cmd("${pkgs.zed-editor}/bin/zeditor")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + F"
-            (mkLuaInline ''hl.dsp.exec_cmd("dolphin")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + D"
-            (mkLuaInline ''hl.dsp.exec_cmd("vesktop")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + Y"
-            (mkLuaInline ''hl.dsp.exec_cmd("ytmusic-pwa")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + space"
-            (mkLuaInline ''hl.dsp.exec_cmd("tofi-drun --drun-launch=true")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + SHIFT + R"
-            (mkLuaInline ''hl.dsp.exec_cmd("pkill quickshell; quickshell &")'')
-          ];
-        }
-
-        # Window management
-        {
-          _args = [
-            "SUPER + Q"
-            (mkLuaInline "hl.dsp.window.close()")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + T"
-            (mkLuaInline ''hl.dsp.window.float({ action = "toggle" })'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + SHIFT + V"
-            (mkLuaInline ''hl.dsp.window.float({ action = "toggle" })'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + P"
-            (mkLuaInline "hl.dsp.window.pseudo()")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + J"
-            (mkLuaInline ''hl.dsp.layout("togglesplit")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + SHIFT + M"
-            (mkLuaInline "hl.dsp.exit()")
-          ];
-        }
-
-        # Focus
-        {
-          _args = [
-            "SUPER + left"
-            (mkLuaInline ''hl.dsp.focus({ direction = "left" })'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + right"
-            (mkLuaInline ''hl.dsp.focus({ direction = "right" })'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + up"
-            (mkLuaInline ''hl.dsp.focus({ direction = "up" })'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + down"
-            (mkLuaInline ''hl.dsp.focus({ direction = "down" })'')
-          ];
-        }
-        # TODO: vérifier l'API monitor focus (peut-être hl.dsp.focus({ monitor = ... })).
-        {
-          _args = [
-            "SUPER + bracketleft"
-            (mkLuaInline ''hl.dsp.exec_cmd("hyprctl dispatch focusmonitor -1")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + bracketright"
-            (mkLuaInline ''hl.dsp.exec_cmd("hyprctl dispatch focusmonitor +1")'')
-          ];
-        }
-
-        # Workspaces AZERTY (& é " ' ( pour 1-5, ² pour 9)
-        {
-          _args = [
-            "SUPER + ampersand"
-            (mkLuaInline "hl.dsp.focus({ workspace = 1 })")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + eacute"
-            (mkLuaInline "hl.dsp.focus({ workspace = 2 })")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + quotedbl"
-            (mkLuaInline "hl.dsp.focus({ workspace = 3 })")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + apostrophe"
-            (mkLuaInline "hl.dsp.focus({ workspace = 4 })")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + parenleft"
-            (mkLuaInline "hl.dsp.focus({ workspace = 5 })")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + minus"
-            (mkLuaInline "hl.dsp.focus({ workspace = 6 })")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + twosuperior"
-            (mkLuaInline "hl.dsp.focus({ workspace = 9 })")
-          ];
-        }
-
-        {
-          _args = [
-            "SUPER + SHIFT + ampersand"
-            (mkLuaInline "hl.dsp.window.move({ workspace = 1 })")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + SHIFT + eacute"
-            (mkLuaInline "hl.dsp.window.move({ workspace = 2 })")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + SHIFT + quotedbl"
-            (mkLuaInline "hl.dsp.window.move({ workspace = 3 })")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + SHIFT + apostrophe"
-            (mkLuaInline "hl.dsp.window.move({ workspace = 4 })")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + SHIFT + parenleft"
-            (mkLuaInline "hl.dsp.window.move({ workspace = 5 })")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + SHIFT + minus"
-            (mkLuaInline "hl.dsp.window.move({ workspace = 6 })")
-          ];
-        }
-        {
-          _args = [
-            "SUPER + SHIFT + twosuperior"
-            (mkLuaInline "hl.dsp.window.move({ workspace = 9 })")
-          ];
-        }
-
-        # Special workspaces
-        {
-          _args = [
-            "SUPER + G"
-            (mkLuaInline ''hl.dsp.exec_cmd("chromium")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + C"
-            (mkLuaInline ''hl.dsp.workspace.toggle_special("claude")'')
-          ];
-        }
-
-        # Quickshell panel widgets
-        {
-          _args = [
-            "SUPER + F1"
-            (mkLuaInline ''hl.dsp.exec_cmd("echo widget:0 > /tmp/qs-panel.fifo")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + F2"
-            (mkLuaInline ''hl.dsp.exec_cmd("echo widget:1 > /tmp/qs-panel.fifo")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + F3"
-            (mkLuaInline ''hl.dsp.exec_cmd("echo widget:2 > /tmp/qs-panel.fifo")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + F4"
-            (mkLuaInline ''hl.dsp.exec_cmd("echo widget:3 > /tmp/qs-panel.fifo")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER + F5"
-            (mkLuaInline ''hl.dsp.exec_cmd("echo widget:4 > /tmp/qs-panel.fifo")'')
-          ];
-        }
-
-        # Mouse drag/resize (ex-bindm)
-        {
-          _args = [
-            "SUPER + mouse:272"
-            (mkLuaInline "hl.dsp.window.drag()")
-            { mouse = true; }
-          ];
-        }
-        {
-          _args = [
-            "SUPER + mouse:273"
-            (mkLuaInline "hl.dsp.window.resize()")
-            { mouse = true; }
-          ];
-        }
-
-        # Volume / brightness (ex-bindel / bindl)
-        {
-          _args = [
-            "XF86AudioRaiseVolume"
-            (mkLuaInline ''hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%+")'')
-            {
-              locked = true;
-              repeating = true;
-            }
-          ];
-        }
-        {
-          _args = [
-            "XF86AudioLowerVolume"
-            (mkLuaInline ''hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%-")'')
-            {
-              locked = true;
-              repeating = true;
-            }
-          ];
-        }
-        {
-          _args = [
-            "XF86AudioMute"
-            (mkLuaInline ''hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")'')
-            { locked = true; }
-          ];
-        }
-        {
-          _args = [
-            "XF86MonBrightnessUp"
-            (mkLuaInline ''hl.dsp.exec_cmd("brightnessctl set 5%+")'')
-            {
-              locked = true;
-              repeating = true;
-            }
-          ];
-        }
-        {
-          _args = [
-            "XF86MonBrightnessDown"
-            (mkLuaInline ''hl.dsp.exec_cmd("brightnessctl set 5%-")'')
-            {
-              locked = true;
-              repeating = true;
-            }
-          ];
-        }
-
-        # Lid switch — en Lua, pas de "mod, key" : juste "switch:on:Lid Switch".
-        {
-          _args = [
-            "switch:on:Lid Switch"
-            (mkLuaInline ''hl.dsp.exec_cmd("${hyprClosedLidLayout} --force")'')
-            { locked = true; }
-          ];
-        }
-        {
-          _args = [
-            "switch:off:Lid Switch"
-            (mkLuaInline ''hl.dsp.exec_cmd("hyprctl keyword monitor 'eDP-1,preferred,auto-left,1.33'")'')
-            { locked = true; }
-          ];
-        }
-      ];
+      # Raccourcis définis dans home/modules/shortcuts.nix (source de vérité
+      # partagée avec Alacritty/zellij/Zed/micro).
+      bind = map (b: {
+        _args = [
+          b.keys
+          (mkLuaInline b.lua)
+        ]
+        ++ lib.optional (b ? opts) b.opts;
+      }) shortcuts.hyprland;
 
       window_rule = [
         # Dolphin flottant par défaut, taille réduite et centré
@@ -596,6 +241,15 @@ in
           };
           float = true;
           size = "1000 650";
+          center = true;
+        }
+        # Émulateur Android : flottant et centré — sinon la fenêtre s'ouvre
+        # hors écran (position X négative, au-delà des moniteurs).
+        {
+          match = {
+            class = "^(Emulator)$";
+          };
+          float = true;
           center = true;
         }
         # File-chooser dialogs (titre)
@@ -668,23 +322,6 @@ in
           float = true;
         }
 
-        # VSCode opacity — l'API Lua attend un string format hyprlang "active inactive".
-        {
-          match = {
-            class = "^(code-url-handler|code|Code)$";
-          };
-          opacity = "0.92 0.82";
-        }
-
-        # Minecraft : opacité pleine. `override` est obligatoire — sans lui,
-        # la valeur est multipliée par decoration.active_opacity (0.75) → reste transparent.
-        {
-          match = {
-            class = "^(Minecraft).*";
-          };
-          opacity = "1.0 override 1.0 override";
-        }
-
         # Misc dialogs
         {
           match = {
@@ -748,11 +385,12 @@ in
         dim_around = true,
       })
 
-      -- Accent color fragment rewritten by paletted on every change.
+      -- Accent color fragment rewritten by anna on every change.
       -- Loaded at top-level so it applies on every config reload (hyprctl reload)
       -- AND at startup. The fragment returns a table of colors.
-      -- Live updates during the session are pushed directly by the paletted daemon
-      -- via `hyprctl keyword` (see accent-daemon/src/appctl.rs::reload_hyprland).
+      -- Live updates during the session are applied by the anna daemon running
+      -- `hyprctl reload` (karenine anna/src/appctl.rs::reload_hyprland) — et non
+      -- `hyprctl keyword`, qui ne fonctionne plus avec le parseur Lua.
       do
         local ok, colors = pcall(dofile, os.getenv("HOME") .. "/.config/accent/fragments/hyprland-colors.lua")
         if ok and type(colors) == "table" and colors.accent_rgba then

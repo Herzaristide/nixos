@@ -11,7 +11,6 @@
   # Hardware autodetection helper (was duplicated in every hardware-configuration.nix)
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
-    ./msi-keyboard.nix
   ];
 
   # Option for head (GUI) configuration
@@ -33,6 +32,20 @@
     type = lib.types.bool;
     default = true;
     description = "Use dark color scheme (false = light mode).";
+  };
+
+  # Persistent /dev/dri path of the DRM card the Wayland compositor should
+  # render on. When set, greetd.nix resolves it to its real card node at login
+  # and exports AQ_DRM_DEVICES before exec'ing Hyprland, so aquamarine (and
+  # therefore every Wayland client, incl. Chromium) renders on that GPU.
+  # Used on gary to keep the whole desktop on the iGPU and leave the discrete
+  # RX 7600 XT idle/free for ROCm. null = let aquamarine pick (default).
+  # Must be a stable by-path symlink (aquamarine rejects the symlink itself,
+  # so head.nix passes it through `readlink -f` to a real cardN node).
+  options.renderDevice = lib.mkOption {
+    type = lib.types.nullOr lib.types.str;
+    default = null;
+    description = "by-path of the DRM card to pin the Wayland compositor to (AQ_DRM_DEVICES).";
   };
 
   config = {
@@ -135,40 +148,35 @@
       extraGroups = [
         "networkmanager"
         "wheel"
-        "docker"
         "video"
         "render"
         "audio"
         "storage"
         "greeter"
-        "gamemode"
       ];
     };
 
-    # Allow aristide to query disk temperatures and RAM info without password (read-only, safe)
-    security.sudo.extraRules = [
-      {
-        users = [ "aristide" ];
-        commands = [
-          {
-            command = "${pkgs.smartmontools}/bin/smartctl";
-            options = [ "NOPASSWD" ];
-          }
-          {
-            command = "${pkgs.dmidecode}/bin/dmidecode";
-            options = [ "NOPASSWD" ];
-          }
-        ];
-      }
-    ];
-
-    # Docker
-    virtualisation.docker.enable = true;
+    # Docker rootless : le démon tourne par utilisateur (pas en root), donc
+    # appartenir à un groupe "docker" n'équivaudrait plus à un accès root sur
+    # l'hôte — d'où l'absence volontaire de ce groupe dans extraGroups ci-dessus.
+    # setSocketVariable exporte DOCKER_HOST pour que le CLI `docker` trouve le
+    # socket rootless sans configuration manuelle.
+    virtualisation.docker.rootless = {
+      enable = true;
+      setSocketVariable = true;
+    };
 
     services.ollama = {
       enable = true;
       host = "127.0.0.1";
+      package = lib.mkDefault pkgs.ollama; # zola surcharge par ollama-cuda
     };
+
+    # Périphériques Logitech sans fil (clavier MX Keys Mini via récepteur Logi Bolt) :
+    # installe Solaar + les règles udev qui donnent l'accès aux /dev/hidraw du récepteur
+    # (sinon 0600 root → « No supported device found ». La batterie remonte alors sans sudo.
+    hardware.logitech.wireless.enable = true;
+    programs.solaar.enable = true; # applet/GUI Solaar (ex hardware.logitech.wireless.enableGraphical)
 
     # Home Manager
     home-manager = {
@@ -179,9 +187,7 @@
         head = config.head;
         darkMode = config.darkMode;
         primaryMonitor = config.primaryMonitor;
-        accentDaemon = pkgs.callPackage ../accent-daemon/default.nix { };
-        msiKeyboardEnabled = config.msiKeyboard.enable;
-        msiRgbSet = pkgs.callPackage ../msi-rgb { };
+        anna = inputs.karenine.packages.${pkgs.stdenv.hostPlatform.system}.anna;
       };
       users.aristide = import ../home/home.nix;
     };

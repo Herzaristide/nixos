@@ -8,24 +8,26 @@ let
     ./modules/network
     ./modules/shell
     ./modules/code
-    ./modules/code/vscode/vscode-server.nix
   ];
 
   headfullModules = [
     ./head.nix
     ./modules/hyprland/hyprland.nix
-    ./modules/hyprland/hyprlock.nix
-    ./modules/code/vscode/vscode.nix
+    ./modules/hyprland/lock.nix
     ./modules/code/zed.nix
+    ./modules/code/vscode.nix
     ./modules/alacritty.nix
-    ../quickshell/quickshell.nix
+    ./modules/quickshell.nix
     ./modules/hyprland/tofi.nix
-    ./modules/vesktop.nix
+    ./modules/teams.nix
+    ./modules/discord.nix
+    ./modules/obs.nix
     ./modules/onlyoffice.nix
     ./modules/penpot.nix
     ./modules/accent/accent.nix
     ./modules/kde
     ./modules/chromium.nix
+    ./modules/blender.nix
     ./modules/music
   ];
 in

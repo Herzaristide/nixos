@@ -3,6 +3,6 @@
 {
   imports = [
     ./ia
-    ./runtimes.nix
+    # ./runtimes.nix  # test : déplacement vers un devShell par projet
   ];
 }

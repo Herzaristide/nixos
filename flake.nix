@@ -11,18 +11,19 @@
       url = "github:nix-community/NixOS-WSL";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    musnix = {
-      url = "github:musnix/musnix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     quickshell = {
       url = "git+https://git.outfoxxed.me/quickshell/quickshell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    karenine = {
+      url = "github:Herzaristide/karenine";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    impermanence.url = "github:nix-community/impermanence";
   };
 
   outputs =
@@ -38,11 +39,22 @@
         config.allowUnfree = true;
       };
 
-      accent-daemon-pkg = import ./accent-daemon/default.nix { inherit pkgs; };
+      # anna — moteur unifié (thème accent/palette + stats matérielles), fourni
+      # par le flake karenine (auparavant le paquet local accent-daemon).
+      anna = inputs.karenine.packages.${system}.anna;
     in
     {
       packages.${system} = {
-        paletted = accent-daemon-pkg;
+        anna = anna;
+        # Image ISO installateur embarquant ce flake (voir hosts/iso).
+        iso = self.nixosConfigurations.iso.config.system.build.isoImage;
+      };
+
+      # Shell de travail sur ce dépôt : `nix develop`.
+      devShells.${system}.default = pkgs.mkShell {
+        packages = [
+          pkgs.nixfmt
+        ];
       };
 
       homeConfigurations = {
@@ -56,7 +68,7 @@
             head = false;
             darkMode = true;
             primaryMonitor = "HDMI-A-1";
-            accentDaemon = pkgs.callPackage ./accent-daemon/default.nix { };
+            anna = anna;
           };
           modules = [
             ./home/home.nix
@@ -80,7 +92,7 @@
           modules = [
             { nixpkgs.hostPlatform = system; }
             inputs.disko.nixosModules.disko
-            ./modules/disko.nix
+            ./hosts/zola/disko.nix
             ./hosts/zola/configuration.nix
           ];
           specialArgs = { inherit inputs; };
@@ -90,7 +102,7 @@
           modules = [
             { nixpkgs.hostPlatform = system; }
             inputs.disko.nixosModules.disko
-            ./modules/disko.nix
+            ./hosts/gary/disko.nix
             ./hosts/gary/configuration.nix
           ];
           specialArgs = { inherit inputs; };
@@ -108,8 +120,21 @@
           modules = [
             { nixpkgs.hostPlatform = system; }
             inputs.disko.nixosModules.disko
-            ./modules/disko.nix
+            ./hosts/kafka/disko.nix
             ./hosts/kafka/configuration.nix
+          ];
+          specialArgs = { inherit inputs; };
+        };
+
+        # Image ISO installateur : live bootable embarquant ce flake pour
+        # installer n'importe quel hôte. N'importe PAS le module disko : le
+        # partitionnement s'applique à l'hôte cible via le flake embarqué,
+        # pas au système de fichiers live de l'installateur.
+        # Build : nix build .#iso
+        iso = nixpkgs.lib.nixosSystem {
+          modules = [
+            { nixpkgs.hostPlatform = system; }
+            ./hosts/iso/configuration.nix
           ];
           specialArgs = { inherit inputs; };
         };

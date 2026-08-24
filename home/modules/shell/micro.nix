@@ -4,6 +4,9 @@
   ...
 }:
 
+let
+  shortcuts = import ../shortcuts.nix { inherit pkgs; };
+in
 {
   programs.micro = {
     enable = true;
@@ -91,13 +94,19 @@
     color-link divider                   "color8"
   '';
 
-  # ~/.config/micro/bindings.json
-  xdg.configFile."micro/bindings.json".text = builtins.toJSON {
-    # Commentaire (plugin comment, built-in)
-    "CtrlE" = "lua:comment.comment";
-    # Formatage (plugin autofmt)
-    "Alt-f" = "command:format";
-  };
+  # ~/.config/micro/bindings.json — raccourcis définis dans
+  # home/modules/shortcuts.nix (source de vérité partagée).
+  xdg.configFile."micro/bindings.json".text = builtins.toJSON (
+    builtins.listToAttrs (
+      map (
+        { key, action, ... }:
+        {
+          name = key;
+          value = action;
+        }
+      ) shortcuts.micro
+    )
+  );
 
   # Installation des plugins Micro externes via `micro -plugin install`.
   # NOTE : `comment` et `linter` sont des plugins built-in (déjà inclus),

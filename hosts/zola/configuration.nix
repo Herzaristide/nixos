@@ -13,12 +13,18 @@
     ../../modules/common.nix
     ../../modules/kernel.nix
     ../../modules/network.nix
+    ../../modules/tailscale.nix
     ../../modules/power.nix
+    ../../modules/zram.nix
     ../../modules/storage.nix
     ../../modules/head.nix
+    ../../modules/greetd.nix
     ../../modules/audio.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix
+    # ../../modules/android.nix  # test : déplacement vers un devShell par projet
+    ../../modules/impermanence.nix
+    ../../modules/print.nix
   ];
 
   # --- Battery / CPU power management (laptop, Intel) ---
@@ -64,12 +70,15 @@
   # Hostname
   networking.hostName = "zola";
 
+  # Fermer le capot suspend réellement la machine (modules/power.nix l'ignore
+  # par défaut, pertinent seulement ici — zola est le seul hôte avec un capot).
+  # hypridle (home/modules/hyprland/hyprlock.nix) verrouille déjà l'écran via
+  # before_sleep_cmd avant toute mise en veille, donc fermer le capot verrouille
+  # aussi la session, pas seulement l'écran.
+  services.logind.settings.Login.HandleLidSwitch = lib.mkForce "suspend";
+
   # Head configuration
   head = true;
-
-  # MSI laptop RGB keyboard (SteelSeries KLC 1038:113a) — kernel doesn't
-  # configure this controller, so udev/boot/resume scripts re-apply the color.
-  msiKeyboard.enable = true;
 
   # Primary monitor: built-in screen (laptop)
   primaryMonitor = "eDP-1";
@@ -108,10 +117,16 @@
     NVD_BACKEND = "direct"; # Configuration for new driver
   };
 
-  # NVIDIA proprietary drivers
-  nixpkgs.config = {
-    nvidia.acceptLicense = true;
-  };
+  # NVIDIA proprietary drivers.
+  # Pas de `cudaSupport` global : il recompilait ~29 paquets absents du cache
+  # cuda-maintainers. CUDA est activé à la carte — ollama-cuda (pré-buildé) et
+  # blender via l'overlay ci-dessous.
+  nixpkgs.config.nvidia.acceptLicense = true;
+  nixpkgs.overlays = [
+    (final: prev: {
+      blender = prev.blender.override { cudaSupport = true; };
+    })
+  ];
 
   hardware = {
     nvidia = {
@@ -175,13 +190,18 @@
     ];
   };
 
-  # Ollama GPU acceleration — Prime Offload mode requires explicit NVIDIA env vars
-  # Without these, the ollama systemd service runs on the Intel iGPU by default.
+  # PRIME offload : sans ces variables le service ollama tourne sur l'iGPU
+  # Intel, qui reste le GPU par défaut. Ce sont exactement celles qu'exporte le
+  # wrapper `nvidia-offload` de nixpkgs (nixos/modules/hardware/video/nvidia.nix)
+  # — noter le casse mixte de `__VK_LAYER_NV_optimus`, seule graphie reconnue
+  # par le driver.
+  #
+  # Variante CUDA pré-buildée (cuda-maintainers), surcharge le pkgs.ollama de common.nix.
   services.ollama.package = pkgs.ollama-cuda;
   services.ollama.environmentVariables = {
     __NV_PRIME_RENDER_OFFLOAD = "1";
     __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    __VK_LAYER_NV_OPTIMUS = "NVIDIA_only";
+    __VK_LAYER_NV_optimus = "NVIDIA_only";
   };
 }
