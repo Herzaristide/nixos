@@ -42,6 +42,8 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `quickshell` — Wayland shell / bar runtime (replaces Waybar/DMS)
 - `karenine` — the Quickshell interface (QML layout) **and** the `anna` engine (Rust: accent/palette theming + hardware stats). `github:Herzaristide/karenine`
 - `explorer` — custom file manager (`github:Herzaristide/Explorer`)
+- `disko` — declarative partitioning; each host's layout is its own `hosts/<host>/disko.nix`
+- `impermanence` — declarative `/home`, wired by `modules/impermanence.nix` on zola and gary only
 
 ### System modules (`/modules/`)
 
@@ -54,6 +56,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `greetd.nix` — login screen: greetd + regreet, reskinned (CSS + wallpaper + clock widget) to match the Quickshell palette. Replaces the old getty-autologin flow — a password prompt is now required at every boot/logout. The greeter's compositor is **Hyprland**, not `cage`: cage exposes no output configuration (no rotation, no positioning), which left gary's upside-down DP-4 rendering inverted at login. The greeter reads the same monitor list as the session (`modules/monitors.nix`) and applies the same `renderDevice` GPU pinning. Its config is **Lua**, like the session (migrated 2026-08-22): hyprlang (`.conf`) is deprecated since 0.55 and 0.56 paints "You are using the .conf config format, support for which will be removed in Hyprland 0.57." across the login screen. Hyprland picks its parser from the file extension (`src/config/ConfigManager.cpp`), so the `.lua` filename passed to `--config` is what selects the Lua manager — there is no flag for it
 - `monitors.nix` — the monitor list (output/mode/position/scale/transform), shared verbatim between the user's Hyprland session (`home/modules/hyprland/hyprland.nix`, Lua attrsets) and the greeter's Hyprland (`modules/greetd.nix`, rendered to `hl.monitor{}` calls). All hosts' outputs are listed together; each host only matches its own
 - `head.nix` — GUI layer: declares the Hyprland session entry consumed by greetd, XDG portal (hyprland + kde), fonts (JetBrains Mono only), printing
+- `impermanence.nix` — declarative `/home` on zola and gary: `@home` is wiped and recreated at every boot by an initrd unit, only the paths listed in `environment.persistence."/keep"` survive (details under "Filesystem layout"). Not imported by kafka or exupery
 - `audio.nix` — low-latency tweaks (`threadirqs`, ALSA seq modules, `@audio` PAM limits, plugin search paths), PipeWire (ALSA/JACK/Pulse), echo-cancel module, WirePlumber rule granting chromium `rwx` audio permissions (read/write/execute, deliberately not the `m` metadata bit) so the BandLab PWA can record — the rule matches on binary name, so it applies to every chromium process (all PWAs + regular browsing share the same binary), not just BandLab
 
 ### Home-manager config (`/home/`)
@@ -67,7 +70,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `modules/kde.nix` — minimal KDE/Qt theming (for xdg-portal-kde + appearance protocol)
 - `modules/accent/accent.nix` — installs the anna engine (from the karenine flake) + its templates, systemd user service, and seed activation (see "Theming" below)
 - `modules/shell/` — `fish`, `starship`, `fastfetch`, `micro`, `direnv`, `yazi`
-- `modules/network/` — `git`, `ssh`
+- `modules/network/` — `git` (+ `gh` et `glab` : les CLI GitHub/GitLab vivent dans `git.nix` ; `programs.gh` a `gitCredentialHelper.enable = false` pour laisser git-credential-manager seul helper HTTPS, et `glab` est un simple `home.packages` — le module `programs.glab` a été supprimé upstream, issue #8066. Remplace `ghorg`, supprimé 2026-08-24), `ssh`
 - `modules/code/` — Zed (`zed.nix`, headful only) + AI assistants (`ia/claude.nix`, `ia/copilot.nix`, `ia/mcp.nix`) + language runtimes
 
 ### Quickshell (`/quickshell/`)
@@ -106,15 +109,26 @@ To change the active accent at runtime: `anna set "#5277c3"`.
 
 ## Filesystem layout
 
-All UEFI hosts share a single **disko** layout in `modules/disko.nix` (imported via `flake.nix`).
+Each UEFI host has **its own** disko file, wired in `flake.nix`: `hosts/zola/disko.nix`, `hosts/gary/disko.nix`, `hosts/kafka/disko.nix`. zola's and gary's are byte-identical; kafka's differs (ESP on a USB stick, see its section). `modules/disko.nix` still exists but is **imported by nobody** — it is the pre-split copy, kept as dead code and missing `@keep`; don't edit it expecting an effect. (Corrected 2026-08-24 — this file previously described the shared-layout arrangement, which the per-host split replaced.)
 
-- UEFI hosts (zola, gary, kafka): GPT + ESP (FAT32, `/boot`, `fmask=0077`/`dmask=0077`) + LUKS2 (`allowDiscards=true`) → btrfs on `/dev/nvme0n1`
+- zola / gary: GPT + ESP (FAT32, `/boot`, `fmask=0077`/`dmask=0077`) + LUKS2 (`allowDiscards=true`) → btrfs on `/dev/nvme0n1`
 - WSL host (exupery): no disko, no bootloader
-- btrfs subvolumes: `@` (`/`), `@home` (`/home`), `@nix` (`/nix`) — all persistent
+- btrfs subvolumes: `@` (`/`), `@home` (`/home`), `@nix` (`/nix`), plus `@keep` on zola/gary
 - Mount options: `compress=zstd noatime space_cache=v2 discard=async ssd`
 - To target a different disk on a future host, override `disko.devices.disk.main.device` with `lib.mkForce` in that host's `configuration.nix`.
 
 LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — write the file before running disko, or pass it via `nixos-anywhere --extra-files`.
+
+### Impermanence — `/home` only, zola and gary only
+
+`modules/impermanence.nix` is imported by **zola and gary only** (`hosts/<host>/configuration.nix`). kafka and exupery (WSL) don't import it and are fully persistent — WSL couldn't run it anyway: its filesystem comes from the Windows-side image, there is no LUKS, no btrfs subvolume, and no systemd initrd to roll anything back in.
+
+- **Only `@home` is wiped.** The initrd unit `rollback-home` recreates an empty `@home` at every boot; `@` (`/`) and `@nix` are never touched. So `/var/lib/nixos`, `/var/lib/*` and everything else under `/` survives — which is why `enableWarnings = false` on `environment.persistence` is correct here rather than a papered-over bug (the module's warning assumes an ephemeral root).
+- What survives lives on the `@keep` subvolume, mounted `neededForBoot` at `/keep/home`, and is listed file-by-file / directory-by-directory under `environment.persistence."/keep".users.aristide`. **Anything not in that list is gone at the next boot.**
+- `@keep` is the old `@home` renamed, so `aristide/` already lands on `/keep/home/aristide` — that's what made the initial migration a rename rather than a file copy. The module's header still points at `scripts/impermanence-migrate.sh`, which **no longer exists** in the tree (dropped once the migration was done; recover it from git history if a new host ever needs it).
+- **Wipes are archived, not deleted**: the old `@home` is moved to `old_roots/<timestamp>` and only purged after `retentionDays = 30`. A path forgotten in the list stays recoverable for a month.
+- **Guard rail**: if `@keep` is absent, `rollback-home` logs and exits without touching anything, so adding the module to a host that hasn't been migrated destroys nothing.
+- Extending impermanence to `/` is noted in the module as a possible "étape 1" but is **not** done today.
 
 ## Host-Specific Details
 
@@ -142,8 +156,9 @@ LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — wri
 
 - Intel CPU (`kvm-intel`, `hardware.cpu.intel.updateMicrocode`)
 - NVIDIA NVS 310 (Fermi / GF119) — too old for the current proprietary driver; uses **in-tree nouveau** for a clean KMS console. No GUI stack.
-- UEFI boot via systemd-boot (no GRUB)
-- Single NVMe SSD on `/dev/nvme0n1`: shared layout from `modules/disko.nix` (GPT + ESP + LUKS2 + btrfs `@`/`@home`/`@nix`)
+- UEFI boot via systemd-boot (no GRUB), but the T3610 firmware has no NVMe driver: the **ESP lives on a USB stick** (FAT label `KAFKABOOT`, pinned by `/dev/disk/by-id/usb-…`) acting as a boot relay — the firmware boots the stick, whose kernel carries the NVMe driver, unlocks the LUKS volume and mounts the btrfs root. The stick must be plugged in during `nixos-rebuild`, or systemd-boot can't write its entries (`/boot` is `nofail`).
+- Single NVMe SSD on `/dev/nvme0n1`, carrying **only** LUKS2 + btrfs (`@`/`@home`/`@nix`, no ESP) — own layout in `hosts/kafka/disko.nix`
+- No impermanence: `@home` is persistent here
 
 ### exupery (WSL2)
 
@@ -204,7 +219,8 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 3. **Editors**: Zed is the primary editor (`home/modules/code/zed.nix`, headful only). VS Code was previously retired but is now back as a secondary editor via `home/modules/code/vscode.nix` (`programs.vscode`, headful only); both are wired by `home/home.nix`.
 4. **Lua Hyprland config** — when editing `home/modules/hyprland/hyprland.nix`, remember it generates Lua, not the classic `hypr.conf` format. Use `mkLuaInline` for raw Lua, attribute sets for the rest.
 5. **`primaryMonitor` is consumed by Quickshell**: changing the option value rewrites `~/.config/quickshell/shell.qml` via `builtins.replaceStrings`.
-6. **mdadm warning at eval time** (`Neither MAILADDR nor PROGRAM has been set`) is benign — set `boot.swraid.mdadmConf` to silence it.
+6. **New home state on zola/gary must be declared** — anything a tool writes under `~` that has to outlive a reboot (a new credential store, cache, or app state directory) needs an entry in `environment.persistence."/keep".users.aristide` in `modules/impermanence.nix`, or it is wiped at the next boot. Home-manager-managed files are fine (regenerated on activation); runtime-written state is not. If something disappeared, it is still in `old_roots/<timestamp>` for 30 days — that lives at the btrfs top level, which nothing mounts at runtime, so reach it with `sudo mount -t btrfs -o subvolid=5 /dev/mapper/cryptroot /mnt/…`.
+7. **mdadm warning at eval time** (`Neither MAILADDR nor PROGRAM has been set`) is benign — set `boot.swraid.mdadmConf` to silence it.
 
 ## Making changes
 

@@ -2,7 +2,6 @@
 
 {
   imports = [
-    ./ghorg.nix
     ./git.nix
     # Désactivé : rclone-bisync est un oneshot sans TimeoutStartSec que sd-switch
     # démarre et attend pendant l'activation. Le resync initial dépasse le timeout

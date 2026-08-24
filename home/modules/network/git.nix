@@ -33,5 +33,18 @@ in
     };
   };
 
-  home.packages = [ pkgs.git-credential-manager ];
+  # gitCredentialHelper désactivé : git-credential-manager reste seul helper HTTPS.
+  programs.gh = {
+    enable = true;
+    settings = {
+      git_protocol = "ssh";
+      editor = "micro";
+    };
+    gitCredentialHelper.enable = false;
+  };
+
+  home.packages = [
+    pkgs.git-credential-manager
+    pkgs.glab # pas de module home-manager : supprimé upstream (#8066)
+  ];
 }

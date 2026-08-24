@@ -144,6 +144,8 @@
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINi5jJe0xviTwThXWub9t7JdgvJ4OSKhhPfGJSyXbpEg aristide.pichereau@gmail.com"
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMKEUyD7riAHBYuRqajNOv+kRWK7b/ORBrVNtmBCipfl aristide.pichereau@gmail.com"
+        # Hôte Windows du WSL — ssh vers exupery en passant par localhostForwarding
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK9zbhv9Y143Ra5TKB7x3+3MoYIOztyJXQcwv7M49qfb aristide@windows"
       ];
       extraGroups = [
         "networkmanager"
