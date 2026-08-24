@@ -109,7 +109,7 @@ To change the active accent at runtime: `anna set "#5277c3"`.
 
 ## Filesystem layout
 
-Each UEFI host has **its own** disko file, wired in `flake.nix`: `hosts/zola/disko.nix`, `hosts/gary/disko.nix`, `hosts/kafka/disko.nix`. zola's and gary's are byte-identical; kafka's differs (ESP on a USB stick, see its section). `modules/disko.nix` still exists but is **imported by nobody** — it is the pre-split copy, kept as dead code and missing `@keep`; don't edit it expecting an effect. (Corrected 2026-08-24 — this file previously described the shared-layout arrangement, which the per-host split replaced.)
+Each UEFI host has **its own** disko file, wired in `flake.nix`: `hosts/zola/disko.nix`, `hosts/gary/disko.nix`, `hosts/kafka/disko.nix`. zola's and gary's are byte-identical; kafka's differs (ESP on a USB stick, see its section). The pre-split shared copy `modules/disko.nix` was deleted on 2026-08-24 — imported by nobody and missing `@keep`; a merge from a stale remote branch had resurrected it along with ~56 other long-deleted files. (Corrected 2026-08-24 — this file previously described the shared-layout arrangement, which the per-host split replaced.)
 
 - zola / gary: GPT + ESP (FAT32, `/boot`, `fmask=0077`/`dmask=0077`) + LUKS2 (`allowDiscards=true`) → btrfs on `/dev/nvme0n1`
 - WSL host (exupery): no disko, no bootloader
