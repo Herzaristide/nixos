@@ -1,11 +1,21 @@
-{ ... }:
+{ pkgs, ... }:
 
+let
+  shortcuts = import ../shortcuts.nix { inherit pkgs; };
+
+  zellijKeybinds = builtins.concatStringsSep "\n" (
+    map (
+      { keys, actions, ... }:
+      "    bind \"${keys}\" { ${builtins.concatStringsSep "; " (actions ++ [ ''SwitchToMode "Normal"'' ])}; }"
+    ) shortcuts.zellij
+  );
+in
 {
   programs.zellij = {
     enable = true;
-    # Pas d'auto-start dans fish : zellij interfère avec l'intégration shell
-    # de Konsole (OSC 7, suivi de cwd côté Dolphin). Lancer manuellement via `z`.
-    enableFishIntegration = false;
+    enableFishIntegration = true;
+    attachExistingSession = true;
+    exitShellOnExit = true;
   };
 
   xdg.configFile."zellij/config.kdl".force = true;
@@ -16,17 +26,13 @@
     show_startup_tips false
     show_release_notes false
     support_kitty_keyboard_protocol true
-    copy_command "wl-copy"
     copy_clipboard "system"
     copy_on_select true
 
-    // Indices ANSI 0-15 — Alacritty remappe le slot 1 (red) vers @ACCENT@
-    // via ~/.config/accent/fragments/alacritty-colors.toml, donc tout ce qui
-    // est tagué `red` ici prend la couleur d'accent en live (comme starship/fastfetch).
     themes {
       accent {
         fg 7
-        bg 0
+        bg 1
         black 0
         red 1
         green 1
@@ -50,6 +56,12 @@
       about location="zellij:about"
       plugin-manager location="zellij:plugin-manager"
       welcome-screen location="zellij:session-manager" { welcome_screen true; }
+    }
+
+    keybinds {
+      shared_except "locked" {
+    ${zellijKeybinds}
+      }
     }
   '';
 

@@ -582,6 +582,24 @@
     }
   ];
 
+  # ── zellij (multiplexeur terminal) ───────────────────────────────────────
+  # `keys` = combo au format KDL zellij ("Alt Enter"), `actions` = liste
+  # d'actions KDL brutes rendues telles quelles dans le bloc
+  # `keybinds { shared_except "locked" { ... } }` de shell/zellij.nix — donc
+  # actives dans tous les modes sauf locked (pas seulement en mode normal).
+  zellij = [
+    {
+      keys = "Alt Enter";
+      actions = [ "NewPane" ];
+      desc = "Nouveau panneau (terminal)";
+    }
+    {
+      keys = "Alt q";
+      actions = [ "CloseFocus" ];
+      desc = "Fermer le panneau (terminal)";
+    }
+  ];
+
   # ── Alacritty (terminal) ─────────────────────────────────────────────────
   alacritty = [
     {

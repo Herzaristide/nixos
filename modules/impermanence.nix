@@ -122,6 +122,7 @@ in
 
         # État applicatif
         ".claude"
+        ".copilot"
         ".config/accent"
         ".config/chromium"
         ".config/OpenRGB" # profils de périphériques (OpenRGB.json, sizes.ors)
