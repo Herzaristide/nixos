@@ -122,6 +122,7 @@ in
 
         # État applicatif
         ".claude"
+        ".config/Claude" # app de bureau : session, historique local, config Cowork
         ".copilot"
         ".config/accent"
         ".config/chromium"
@@ -145,12 +146,19 @@ in
         ".docker"
 
         # Données
-        "ghub"
-        "gpoc"
-        "glab"
-        "gdrive"
-        "musique"
-        "Downloads"
+        "ciph3r"
+        "sc0re"
+        "f3tch"
+        "v4ult"
+        # Destiné aux disques non système et amovibles. Le dossier existe, mais
+        # aucun montage n'y est encore branché : les disques déclarés vivent
+        # toujours sous /mnt (modules/storage.nix) et udisks2 monte les
+        # amovibles dans /run/media/$USER, chemin qu'il ne sait pas changer.
+        "sh3lf"
+        # Miroir local du Drive (cf. home/modules/network/rclone.nix) : la
+        # persistance n'est PAS optionnelle ici — un bisync qui repart d'un
+        # dossier vide déclenche un --resync intégral à chaque boot.
+        "cl0ud"
       ];
     };
   };

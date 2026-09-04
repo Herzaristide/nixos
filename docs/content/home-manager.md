@@ -27,7 +27,7 @@ l'environnement utilisateur en même temps que le système.
 - `modules/alacritty.nix` — configuration du terminal.
 - `modules/hyprland/tofi.nix` — lanceur tofi (config rendue par le
   [daemon d'accent](#theming)).
-- `modules/chromium.nix` — chromium + wrappers PWA (`gemini-pwa`, `claude-pwa`,
+- `modules/chromium.nix` — chromium + wrappers PWA (`gemini-pwa`,
   `bandlab-pwa`) partageant `~/.config/chromium-$(hostname)`.
 - `modules/kde.nix` — thème minimal KDE/Qt (pour xdg-portal-kde).
 - `modules/accent/accent.nix` — installe le [daemon d'accent](#theming) et ses
@@ -39,9 +39,8 @@ l'environnement utilisateur en même temps que le système.
 
 ## Chromium & PWAs
 
-Trois wrappers PWA partagent `~/.config/chromium-$(hostname)`, tous en
+Les wrappers PWA partagent `~/.config/chromium-$(hostname)`, tous en
 `--force-dark-mode` :
 
 - `gemini-pwa` → gemini.google.com (workspace spécial Super+G)
-- `claude-pwa` → claude.ai
 - `bandlab-pwa` → bandlab.com

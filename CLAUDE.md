@@ -66,7 +66,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `modules/hyprland/hyprland.nix` — Hyprland config in **Lua** mode (`configType = "lua"`), keybinds, monitor setup, special workspaces. Has a lid-closed-layout helper script for zola.
 - `modules/alacritty.nix` — terminal config
 - `modules/hyprland/tofi.nix` — tofi application launcher (config rendue par anna, voir Theming)
-- `modules/chromium.nix` — chromium package + PWA wrappers (`gemini-pwa`, `claude-pwa`, `bandlab-pwa`, `ytmusic-pwa`) sharing `~/.config/chromium` profile
+- `modules/chromium.nix` — chromium package + PWA wrappers (`gemini-pwa`, `bandlab-pwa`, `ytmusic-pwa`) sharing `~/.config/chromium` profile. The former `claude-pwa` wrapper was dropped 2026-09-04 in favour of the `claude-desktop` package
 - `modules/kde.nix` — minimal KDE/Qt theming (for xdg-portal-kde + appearance protocol)
 - `modules/accent/accent.nix` — installs the anna engine (from the karenine flake) + its templates, systemd user service, and seed activation (see "Theming" below)
 - `modules/shell/` — `fish`, `starship`, `fastfetch`, `micro`, `direnv`, `yazi`
@@ -188,10 +188,9 @@ LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — wri
 
 ## Chromium PWAs (`home/modules/chromium.nix`)
 
-Four PWA wrappers, all sharing `~/.config/chromium`:
+Three PWA wrappers, all sharing `~/.config/chromium`:
 
 - `gemini-pwa` → gemini.google.com (also has a desktop entry; Super+G special workspace auto-launches it)
-- `claude-pwa` → claude.ai
 - `bandlab-pwa` → bandlab.com
 - `ytmusic-pwa` → music.youtube.com (Super+Y)
 
@@ -209,6 +208,7 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 ## Custom packages (`packages.x86_64-linux`)
 
 - `anna` — re-export of `inputs.karenine.packages.x86_64-linux.anna` (the unified theming + hwstats engine; see "Theming")
+- `claude-desktop` — repackaging of Anthropic's official `.deb` (`pkgs/claude-desktop/default.nix`), since the app is not in nixpkgs (PR #537215 still open). Unpacks the deb from `downloads.claude.ai` and autoPatchelfs the bundled Electron 42; `chrome-sandbox` is removed so Electron falls back to the namespace sandbox. `withCowork` (default `true`) adds qemu + OVMF for the Cowork micro-VM — that flag alone is 3 GiB of the 4.1 GiB closure. Bump by hand: read the newest version + SHA256 from the apt `Packages.gz` (command in the file header), then `nix hash convert`. Wired as a headful home-manager module (`home/modules/code/ia/claude-desktop.nix`); its state lives in `~/.config/Claude`, persisted in `modules/impermanence.nix`. Replaced the `claude-pwa` Chromium wrapper on 2026-09-04: it also backs the `special:claude` scratchpad (`home/modules/hyprland/hyprland.nix`). Note the app is single-instance (`SingleMainWindow`), so relaunching it focuses the existing window instead of opening a second one — unlike the old `chromium --app` wrapper. A `Claude` bookmark to claude.ai remains in the managed Chromium bookmarks. **Login flow**: claude.ai ends its OAuth round-trip on a `claude://` redirect, so two pieces must stay in place — `x-scheme-handler/claude` in `home/head.nix` (`xdg.mimeApps`), and `AutoLaunchProtocolsFromOrigins` in the Chromium managed policy (`home/modules/chromium.nix`), which skips the "Open Claude?" dialog for the claude.ai/claude.com origins. The app itself cannot register the handler: it tries to write `~/.config/mimeapps.list`, which home-manager owns read-only (harmless ERROR line at every launch). **Do not use the `${NIXOS_OZONE_WL:+…}` idiom in the wrapper**: `wrapGAppsHook3` emits a *binary* wrapper, which expands nothing, so the literal string reached Chromium as the first non-`-` argument — i.e. as the URL to open — and swallowed the `claude://` deep link, leaving the login silently stuck. Plain `--ozone-platform-hint=auto` covers both Wayland and X11 without any shell test.
 - `iso` — bootable installer image (`hosts/iso/configuration.nix`) that embeds a read-only copy of this flake under `/etc/nixos` (via `environment.etc."nixos".source = inputs.self`). Build with `nix build .#iso`. Boots into a live NixOS with `nixos-install-here <hostname>` on the PATH, which runs disko (partition + LUKS + btrfs) from `/tmp/disko-luks-passphrase` (prompted interactively if absent) and then `nixos-install --flake`.
   - **Security note**: the ISO enables SSH with `PermitRootLogin = "yes"` and an empty root password, for convenience during headless/remote installs. Don't leave a booted installer connected to an untrusted network — anyone on the same segment can `ssh root@<ip>` with no password until the target host's own SSH config (key-only, see `network.nix`) takes over post-install.
 
@@ -216,7 +216,7 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 
 1. **NVIDIA on zola**: `WLR_NO_HARDWARE_CURSORS=1` is mandatory — disabling it kills the cursor on Wayland.
 2. **ROCm on gary**: don't bring back a custom `gpuTargets` overlay — upstream rocBLAS already has `gfx1100` and we map the RX 7600 XT (Navi 33 / gfx1102) onto it via `HSA_OVERRIDE_GFX_VERSION=11.0.0`. Any overlay that touches `gpuTargets` diverges from the Hydra cache and triggers a ~30-minute Tensile kernel regeneration.
-3. **Editors**: Zed is the primary editor (`home/modules/code/zed.nix`, headful only). VS Code was previously retired but is now back as a secondary editor via `home/modules/code/vscode.nix` (`programs.vscode`, headful only); both are wired by `home/home.nix`.
+3. **Editors**: Zed is the only editor (`home/modules/code/zed.nix`, headful only, wired by `home/home.nix`). VS Code was briefly back as a secondary editor (`home/modules/code/vscode.nix`) but was removed again on 2026-09-04 — don't re-add it without asking.
 4. **Lua Hyprland config** — when editing `home/modules/hyprland/hyprland.nix`, remember it generates Lua, not the classic `hypr.conf` format. Use `mkLuaInline` for raw Lua, attribute sets for the rest.
 5. **`primaryMonitor` is consumed by Quickshell**: changing the option value rewrites `~/.config/quickshell/shell.qml` via `builtins.replaceStrings`.
 6. **New home state on zola/gary must be declared** — anything a tool writes under `~` that has to outlive a reboot (a new credential store, cache, or app state directory) needs an entry in `environment.persistence."/keep".users.aristide` in `modules/impermanence.nix`, or it is wiped at the next boot. Home-manager-managed files are fine (regenerated on activation); runtime-written state is not. If something disappeared, it is still in `old_roots/<timestamp>` for 30 days — that lives at the btrfs top level, which nothing mounts at runtime, so reach it with `sudo mount -t btrfs -o subvolid=5 /dev/mapper/cryptroot /mnt/…`.

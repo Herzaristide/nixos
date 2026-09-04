@@ -70,7 +70,11 @@
 
       # Nix
       nr = "nixos-rebuild";
-      nrs = "sudo nixos-rebuild switch --flake github:Herzaristide/nixos#(hostname)";
+      # Le dépôt vit dans /etc/nixos : le rebuild part du working tree local
+      # (modifs non commitées comprises) au lieu du dernier push GitHub.
+      # `nixos-rebuild` déduirait déjà /etc/nixos#(hostname) sans --flake, mais
+      # une abréviation se développe à l'écran — autant qu'elle dise ce qu'elle fait.
+      nrs = "sudo nixos-rebuild switch --flake /etc/nixos#(hostname)";
       nfu = "nix flake update";
       nfc = "nix flake check";
     };

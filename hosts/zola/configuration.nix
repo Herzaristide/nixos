@@ -196,8 +196,11 @@
   # — noter le casse mixte de `__VK_LAYER_NV_optimus`, seule graphie reconnue
   # par le driver.
   #
-  # Variante CUDA pré-buildée (cuda-maintainers), surcharge le pkgs.ollama de common.nix.
-  services.ollama.package = pkgs.ollama-cuda;
+  # ollama CUDA, ciblé sur la seule arch de zola (RTX 3070 Mobile = sm_86) au lieu
+  # des ~9 archs par défaut : ollama-cuda n'est dans aucun cache (unfree → pas sur
+  # Hydra, 404 sur cuda-maintainers), donc il recompile en local ; ne compiler
+  # qu'une arch divise d'autant le temps de build.
+  services.ollama.package = pkgs.ollama-cuda.override { cudaArches = [ "sm_86" ]; };
   services.ollama.environmentVariables = {
     __NV_PRIME_RENDER_OFFLOAD = "1";
     __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";

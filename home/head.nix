@@ -105,6 +105,9 @@
       "x-scheme-handler/unknown" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/file" = [ "zed-url-handler.desktop" ];
       "x-scheme-handler/figma" = [ "figma.desktop" ];
+      # Déclaré ici car l'app tente sinon d'écrire elle-même dans
+      # mimeapps.list, qui est en lecture seule (géré par home-manager).
+      "x-scheme-handler/claude" = [ "com.anthropic.Claude.desktop" ];
       "x-terminal-emulator" = [ "Alacritty.desktop" ];
       "inode/directory" = [ "zed-url-handler.desktop" ];
       "application/pdf" = [ "org.kde.okular.desktop" ];

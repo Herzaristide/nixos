@@ -147,7 +147,7 @@ in
         hide_root = true;
         auto_fold_dirs = false;
         starts_open = true;
-        git_status = false;
+        git_status = true;
         sticky_scroll = false;
         scrollbar = {
           show = "never";

@@ -1,4 +1,9 @@
-{ pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
   # Fabrique un lanceur PWA (fenêtre dédiée, sans barre d'onglets ni champ URL)
@@ -80,8 +85,25 @@ in
   # directement le fichier de policy par-utilisateur.
   xdg.configFile."chromium/policies/managed/preferences.json".text = builtins.toJSON {
     TranslateEnabled = false;
+    # Le profil Chromium est persisté : il a mémorisé ~/Downloads et ignore
+    # XDG_DOWNLOAD_DIR une fois créé. Seule la policy force le changement.
+    DownloadDirectory = "${config.home.homeDirectory}/f3tch";
     # 2 = aucun site ne peut afficher de notifications (bloque les pubs push).
     DefaultNotificationsSetting = 2;
+
+    # Retour de connexion de Claude Desktop : claude.ai redirige vers une URL
+    # `claude://` à la fin du flow OAuth. Sans cette policy, Chromium ouvre une
+    # boîte de dialogue « Ouvrir Claude ? » à chaque fois et le retour se perd
+    # si elle est ignorée. Limité aux origines d'Anthropic.
+    AutoLaunchProtocolsFromOrigins = [
+      {
+        protocol = "claude";
+        allowed_origins = [
+          "https://claude.ai"
+          "https://claude.com"
+        ];
+      }
+    ];
   };
 
   xdg.configFile."chromium/policies/managed/bookmarks.json".text = builtins.toJSON {
@@ -107,7 +129,6 @@ in
     [
       (writeShellScriptBin "hypr-gemini-launch" "gemini-pwa")
       (writeShellScriptBin "gemini-pwa" "chromium --app=https://gemini.google.com --user-data-dir=$HOME/.config/chromium")
-      (writeShellScriptBin "claude-pwa" "chromium --app=https://claude.ai --user-data-dir=$HOME/.config/chromium")
       (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium")
       (writeShellScriptBin "deezer-pwa" "chromium --app=https://www.deezer.com --user-data-dir=$HOME/.config/chromium")
     ]
@@ -116,15 +137,6 @@ in
   # Entrées de bureau : les PWA définies à la main + la suite Google générée.
   # Un seul bloc `xdg.desktopEntries` pour éviter un conflit d'attribut Nix.
   xdg.desktopEntries = {
-    claude-chrome = {
-      name = "Claude";
-      comment = "Claude AI assistant in a Chromium PWA";
-      exec = "claude-pwa";
-      icon = "claude";
-      categories = [ "Utility" ];
-      startupNotify = true;
-    };
-
     # BandLab PWA (music production web app)
     bandlab-chrome = {
       name = "BandLab";

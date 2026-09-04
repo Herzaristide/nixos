@@ -213,7 +213,7 @@ in
         }
         {
           workspace = "special:claude";
-          on_created_empty = "claude-pwa";
+          on_created_empty = "claude-desktop";
           gaps_out = {
             top = 60;
             right = 300;

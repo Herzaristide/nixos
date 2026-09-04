@@ -6,7 +6,9 @@ let
   zellijKeybinds = builtins.concatStringsSep "\n" (
     map (
       { keys, actions, ... }:
-      "    bind \"${keys}\" { ${builtins.concatStringsSep "; " (actions ++ [ ''SwitchToMode "Normal"'' ])}; }"
+      "    bind \"${keys}\" { ${
+            builtins.concatStringsSep "; " (actions ++ [ ''SwitchToMode "Normal"'' ])
+          }; }"
     ) shortcuts.zellij
   );
 in
@@ -14,7 +16,10 @@ in
   programs.zellij = {
     enable = true;
     enableFishIntegration = true;
-    attachExistingSession = true;
+    # false = une session neuve par terminal. À true, l'auto-start fish lance
+    # `zellij attach -c` (sans nom), qui rattache toutes les fenêtres à la
+    # dernière session vivante : mêmes onglets, mêmes panes, curseur partagé.
+    attachExistingSession = false;
     exitShellOnExit = true;
   };
 

@@ -42,10 +42,14 @@
       # anna — moteur unifié (thème accent/palette + stats matérielles), fourni
       # par le flake karenine (auparavant le paquet local accent-daemon).
       anna = inputs.karenine.packages.${system}.anna;
+
+      # Claude Desktop : repackaging du .deb officiel (absent de nixpkgs).
+      claude-desktop = pkgs.callPackage ./pkgs/claude-desktop { };
     in
     {
       packages.${system} = {
         anna = anna;
+        claude-desktop = claude-desktop;
         # Image ISO installateur embarquant ce flake (voir hosts/iso).
         iso = self.nixosConfigurations.iso.config.system.build.isoImage;
       };

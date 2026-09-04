@@ -18,7 +18,7 @@ let
   remote = "gdrive";
 
   # Dossier local synchronisé bidirectionnellement avec la racine du Drive.
-  localDir = "${config.home.homeDirectory}/gdrive";
+  localDir = "${config.home.homeDirectory}/cl0ud";
 
   # Fréquence de synchronisation.
   interval = "5m";
