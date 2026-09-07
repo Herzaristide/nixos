@@ -5,6 +5,7 @@
 
 let
   headlessModules = [
+    ./xdg.nix
     ./modules/network
     ./modules/shell
     ./modules/code
