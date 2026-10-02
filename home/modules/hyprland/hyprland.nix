@@ -131,8 +131,8 @@ in
 
         decoration = {
           rounding = 2;
-          active_opacity = 0.75;
-          inactive_opacity = 0.60;
+          active_opacity = 0.90;
+          inactive_opacity = 0.80;
         };
 
         misc = {
@@ -196,7 +196,8 @@ in
         }
         {
           workspace = "9";
-          monitor = "DP-4";
+          # Le HP, par description : DP-4 sur gary, DP-3 sur zola.
+          monitor = "desc:HP Inc. HP E24q G5 CNC3021TQS";
           default = true;
         }
         # gaps_out: css_gap = soit un int soit { top, right, bottom, left }.

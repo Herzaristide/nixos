@@ -41,7 +41,7 @@
       # entier : la racine du home donne accès à ~/.ssh, ~/.aws et
       # ~/.config/rclone, tous persistés par impermanence. Leur mode 0700 ne
       # protège de rien face à un process tournant sous le même uid.
-      # Ajouter un dossier ici est une décision explicite : ~/v4ult, l'archive,
+      # Ajouter un dossier ici est une décision explicite : ~/d3pot, l'archive,
       # en est volontairement absent.
       filesystem = {
         command = lib.getExe pkgs.mcp-server-filesystem;

@@ -219,6 +219,22 @@
       desc = "Scratchpad Claude";
     }
 
+    # Tap sur Super seule. `release = true` est indispensable : sur le press,
+    # l'action partirait dès qu'on enfonce Super pour composer Super+X.
+    # Le shadowing de Hyprland (KeybindManager.cpp, shadowKeybinds) neutralise
+    # ce bind dès qu'une autre touche est pressée pendant que Super est tenue,
+    # donc Super+D n'ouvre pas le dock en plus de Dolphin.
+    # "dock" épingle le RightDock de karenine (propriété `pinned`) : il reste
+    # ouvert sans curseur dessus, jusqu'au tap suivant ou à Échap.
+    {
+      keys = "SUPER + SUPER_L";
+      lua = ''hl.dsp.exec_cmd("echo dock > /tmp/qs-panel.fifo")'';
+      opts = {
+        release = true;
+      };
+      desc = "Dock de droite (tap Super)";
+    }
+
     {
       keys = "SUPER + F1";
       lua = ''hl.dsp.exec_cmd("echo widget:0 > /tmp/qs-panel.fifo")'';
@@ -261,10 +277,37 @@
       };
       desc = "Redimensionner fenêtre (drag souris)";
     }
+    # Pincement pouce-index devant la webcam (anna, module gesture) : anna
+    # maintient F24 sur un clavier virtuel uinput pendant le pincement. Une
+    # touche et non Super + clic : aucun clic n'atteint l'application (pas de
+    # sélection de texte), et le tap de Super (dock) ne peut pas partir au
+    # relâchement.
+    {
+      keys = "F24";
+      lua = "hl.dsp.window.drag()";
+      opts = {
+        mouse = true;
+      };
+      desc = "Déplacer fenêtre (pincement webcam, anna)";
+    }
+
+    # Captures d'écran : copiées dans le presse-papiers et enregistrées dans
+    # /tmp, comme le faisait la ligne « capture » du popup de karenine (qui ne
+    # contient plus que l'audio).
+    {
+      keys = "Print";
+      lua = ''hl.dsp.exec_cmd("grimblast --notify copysave area /tmp/screenshot-$(date +%Y%m%d_%H%M%S).png")'';
+      desc = "Capture d'une zone";
+    }
+    {
+      keys = "SHIFT + Print";
+      lua = ''hl.dsp.exec_cmd("grimblast --notify copysave screen /tmp/screenshot-$(date +%Y%m%d_%H%M%S).png")'';
+      desc = "Capture de l'écran entier";
+    }
 
     {
       keys = "XF86AudioRaiseVolume";
-      lua = ''hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 3%+")'';
+      lua = ''hl.dsp.exec_cmd("wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 3%+")'';
       opts = {
         locked = true;
         repeating = true;
@@ -323,7 +366,7 @@
       # reconfigure le moniteur directement, sans passer par hyprctl.
       lua = ''
         function()
-          hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto-left", scale = 1.33 })
+          hl.monitor({ output = "eDP-1", mode = "preferred", position = "1536x900", scale = 1.25 })
         end'';
       opts = {
         locked = true;

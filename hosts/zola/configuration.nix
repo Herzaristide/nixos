@@ -6,6 +6,13 @@
   ...
 }:
 
+let
+  # nixpkgs figé pour les paquets CUDA (voir l'input `nixpkgs-cuda`).
+  pkgsCuda = import inputs.nixpkgs-cuda {
+    inherit (pkgs.stdenv.hostPlatform) system;
+    config.allowUnfree = true;
+  };
+in
 {
   imports = [
     inputs.home-manager.nixosModules.default
@@ -118,13 +125,15 @@
   };
 
   # NVIDIA proprietary drivers.
-  # Pas de `cudaSupport` global : il recompilait ~29 paquets absents du cache
-  # cuda-maintainers. CUDA est activé à la carte — ollama-cuda (pré-buildé) et
-  # blender via l'overlay ci-dessous.
+  # Pas de `cudaSupport` global : il recompilait ~29 paquets absents de tout
+  # cache. CUDA est activé à la carte — ollama-cuda (plus bas) et blender via
+  # l'overlay ci-dessous — et tous deux viennent de `pkgsCuda`, le nixpkgs
+  # figé de l'input `nixpkgs-cuda` (flake.nix) : un bump de nixpkgs ne les
+  # recompile plus, seul un bump de cet input le fait.
   nixpkgs.config.nvidia.acceptLicense = true;
   nixpkgs.overlays = [
     (final: prev: {
-      blender = prev.blender.override { cudaSupport = true; };
+      blender = pkgsCuda.blender.override { cudaSupport = true; };
     })
   ];
 
@@ -182,14 +191,6 @@
     libva-utils
   ];
 
-  # Nix cache for CUDA
-  nix.settings = {
-    substituters = [ "https://cuda-maintainers.cachix.org" ];
-    trusted-public-keys = [
-      "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
-    ];
-  };
-
   # PRIME offload : sans ces variables le service ollama tourne sur l'iGPU
   # Intel, qui reste le GPU par défaut. Ce sont exactement celles qu'exporte le
   # wrapper `nvidia-offload` de nixpkgs (nixos/modules/hardware/video/nvidia.nix)
@@ -198,9 +199,9 @@
   #
   # ollama CUDA, ciblé sur la seule arch de zola (RTX 3070 Mobile = sm_86) au lieu
   # des ~9 archs par défaut : ollama-cuda n'est dans aucun cache (unfree → pas sur
-  # Hydra, 404 sur cuda-maintainers), donc il recompile en local ; ne compiler
-  # qu'une arch divise d'autant le temps de build.
-  services.ollama.package = pkgs.ollama-cuda.override { cudaArches = [ "sm_86" ]; };
+  # Hydra), donc il compile en local à chaque bump de `nixpkgs-cuda` ; ne
+  # compiler qu'une arch divise d'autant le temps de build.
+  services.ollama.package = pkgsCuda.ollama-cuda.override { cudaArches = [ "sm_86" ]; };
   services.ollama.environmentVariables = {
     __NV_PRIME_RENDER_OFFLOAD = "1";
     __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";

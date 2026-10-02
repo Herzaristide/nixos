@@ -15,16 +15,19 @@ let
   tree = [
     "ciph3r"
     "cl0ud"
+    "d3pot"
     "f3tch"
     "sc0re"
     "sh3lf"
+    # Vault Obsidian (cf. home/modules/obsidian.nix). Le nom est réattribué :
+    # l'archive qui le portait est devenue d3pot.
     "v4ult"
-    # Les trois dossiers XDG qui ont un sens ici vivent sous v4ult plutôt qu'à
-    # la racine du home : v4ult est déjà persisté en entier, donc rien à
+    # Les trois dossiers XDG qui ont un sens ici vivent sous d3pot plutôt qu'à
+    # la racine du home : d3pot est déjà persisté en entier, donc rien à
     # ajouter à impermanence.
-    "v4ult/img"
-    "v4ult/snd"
-    "v4ult/vid"
+    "d3pot/img"
+    "d3pot/snd"
+    "d3pot/vid"
   ];
 in
 {
@@ -36,12 +39,12 @@ in
     enable = true;
 
     download = "${home}/f3tch";
-    documents = "${home}/v4ult";
-    # ~/v4ult/gpoc et consorts : c'est là que vivent les dépôts, pas ~/Projects.
-    projects = "${home}/v4ult";
-    pictures = "${home}/v4ult/img";
-    music = "${home}/v4ult/snd";
-    videos = "${home}/v4ult/vid";
+    documents = "${home}/d3pot";
+    # ~/d3pot/gpoc et consorts : c'est là que vivent les dépôts, pas ~/Projects.
+    projects = "${home}/d3pot";
+    pictures = "${home}/d3pot/img";
+    music = "${home}/d3pot/snd";
+    videos = "${home}/d3pot/vid";
 
     # Pas d'équivalent dans cette arborescence. On pointe sur $HOME plutôt que
     # de mettre `null` : `null` retire l'entrée de user-dirs.dirs, et GLib
@@ -58,8 +61,8 @@ in
     # pas user-dirs.dirs (scripts, yt-dlp) dépendent de cet export.
     setSessionVariables = true;
 
-    # Ne créerait que les dossiers XDG ci-dessus ; ciph3r, sc0re, cl0ud et
-    # sh3lf n'en sont pas. Une seule liste (`tree`) décrit l'arborescence.
+    # Ne créerait que les dossiers XDG ci-dessus ; ciph3r, sc0re, cl0ud,
+    # sh3lf et v4ult n'en sont pas. Une seule liste (`tree`) décrit l'arborescence.
     createDirectories = false;
   };
 

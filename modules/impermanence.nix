@@ -132,8 +132,10 @@ in
         ".local/share/direnv" # allow-list ; sans elle, tout devDir redemande `direnv allow`
         ".local/state/wireplumber" # volumes et routage audio par périphérique
         ".local/share/zed" # extensions + historique de l'éditeur
+        ".local/share/quickshell" # karenine : notes (notes.json) + écran de l'interface (display.json)
         ".config/penpot-desktop"
         ".local/share/onlyoffice"
+        ".config/obsidian" # liste des vaults ouverts + géométrie des fenêtres
 
         # Gros téléchargements — régénérables mais lents (SDK Android 4,6 Go,
         # modèles whisper), et le cache d'uv, seul runtime dont l'état pèse.
@@ -149,7 +151,8 @@ in
         "ciph3r"
         "sc0re"
         "f3tch"
-        "v4ult"
+        "d3pot" # l'archive : documents, dépôts et médias (ex-v4ult)
+        "v4ult" # vault Obsidian — des notes, donc rien de régénérable ici
         # Destiné aux disques non système et amovibles. Le dossier existe, mais
         # aucun montage n'y est encore branché : les disques déclarés vivent
         # toujours sous /mnt (modules/storage.nix) et udisks2 monte les
@@ -159,6 +162,11 @@ in
         # persistance n'est PAS optionnelle ici — un bisync qui repart d'un
         # dossier vide déclenche un --resync intégral à chaque boot.
         "cl0ud"
+
+        # Caches de shaders : régénérables, mais les reconstruire à chaque boot
+        # se paie en saccades dans toute application GPU (Blender, Chromium…).
+        ".cache/mesa_shader_cache" # AMD/Intel (gary, iGPU de zola)
+        ".cache/nvidia" # GLCache (zola)
       ];
     };
   };

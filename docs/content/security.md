@@ -20,7 +20,7 @@ Gérés principalement dans `modules/common.nix` (voir [Modules système](#syste
 Groupes :
 
 ```
-networkmanager wheel docker video render audio storage greeter gamemode
+networkmanager wheel docker video render audio storage greeter
 ```
 
 ## Sudo

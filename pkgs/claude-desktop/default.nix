@@ -57,7 +57,7 @@
 }:
 
 let
-  version = "1.46388.2";
+  version = "2.9939.4";
 
   runtimeDeps = [
     xdg-utils # xdg-open pour les liens externes
@@ -74,7 +74,7 @@ stdenv.mkDerivation {
 
   src = fetchurl {
     url = "https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_${version}_amd64.deb";
-    hash = "sha256-mL9U6F5JFgaMQoFFmw8EMdj/aANHc/PumDEdcgZWarE=";
+    hash = "sha256-PP3bI78pEeBeJ7TtOFa455XflGQ7LDW1nesxfPmVvKA=";
   };
 
   nativeBuildInputs = [

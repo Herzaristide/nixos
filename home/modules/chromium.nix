@@ -68,6 +68,13 @@ let
       url = "https://maps.google.com";
     };
   };
+
+  duolingo = mkPwa {
+    id = "duolingo";
+    name = "Duolingo";
+    url = "https://www.duolingo.com";
+    categories = [ "Education" ];
+  };
 in
 {
   programs.chromium = {
@@ -132,6 +139,7 @@ in
       (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium")
       (writeShellScriptBin "deezer-pwa" "chromium --app=https://www.deezer.com --user-data-dir=$HOME/.config/chromium")
     ]
+    ++ [ duolingo.package ]
     ++ map (p: p.package) (lib.attrValues googlePwas);
 
   # Entrées de bureau : les PWA définies à la main + la suite Google générée.
@@ -162,6 +170,8 @@ in
       ];
       startupNotify = true;
     };
+
+    duolingo-chrome = duolingo.desktopEntry;
   }
   // lib.mapAttrs' (id: p: lib.nameValuePair "${id}-chrome" p.desktopEntry) googlePwas;
 }

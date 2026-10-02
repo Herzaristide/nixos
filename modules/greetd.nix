@@ -130,7 +130,7 @@ let
   # Le greeter doit être épinglé sur le même GPU que la session : sur gary les
   # écrans sont câblés sur l'iGPU, et sans ce pinning aquamarine choisirait le
   # dGPU, où les sorties portent d'autres noms (DP-2/DP-1) — les lignes monitor
-  # ci-dessus, dont la rotation de DP-4, ne matcheraient plus.
+  # ci-dessus, dont la rotation du HP, ne matcheraient plus.
   greeterSession = pkgs.writeShellScriptBin "greetd-hyprland-session" ''
     ${lib.optionalString (config.renderDevice != null) ''
       if [ -e "${config.renderDevice}" ]; then

@@ -105,6 +105,11 @@
       "x-scheme-handler/unknown" = [ "chromium-browser.desktop" ];
       "x-scheme-handler/file" = [ "zed-url-handler.desktop" ];
       "x-scheme-handler/figma" = [ "figma.desktop" ];
+      # Liens `obsidian://open?vault=…` (backlinks depuis une autre app) :
+      # l'entrée .desktop du paquet déclare bien le scheme, mais
+      # x-scheme-handler/unknown pointe sur Chromium juste au-dessus et gagne
+      # dès que mimeinfo.cache n'est pas à jour.
+      "x-scheme-handler/obsidian" = [ "obsidian.desktop" ];
       # Déclaré ici car l'app tente sinon d'écrire elle-même dans
       # mimeapps.list, qui est en lecture seule (géré par home-manager).
       "x-scheme-handler/claude" = [ "com.anthropic.Claude.desktop" ];

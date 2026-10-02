@@ -31,6 +31,31 @@ let
     fi
     exec ${quickshell}/bin/quickshell -p ${config.xdg.configHome}/quickshell/lock.qml
   '';
+
+  # Rallumage de l'écran au sortir de veille.
+  #
+  # hypridle exécute after_sleep_cmd dès qu'il reçoit PrepareForSleep=false,
+  # donc AVANT que logind ait rendu /dev/dri/* à la session. Un `dpms on` à cet
+  # instant répond « ok » mais ne produit aucun trafic DRM (vérifié dans
+  # $XDG_RUNTIME_DIR/hypr/*/hyprland.log) : il ne fait que basculer le drapeau
+  # interne de Hyprland. Juste derrière, la passe « Restoring after VT switch »
+  # d'aquamarine constate « eDP-1 is disabled, releasing crtc 108 » et libère la
+  # CRTC — l'écran garde encore l'ancien framebuffer (le lockscreen) quelques
+  # secondes, puis passe au noir définitivement. Hyprland se croyant allumé,
+  # tout `dpms on` ultérieur devient un no-op ; seul un TTY, qui fait son propre
+  # modeset, répond encore. (Un retour de VT, lui, journalise « Skipping
+  # connector eDP-1, has crtc 108 and is connected » et ne casse rien.)
+  #
+  # D'où : attendre le retour des devices, puis forcer un cycle off→on, seul
+  # moyen de garantir un vrai commit DRM et la réassignation de la CRTC.
+  # `hyprctl` sans chemin absolu, comme les autres commandes hypridle du
+  # fichier : le service hérite du PATH de la session graphique.
+  wakeDisplay = pkgs.writeShellScript "hypr-wake-display" ''
+    ${pkgs.coreutils}/bin/sleep 2
+    hyprctl dispatch 'hl.dsp.dpms("off")'
+    ${pkgs.coreutils}/bin/sleep 1
+    hyprctl dispatch 'hl.dsp.dpms("on")'
+  '';
 in
 {
   # hypridle : verrouille après 30 min d'inactivité, DPMS peu après, et
@@ -43,9 +68,8 @@ in
       general = {
         lock_cmd = "${lockSession}/bin/lock-session";
         before_sleep_cmd = "loginctl lock-session";
-        # Syntaxe Lua : la session est en config Lua, où `hyprctl dispatch dpms on`
-        # (forme hyprlang) est rejeté par le parseur.
-        after_sleep_cmd = ''hyprctl dispatch 'hl.dsp.dpms("on")' '';
+        # Pas un simple `dpms on` : voir le commentaire de wakeDisplay ci-dessus.
+        after_sleep_cmd = "${wakeDisplay}";
       };
 
       listener = [
