@@ -70,6 +70,17 @@ in
     powertop.enable = true;
   };
 
+  # `powertop --auto-tune` passe tous les périphériques USB en autosuspend
+  # (power/control=auto) avec le délai kernel par défaut de 2 s : le récepteur
+  # du clavier Logitech s'endormait à chaque pause et retenait les frappes
+  # ~2 s au réveil. powertop ne touche qu'à `control`, pas au délai : on
+  # rallonge donc celui-ci à 5 min, au branchement, pour le récepteur Logitech
+  # et le dongle de la souris Corsair Katar Pro.
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="046d", ATTR{idProduct}=="c548", ATTR{power/autosuspend_delay_ms}="300000"
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1b1c", ATTR{idProduct}=="1b94", ATTR{power/autosuspend_delay_ms}="300000"
+  '';
+
   # CPU: Intel — KVM virtualization + microcode update
   boot.kernelModules = [ "kvm-intel" ];
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
