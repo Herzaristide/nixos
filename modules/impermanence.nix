@@ -136,6 +136,7 @@ in
         ".config/penpot-desktop"
         ".local/share/onlyoffice"
         ".config/obsidian" # liste des vaults ouverts + géométrie des fenêtres
+        ".local/share/infinite-fusion" # jeu (clone git, plusieurs Go) + préfixe Wine, où vivent les sauvegardes
 
         # Gros téléchargements — régénérables mais lents (SDK Android 4,6 Go,
         # modèles whisper), et le cache d'uv, seul runtime dont l'état pèse.
