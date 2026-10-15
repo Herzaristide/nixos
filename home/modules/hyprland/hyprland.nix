@@ -41,6 +41,40 @@ let
 
   wallpaper = ../../../src/cheng-feng-psdV2Rl-GvU-unsplash.jpg;
 
+  # L'image est étendue sur les deux écrans du bureau, empilés verticalement
+  # (cf. modules/monitors.nix) : HP 1600×900 logiques en 0x0, Samsung 1536×864
+  # en 0x900, soit une boîte de 1600×1764. On la remplit à l'échelle 1,6 (la
+  # définition native du HP) puis on y découpe le rectangle de chaque écran.
+  # À recalculer si la disposition change dans monitors.nix.
+  wallpaperSplit = pkgs.runCommand "wallpaper-split" { nativeBuildInputs = [ pkgs.imagemagick ]; } ''
+    mkdir -p $out
+    magick ${wallpaper} -resize 2560x2822^ -gravity center -extent 2560x2822 box.png
+    magick box.png -crop 2560x1440+0+0 +repage $out/hp.png
+    magick box.png -crop 2458x1382+0+1440 +repage $out/samsung.png
+  '';
+
+  # Les connecteurs diffèrent entre gary et zola : on reconnaît les écrans du
+  # bureau par leur description EDID ; tout autre écran reçoit l'image entière.
+  setWallpaper = pkgs.writeShellApplication {
+    name = "set-wallpaper";
+    runtimeInputs = [
+      pkgs.awww
+      pkgs.jq
+    ];
+    text = ''
+      until awww query >/dev/null 2>&1; do sleep 0.1; done
+      hyprctl monitors -j | jq -r '.[] | "\(.name)\t\(.description)"' |
+        while IFS=$'\t' read -r name desc; do
+          case "$desc" in
+          "HP Inc. HP E24q G5 CNC3021TQS"*) img=${wallpaperSplit}/hp.png ;;
+          "Samsung Electric Company C27R50x H9JTB00510"*) img=${wallpaperSplit}/samsung.png ;;
+          *) img=${wallpaper} ;;
+          esac
+          awww img -o "$name" "$img" --transition-type=fade --transition-duration 0.3 --transition-fps 255
+        done
+    '';
+  };
+
   shortcuts = import ../shortcuts.nix {
     inherit pkgs;
     lidLayoutPath = toString hyprClosedLidLayout;
@@ -415,7 +449,7 @@ in
         hl.exec_cmd("${hyprClosedLidLayout}")
         hl.exec_cmd("quickshell")
         hl.exec_cmd("awww-daemon")
-        hl.exec_cmd("sh -c 'until [ -S /run/user/$(id -u)/wayland-1-awww-daemon.sock ]; do sleep 0.1; done; awww img ${wallpaper} --transition-type=fade --transition-duration 0.3 --transition-fps 255'")
+        hl.exec_cmd("${lib.getExe setWallpaper}")
       end)
     '';
   };
