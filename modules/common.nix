@@ -168,11 +168,12 @@
       setSocketVariable = true;
     };
 
-    services.ollama = {
-      enable = true;
-      host = "127.0.0.1";
-      package = lib.mkDefault pkgs.ollama; # zola surcharge par ollama-cuda
-    };
+    # ollama désactivé pour le moment (voir aussi hosts/{gary,zola}/configuration.nix).
+    # services.ollama = {
+    #   enable = true;
+    #   host = "127.0.0.1";
+    #   package = lib.mkDefault pkgs.ollama; # zola surcharge par ollama-cuda
+    # };
 
     # Périphériques Logitech sans fil (clavier MX Keys Mini via récepteur Logi Bolt) :
     # installe Solaar + les règles udev qui donnent l'accès aux /dev/hidraw du récepteur

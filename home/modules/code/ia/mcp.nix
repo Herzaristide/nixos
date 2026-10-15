@@ -68,13 +68,13 @@
       # Pilotage de Blender : le serveur parle à l'add-on BlenderMCP (socket
       # 9876, déposé par home/modules/blender.nix) — Blender doit tourner et
       # l'add-on être connecté pour que les outils répondent.
-      # Seul serveur stdio encore lancé par un résolveur externe : blender-mcp
-      # n'est pas packagé dans nixpkgs. `uvx` le télécharge donc à chaque
-      # démarrage, sans épinglage — à figer sur une version exacte
-      # (`blender-mcp==x.y.z`) ou à packager quand l'occasion se présente.
+      # Seul serveur stdio encore lancé par un résolveur externe :
+      # mcp-for-blender (ex-blender-mcp, renommé en 2.x) n'est pas packagé
+      # dans nixpkgs. `uvx` le résout, mais épinglé sur la release de
+      # home/modules/blender-mcp-release.nix — la même que l'add-on.
       blender = {
         command = "${pkgs.uv}/bin/uvx";
-        args = [ "blender-mcp" ];
+        args = [ "mcp-for-blender==${(import ../../blender-mcp-release.nix).version}" ];
         type = "stdio";
       };
       penpot = {

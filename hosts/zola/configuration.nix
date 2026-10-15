@@ -212,11 +212,13 @@ in
   # des ~9 archs par défaut : ollama-cuda n'est dans aucun cache (unfree → pas sur
   # Hydra), donc il compile en local à chaque bump de `nixpkgs-cuda` ; ne
   # compiler qu'une arch divise d'autant le temps de build.
-  services.ollama.package = pkgsCuda.ollama-cuda.override { cudaArches = [ "sm_86" ]; };
-  services.ollama.environmentVariables = {
-    __NV_PRIME_RENDER_OFFLOAD = "1";
-    __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";
-    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    __VK_LAYER_NV_optimus = "NVIDIA_only";
-  };
+  #
+  # ollama désactivé pour le moment (voir modules/common.nix).
+  # services.ollama.package = pkgsCuda.ollama-cuda.override { cudaArches = [ "sm_86" ]; };
+  # services.ollama.environmentVariables = {
+  #   __NV_PRIME_RENDER_OFFLOAD = "1";
+  #   __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";
+  #   __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+  #   __VK_LAYER_NV_optimus = "NVIDIA_only";
+  # };
 }

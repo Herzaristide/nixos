@@ -15,12 +15,10 @@ in
 {
   programs.zellij = {
     enable = true;
-    enableFishIntegration = true;
-    # false = une session neuve par terminal. À true, l'auto-start fish lance
-    # `zellij attach -c` (sans nom), qui rattache toutes les fenêtres à la
-    # dernière session vivante : mêmes onglets, mêmes panes, curseur partagé.
-    attachExistingSession = false;
-    exitShellOnExit = true;
+    # false = les terminaux s'ouvrent sur fish nu ; zellij se lance à la main
+    # (abbr `z`). À true, home-manager ajoute à fish un auto-start qui ouvre
+    # zellij dans chaque nouveau shell interactif.
+    enableFishIntegration = false;
   };
 
   xdg.configFile."zellij/config.kdl".force = true;

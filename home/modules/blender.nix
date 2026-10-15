@@ -6,15 +6,26 @@
 
 let
   # Add-on socket (port 9876) auquel le serveur MCP `blender` se connecte.
-  # Côté Nix on ne fait que déposer le fichier : il reste à cocher l'add-on
-  # dans Preferences → Add-ons, puis « Connect to MCP server » dans le panneau
-  # latéral (N) → BlenderMCP.
-  blenderMcpAddon = pkgs.fetchFromGitHub {
-    owner = "ahujasid";
-    repo = "blender-mcp";
-    rev = "6641189231caf3752302ae20591bc87fda85fc4e";
-    hash = "sha256-4I5pLS4bf0PrPUolbrsGrZmnEhMFLlL0ELYIBBeHUns=";
-  };
+  # Extrait du wheel `mcp-for-blender` épinglé dans blender-mcp-release.nix,
+  # le même que lance le serveur : add-on et serveur sont toujours de la même
+  # release. Côté Nix on ne fait que déposer le fichier : il reste à cocher
+  # « MCP for Blender » dans Preferences → Add-ons (une fois, l'état est dans
+  # userpref.blend). Le serveur socket démarre ensuite à l'ouverture de
+  # Blender (panneau latéral N → MCP for Blender pour vérifier).
+  release = import ./blender-mcp-release.nix;
+
+  blenderMcpAddon =
+    pkgs.runCommand "mcp-for-blender-addon-${release.version}"
+      {
+        src = pkgs.fetchurl {
+          url = release.wheelUrl;
+          hash = release.wheelHash;
+        };
+        nativeBuildInputs = [ pkgs.unzip ];
+      }
+      ''
+        unzip -p "$src" blender_mcp/bundled/addon.py > $out
+      '';
 
   blenderVersion = lib.versions.majorMinor pkgs.blender.version;
 in
@@ -23,6 +34,8 @@ in
   # CUDA/OptiX sur zola (overlay blender-cuda dans son configuration.nix).
   home.packages = [ pkgs.blender ];
 
-  home.file.".config/blender/${blenderVersion}/scripts/addons/blender_mcp_addon.py".source =
-    "${blenderMcpAddon}/addon.py";
+  # Nom de fichier = nom de module de l'add-on ; `blender_mcp.py` est celui
+  # qu'utilise `mcp-for-blender install-addon`.
+  home.file.".config/blender/${blenderVersion}/scripts/addons/blender_mcp.py".source =
+    blenderMcpAddon;
 }

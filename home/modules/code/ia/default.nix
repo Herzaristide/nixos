@@ -8,5 +8,6 @@
     ./glm.nix
     ./mcp.nix
     ./rtk.nix
+    ./savoir.nix
   ];
 }

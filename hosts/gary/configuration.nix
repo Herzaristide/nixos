@@ -71,11 +71,12 @@
   # projets pip/Docker de déclarer où ils trouvent ROCm.
   environment.variables.HSA_OVERRIDE_GFX_VERSION = "11.0.0";
 
-  services.ollama.environmentVariables = {
-    OLLAMA_FLASH_ATTENTION = "1";
-    OLLAMA_KV_CACHE_TYPE = "q8_0";
-    OLLAMA_KEEP_ALIVE = "0";
-  };
+  # ollama désactivé pour le moment (voir modules/common.nix).
+  # services.ollama.environmentVariables = {
+  #   OLLAMA_FLASH_ATTENTION = "1";
+  #   OLLAMA_KV_CACHE_TYPE = "q8_0";
+  #   OLLAMA_KEEP_ALIVE = "0";
+  # };
 
   # Wifi MediaTek MT7922 (mt7921e, PCI 09:00.0) — bug matériel/firmware connu et
   # intermittent : après un reboot à chaud, le chip reste parfois bloqué dans un
