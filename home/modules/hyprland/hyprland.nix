@@ -39,7 +39,7 @@ let
     hyprctl dispatch 'hl.dsp.focus({ monitor = "HDMI-A-1" })'
   '';
 
-  wallpaperPng = ../../../src/nix-wallpaper-binary-black_2k.png;
+  wallpaper = ../../../src/cheng-feng-psdV2Rl-GvU-unsplash.jpg;
 
   shortcuts = import ../shortcuts.nix {
     inherit pkgs;
@@ -406,7 +406,7 @@ in
         hl.exec_cmd("${hyprClosedLidLayout}")
         hl.exec_cmd("quickshell")
         hl.exec_cmd("awww-daemon")
-        hl.exec_cmd("sh -c 'until [ -S /run/user/$(id -u)/wayland-1-awww-daemon.sock ]; do sleep 0.1; done; awww img ${wallpaperPng} --transition-type=fade --transition-duration 0.3 --transition-fps 255'")
+        hl.exec_cmd("sh -c 'until [ -S /run/user/$(id -u)/wayland-1-awww-daemon.sock ]; do sleep 0.1; done; awww img ${wallpaper}--transition-type=fade --transition-duration 0.3 --transition-fps 255'")
       end)
     '';
   };
