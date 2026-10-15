@@ -135,6 +135,7 @@ in
         ".local/share/quickshell" # karenine : notes (notes.json) + écran de l'interface (display.json)
         ".config/penpot-desktop"
         ".local/share/onlyoffice"
+        ".config/ardour9" # préférences, surfaces de contrôle (dont MCPHttp), raccourcis
         ".config/obsidian" # liste des vaults ouverts + géométrie des fenêtres
         ".local/share/infinite-fusion" # jeu (clone git, plusieurs Go) + préfixe Wine, où vivent les sauvegardes
 

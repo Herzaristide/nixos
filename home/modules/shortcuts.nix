@@ -224,15 +224,32 @@
     # Le shadowing de Hyprland (KeybindManager.cpp, shadowKeybinds) neutralise
     # ce bind dès qu'une autre touche est pressée pendant que Super est tenue,
     # donc Super+D n'ouvre pas le dock en plus de Dolphin.
-    # "dock" épingle le RightDock de karenine (propriété `pinned`) : il reste
-    # ouvert sans curseur dessus, jusqu'au tap suivant ou à Échap.
+    # "dock" fait monter la barre de conversation de karenine, le champ prêt
+    # à écrire ; elle repart au tap suivant, à Échap, ou une fois la réponse lue.
     {
       keys = "SUPER + SUPER_L";
       lua = ''hl.dsp.exec_cmd("echo dock > /tmp/qs-panel.fifo")'';
       opts = {
         release = true;
       };
-      desc = "Dock de droite (tap Super)";
+      desc = "Barre de conversation (tap Super)";
+    }
+
+    # Le panneau des sessions Claude Code de karenine, contre le bord gauche :
+    # les sessions en cours, leur conversation, l'historique et le savoir.
+    {
+      keys = "SUPER + P";
+      lua = ''hl.dsp.exec_cmd("echo widget:sessions:basculer > /tmp/qs-panel.fifo")'';
+      desc = "Panneau des sessions Claude";
+    }
+
+    # Parler au pilote du dock IA : un appui lance l'écoute, la fin de la
+    # phrase (ou un second appui) l'arrête ; anna transcrit en local
+    # (whisper.cpp) et transmet la demande au pilote.
+    {
+      keys = "SUPER + V";
+      lua = ''hl.dsp.exec_cmd("anna voice")'';
+      desc = "Parler au pilote (dock IA)";
     }
 
     {

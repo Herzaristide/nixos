@@ -95,6 +95,8 @@
     };
     packages = with pkgs; [
       jetbrains-mono
+      # Inter : la barre de conversation de karenine (texte façon macOS).
+      inter
       monocraft
       noto-fonts-color-emoji
       terminus_font_ttf

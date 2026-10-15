@@ -386,6 +386,15 @@ in
         dim_around = true,
       })
 
+      -- Karenine : la barre de conversation (panels/ConversationBar.qml) pose
+      -- ses réponses sur un voile qui s'efface vers ses bords. Flou derrière
+      -- tout pixel un peu opaque : le voile, la pastille, jamais le vide autour.
+      hl.layer_rule({
+        match = { namespace = "^(quickshell-conversation)$" },
+        blur = true,
+        ignore_alpha = 0.08,
+      })
+
       -- Accent color fragment rewritten by anna on every change.
       -- Loaded at top-level so it applies on every config reload (hyprctl reload)
       -- AND at startup. The fragment returns a table of colors.

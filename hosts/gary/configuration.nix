@@ -22,7 +22,6 @@
     ../../modules/audio.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix
-    # ../../modules/android.nix  # test : déplacement vers un devShell par projet
     ../../modules/impermanence.nix
     ../../modules/print.nix
   ];

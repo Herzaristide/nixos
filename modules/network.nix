@@ -36,18 +36,6 @@
       "youtu.be"
       "youtubekids.com"
       "www.youtubekids.com"
-
-      "twitch.tv"
-      "www.twitch.tv"
-      "m.twitch.tv"
-      "clips.twitch.tv"
-      "go.twitch.tv"
-      "player.twitch.tv"
-      "dashboard.twitch.tv"
-      "gql.twitch.tv"
-      "passport.twitch.tv"
-      "static-cdn.jtvnw.net"
-      "usher.ttvnw.net"
     ];
   };
 
