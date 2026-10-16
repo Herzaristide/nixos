@@ -134,7 +134,6 @@ in
   home.packages =
     with pkgs;
     [
-      (writeShellScriptBin "hypr-gemini-launch" "gemini-pwa")
       (writeShellScriptBin "gemini-pwa" "chromium --app=https://gemini.google.com --user-data-dir=$HOME/.config/chromium")
       (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium")
       (writeShellScriptBin "deezer-pwa" "chromium --app=https://www.deezer.com --user-data-dir=$HOME/.config/chromium")

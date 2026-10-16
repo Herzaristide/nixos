@@ -40,5 +40,5 @@ l'environnement utilisateur en même temps que le système.
 Les wrappers PWA partagent `~/.config/chromium-$(hostname)`, tous en
 `--force-dark-mode` :
 
-- `gemini-pwa` → gemini.google.com (workspace spécial Super+G)
+- `gemini-pwa` → gemini.google.com
 - `bandlab-pwa` → bandlab.com

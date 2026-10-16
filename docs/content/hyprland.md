@@ -25,11 +25,6 @@ Le compositeur Wayland, configuré côté [home-manager](#home-manager)
   [zola](#zola)).
 - `decoration.active_opacity = 0.75` / `inactive_opacity = 0.60`.
 
-## Workspaces spéciaux
-
-- Scratchpad `gemini` : auto-lance `gemini-pwa` via `on_created_empty`
-  (Super+G).
-
 ## Écran & couleur
 
 - Sur [zola](#zola), `hypr-closed-lid-layout` déplace les workspaces 1-5 vers

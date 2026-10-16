@@ -130,7 +130,7 @@
       desc = "Focus moniteur suivant";
     }
 
-    # Workspaces AZERTY (& é " ' ( pour 1-5, - pour 6, ² pour 9)
+    # Workspaces AZERTY (& é " ' ( pour 1-5, ² pour 9)
     {
       keys = "SUPER + ampersand";
       lua = "hl.dsp.focus({ workspace = 1 })";
@@ -155,11 +155,6 @@
       keys = "SUPER + parenleft";
       lua = "hl.dsp.focus({ workspace = 5 })";
       desc = "Focus workspace 5";
-    }
-    {
-      keys = "SUPER + minus";
-      lua = "hl.dsp.focus({ workspace = 6 })";
-      desc = "Focus workspace 6";
     }
     {
       keys = "SUPER + twosuperior";
@@ -193,11 +188,6 @@
       desc = "Déplacer fenêtre vers workspace 5";
     }
     {
-      keys = "SUPER + SHIFT + minus";
-      lua = "hl.dsp.window.move({ workspace = 6 })";
-      desc = "Déplacer fenêtre vers workspace 6";
-    }
-    {
       keys = "SUPER + SHIFT + twosuperior";
       lua = "hl.dsp.window.move({ workspace = 9 })";
       desc = "Déplacer fenêtre vers workspace 9";
@@ -206,12 +196,7 @@
     {
       keys = "SUPER + G";
       lua = ''hl.dsp.exec_cmd("chromium")'';
-      desc = "Scratchpad Gemini (chromium)";
-    }
-    {
-      keys = "SUPER + C";
-      lua = ''hl.dsp.workspace.toggle_special("claude")'';
-      desc = "Scratchpad Claude";
+      desc = "Ouvrir Chromium";
     }
 
     # Tap sur Super seule. `release = true` est indispensable : sur le press,

@@ -183,23 +183,6 @@ in
         };
       };
 
-      animation = [
-        {
-          leaf = "specialWorkspaceIn";
-          enabled = true;
-          speed = 8;
-          bezier = "default";
-          style = "slidevert bottom";
-        }
-        {
-          leaf = "specialWorkspaceOut";
-          enabled = true;
-          speed = 8;
-          bezier = "default";
-          style = "slidevert bottom";
-        }
-      ];
-
       # Liste partagée avec le greeter (cf. modules/monitors.nix).
       monitor = import ../../../modules/monitors.nix;
 
@@ -233,28 +216,6 @@ in
           # Le HP, par description : DP-4 sur gary, DP-3 sur zola.
           monitor = "desc:HP Inc. HP E24q G5 CNC3021TQS";
           default = true;
-        }
-        # gaps_out: css_gap = soit un int soit { top, right, bottom, left }.
-        # En hyprlang `gapsout:60 300 60` = top=60, h=300, bottom=60 (CSS 3-valeurs).
-        {
-          workspace = "special:gemini";
-          on_created_empty = "hypr-gemini-launch";
-          gaps_out = {
-            top = 60;
-            right = 300;
-            bottom = 60;
-            left = 300;
-          };
-        }
-        {
-          workspace = "special:claude";
-          on_created_empty = "claude-desktop";
-          gaps_out = {
-            top = 60;
-            right = 300;
-            bottom = 60;
-            left = 300;
-          };
         }
       ];
 
