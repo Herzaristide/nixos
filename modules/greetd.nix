@@ -2,10 +2,34 @@
   config,
   pkgs,
   lib,
+  inputs,
   ...
 }:
 
 let
+  system = pkgs.stdenv.hostPlatform.system;
+
+  # Le greeter est le greeter.qml de karenine, la même carte centrale que le
+  # lockscreen (lock.qml). Mêmes superpositions machine que la session
+  # (home/modules/quickshell.nix), mais côté système : le greeter tourne sous
+  # l'utilisateur `greeter`, avant tout home-manager.
+  greeterUi = pkgs.runCommand "karenine-greeter" { } ''
+    cp -r ${inputs.karenine.packages.${system}.default} "$out"
+    chmod -R u+w "$out"
+
+    substituteInPlace "$out/greeter.qml" \
+      --replace-fail 'primaryScreen: "DP-1"' 'primaryScreen: "${config.primaryMonitor}"' \
+      --replace-fail '["start-hyprland"]' '["${hyprlandSessionScript}/bin/quickshell-hyprland-session"]'
+
+    cp ${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake-white.svg "$out/assets/nixos.svg"
+  '';
+
+  # Sans ~/.config/accent (l'utilisateur `greeter` n'en a pas), Theme.qml
+  # retombe sur sa palette intégrée : accent bleu NixOS, mode sombre.
+  greeterLauncher = pkgs.writeShellScript "karenine-greeter" ''
+    exec ${inputs.quickshell.packages.${system}.default}/bin/quickshell -p ${greeterUi}/greeter.qml
+  '';
+
   # Wrapper qui préserve le pinning GPU (AQ_DRM_DEVICES, cf. modules/common.nix
   # `renderDevice`) auparavant fait dans programs.fish.loginShellInit avant
   # l'exec direct de Hyprland à l'autologin. `start-hyprland` (pas `Hyprland`)
@@ -67,6 +91,20 @@ let
     ipc = off
   '';
 
+  # Fond du greeter : la vidéo de la session (recopiée dans
+  # /var/lib/wallpaper/current par la commande `wallpaper`, cf.
+  # home/modules/hyprland/hyprland.nix), jouée par mpvpaper sous le greeter
+  # Quickshell, qui est transparent. Tant qu'aucune vidéo n'a été partagée
+  # (premier boot), l'image fixe de hyprpaper la remplace.
+  greeterBackground = pkgs.writeShellScript "greetd-background" ''
+    if [ -s /var/lib/wallpaper/current ]; then
+      exec ${lib.getExe pkgs.mpvpaper} \
+        -o "no-audio loop hwdec=auto-safe panscan=1.0" \
+        ALL /var/lib/wallpaper/current
+    fi
+    exec ${lib.getExe pkgs.hyprpaper} -c ${hyprpaperConf}
+  '';
+
   # Config Lua, et non hyprlang (`.conf`) : depuis 0.55 hyprlang est déprécié, et
   # 0.56 affiche à l'écran « You are using the .conf config format, support for
   # which will be removed in Hyprland 0.57. » — sur le greeter, donc en travers de
@@ -117,13 +155,15 @@ let
     -- Remplace `exec-once` : en mode Lua l'autostart passe par l'événement
     -- `hyprland.start` (même mécanique que la session, cf. home/modules/hyprland).
     hl.on("hyprland.start", function()
-      hl.exec_cmd("${lib.getExe pkgs.hyprpaper} -c ${hyprpaperConf}")
+      hl.exec_cmd("${greeterBackground}")
 
-      -- regreet rend la main quand la session est choisie ; on ferme alors le
-      -- compositeur pour que greetd enchaîne sur la session utilisateur.
+      -- Le greeter Quickshell (karenine) rend la main une fois la session
+      -- confiée à greetd ; on ferme alors le compositeur pour que greetd
+      -- enchaîne sur la session utilisateur. S'il échoue (code non nul), regreet
+      -- prend le relais : un QML cassé ne doit pas fermer l'accès à la machine.
       -- `hyprctl dispatch exit` (forme hyprlang) est rejeté par le parseur Lua :
       -- dispatch y est un raccourci pour hl.dispatch(...), il faut le dispatcher.
-      hl.exec_cmd("${lib.getExe config.services.displayManager.regreet.package}; ${config.programs.hyprland.package}/bin/hyprctl dispatch 'hl.dsp.exit()'")
+      hl.exec_cmd("${greeterLauncher} || ${lib.getExe config.services.displayManager.regreet.package}; ${config.programs.hyprland.package}/bin/hyprctl dispatch 'hl.dsp.exit()'")
     end)
   '';
 
@@ -152,8 +192,14 @@ in
   # Destination des logs du compositeur du greeter : lisible sans privilèges
   # (contrairement à /run/user/999) et persistant d'un boot à l'autre, sinon un
   # écran de login cassé n'est diagnosticable que depuis un TTY en root.
+  #
+  # /var/lib/wallpaper : la vidéo de fond partagée entre la session (qui l'écrit,
+  # d'où le propriétaire aristide) et le greeter / le lockscreen (qui la lisent).
+  # Sous / et non sous ~ : le greeter n'a pas accès à /home, et / n'est pas
+  # effacé au boot (l'impermanence ne touche que @home).
   systemd.tmpfiles.rules = [
     "d /var/log/greeter 0755 greeter greeter -"
+    "d /var/lib/wallpaper 0755 aristide users -"
   ];
 
   # Le compositeur du greeter est Hyprland et non cage : cage n'expose aucun
@@ -163,12 +209,10 @@ in
   services.greetd.settings.default_session.command =
     "${pkgs.dbus}/bin/dbus-run-session ${greeterSession}/bin/greetd-hyprland-session";
 
-  # Écran de login (remplace l'autologin) : greetd + regreet.
-  # Reskin manuel pour se rapprocher de la palette Quickshell (services/Theme.qml
-  # dans le repo karenine) : fond #0d0d0d, accent #5277c3, police JetBrains Mono.
-  # Ce n'est pas un rendu QML identique (regreet est du GTK4) — cf. discussion :
-  # un greeter Quickshell natif est un développement bien plus lourd, écarté
-  # au profit d'un logiciel mature reskinné.
+  # regreet n'est plus que le greeter de secours : il ne se lance que si le
+  # greeter Quickshell (greeterLauncher, plus haut) sort en erreur. On garde son
+  # reskin manuel, proche de la palette Quickshell (services/Theme.qml dans
+  # karenine) : fond #0d0d0d, accent #5277c3, police JetBrains Mono.
   services.displayManager.regreet = {
     enable = true;
 

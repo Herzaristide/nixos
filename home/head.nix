@@ -52,14 +52,9 @@
   '';
 
   home.packages = with pkgs; [
-    awww # Wallpaper daemon — caches GPU textures for instant zero-flash switching
     watchexec
     kdePackages.xdg-desktop-portal-kde
   ];
-
-  # Wallpaper files for awww (dark/light toggle via Theme.qml)
-  xdg.configFile."wallpaper-dark".source = ../src/nix-wallpaper-binary-black_8k.png;
-  xdg.configFile."wallpaper-light".source = ../src/nix-wallpaper-binary-white_8k.png;
 
   # FluidSynth doesn't ship a .desktop entry (CLI only). Provide one so
   # MIDI files can be opened from file managers via the GM soundfont.

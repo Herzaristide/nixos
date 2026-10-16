@@ -134,6 +134,7 @@ in
         ".local/share/zed" # extensions + historique de l'éditeur
         ".local/share/quickshell" # karenine : notes (notes.json) + écran de l'interface (display.json)
         ".local/state/anna" # karenine : mot d'activation allumé (wake-on)
+        ".local/state/wallpaper" # fond d'écran vidéo choisi (cf. hyprland.nix, `wallpaper set`)
         ".config/anna" # karenine : les serveurs suivis (servers.json)
         ".config/kdeconnect" # KDE Connect : identité de l'ordinateur + téléphones appairés
         ".config/penpot-desktop"

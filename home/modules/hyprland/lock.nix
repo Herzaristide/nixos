@@ -29,6 +29,16 @@ let
     if ! ${pkgs.util-linux}/bin/flock -n 9; then
       exit 0
     fi
+    # Le lock joue lui-même la vidéo de fond (le compositeur ne dessine rien
+    # sous un écran verrouillé, mpvpaper compris) : il lui faut QtMultimedia,
+    # que le paquet quickshell n'embarque pas — même Qt, quickshell suit nixpkgs.
+    # Fourni au seul lock, la barre n'en a pas besoin.
+    export QML2_IMPORT_PATH="${pkgs.qt6.qtmultimedia}/lib/qt-6/qml''${QML2_IMPORT_PATH:+:$QML2_IMPORT_PATH}"
+    export QT_PLUGIN_PATH="${pkgs.qt6.qtmultimedia}/lib/qt-6/plugins''${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"
+    # La copie partagée par la commande `wallpaper` (cf. hyprland.nix).
+    if [ -s /var/lib/wallpaper/current ]; then
+      export KARENINE_WALLPAPER=/var/lib/wallpaper/current
+    fi
     exec ${quickshell}/bin/quickshell -p ${config.xdg.configHome}/quickshell/lock.qml
   '';
 

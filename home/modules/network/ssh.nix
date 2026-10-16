@@ -1,7 +1,52 @@
-{ ... }:
+{
+  pkgs,
+  lib,
+  osConfig,
+  ...
+}:
 
+let
+  isHead = osConfig.head or false;
+
+  # SSH_ASKPASS qui lit la passphrase de siddhartha dans GNOME Keyring au lieu
+  # de la demander. Elle y est rangée une fois pour toutes, à la main :
+  #   secret-tool store --label="SSH siddhartha" ssh-key siddhartha
+  sshAskpassKeyring = pkgs.writeShellScript "ssh-askpass-keyring" ''
+    exec ${pkgs.libsecret}/bin/secret-tool lookup ssh-key siddhartha
+  '';
+in
 {
   services.ssh-agent.enable = true;
+
+  # Postes graphiques : la clé est chargée dans ssh-agent dès l'ouverture de
+  # session, le trousseau étant déverrouillé par pam_gnome_keyring au login.
+  # On garde l'agent OpenSSH (celui de gnome-keyring rejette ed25519) : le
+  # trousseau ne fournit que la passphrase. Si elle n'y est pas, ou si le
+  # trousseau est verrouillé, l'unité échoue sans bloquer et `AddKeysToAgent`
+  # redemande la passphrase au premier ssh, comme avant.
+  home.packages = lib.mkIf isHead [ pkgs.libsecret ];
+
+  systemd.user.services.ssh-add-siddhartha = lib.mkIf isHead {
+    Unit = {
+      Description = "Charge la clé SSH siddhartha depuis GNOME Keyring";
+      After = [
+        "ssh-agent.service"
+        "gnome-keyring.service"
+      ];
+      Requires = [ "ssh-agent.service" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "oneshot";
+      Environment = [
+        "SSH_AUTH_SOCK=%t/ssh-agent"
+        "SSH_ASKPASS=${sshAskpassKeyring}"
+        "SSH_ASKPASS_REQUIRE=force"
+      ];
+      ExecStart = "${pkgs.openssh}/bin/ssh-add %h/.ssh/siddhartha";
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
 
   programs.ssh = {
     enable = true;
