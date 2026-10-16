@@ -81,6 +81,27 @@
         url = "http://localhost:4401/mcp";
         type = "http";
       };
+      # CodeGraph (colbymchenry/codegraph, nixpkgs) : graphe de symboles/appels
+      # du projet, l'agent l'interroge au lieu de parcourir les fichiers (moins
+      # d'appels d'outils et de tokens). Chaque projet doit être indexé une fois
+      # avec `codegraph init` (crée `.codegraph/` dans le repo), ensuite le
+      # serveur resynchronise l'index à chaque modification de fichier.
+      # `alwaysLoad` évite que Claude Code cache l'outil derrière son tool-search.
+      codegraph = {
+        command = lib.getExe pkgs.codegraph;
+        args = [
+          "serve"
+          "--mcp"
+        ];
+        type = "stdio";
+        alwaysLoad = true;
+        # Télémétrie d'usage active par défaut (opt-out, avec machine_id).
+        env.CODEGRAPH_TELEMETRY = "0";
+      };
     };
   };
+
+  # CLI pour `codegraph init` / `status` / `sync`.
+  home.packages = [ pkgs.codegraph ];
+  home.sessionVariables.CODEGRAPH_TELEMETRY = "0";
 }
