@@ -6,7 +6,7 @@
 
 let
   # Sur NixOS les plugins ne sont pas dans /usr/lib : sans ces variables, un
-  # hôte (REAPER, Ardour) ne trouve pas sfizz & co.
+  # hôte (REAPER…) ne trouve pas sfizz & co.
   pluginPath =
     format:
     "$HOME/.${format}:"
@@ -75,16 +75,29 @@ in
     alsa.support32Bit = true;
     pulse.enable = true;
     jack.enable = true;
-    # Echo cancellation: removes loopback of speaker output into the mic
-    # (fixes the voice-assistant feedback loop where piper TTS was being
-    # transcribed back by whisper). Creates virtual `echo-cancel-source` /
-    # `echo-cancel-sink` nodes; WirePlumber routes default mic through them.
+    # Annulation d'écho pour l'assistant vocal d'anna : `echo-cancel-source`
+    # est le micro par défaut moins ce que jouent les haut-parleurs, pour que
+    # « Karénine » soit entendu par-dessus la musique ou une vidéo (et qu'une
+    # vidéo qui le dit ne réveille pas anna). Seule anna l'écoute (mot
+    # d'éveil et dictée, `anna/src/audio.rs` de karenine).
+    #
+    # `monitor.mode` : la référence est le moniteur de la sortie par défaut, et
+    # non un sink virtuel par lequel tout le son devrait passer. La lecture
+    # n'est donc ni détournée ni retardée (REAPER, BandLab, l'accordeur ne
+    # voient rien), et le micro par défaut reste le micro brut. Testé le
+    # 16/10/2026 : son des haut-parleurs atténué de ~26 dB, score Karénine
+    # 0.99 → 0.00 sur des clips joués par l'ordinateur.
+    #
+    # Sans « priority.session », le nœud ne devient jamais la source par
+    # défaut ; ni réglage de gain ni suppression de bruit, pour garder le son
+    # proche de celui sur lequel le modèle du mot a été entraîné.
     extraConfig.pipewire."99-echo-cancel" = {
       "context.modules" = [
         {
           name = "libpipewire-module-echo-cancel";
           args = {
             "library.name" = "aec/libspa-aec-webrtc";
+            "monitor.mode" = true;
             "node.description" = "Echo Cancelled Source";
             "capture.props" = {
               "node.name" = "capture.echo-cancel";
@@ -98,25 +111,21 @@ in
             "source.props" = {
               "node.name" = "echo-cancel-source";
               "node.description" = "Microphone (Echo Cancelled)";
-              "priority.session" = 1500;
               "audio.channels" = 2;
               "audio.position" = [
                 "FL"
                 "FR"
               ];
             };
+            # En monitor.mode, le flux qui lit le moniteur de la sortie.
             "playback.props" = {
-              "node.name" = "playback.echo-cancel";
+              "node.name" = "monitor.echo-cancel";
               "node.passive" = true;
             };
-            "sink.props" = {
-              "node.name" = "echo-cancel-sink";
-              "node.description" = "Speakers (Echo Cancel Loopback)";
-            };
             "aec.args" = {
-              "webrtc.gain_control" = true;
+              "webrtc.gain_control" = false;
               "webrtc.extended_filter" = true;
-              "webrtc.noise_suppression" = true;
+              "webrtc.noise_suppression" = false;
             };
           };
         }

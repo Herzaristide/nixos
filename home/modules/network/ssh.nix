@@ -24,10 +24,20 @@
       #  IdentityFile = "~/.ssh/sisyphe";
       #  IdentitiesOnly = true;
       #};
-      # Serveur gary (clé siddhartha — même clé que GitHub, autorisée via modules/common.nix)
+      # Serveur gary (clé siddhartha — même clé que GitHub, autorisée via modules/common.nix).
+      # IP Tailscale : fixe tant que le nœud n'est pas réenregistré, et joignable
+      # hors du LAN, contrairement à l'ancienne 192.168.1.138 (DHCP).
       "gary" = {
         AddKeysToAgent = "yes";
-        HostName = "192.168.1.138";
+        HostName = "100.90.139.70";
+        User = "aristide";
+        IdentityFile = "~/.ssh/siddhartha";
+        IdentitiesOnly = true;
+      };
+      # Laptop zola, via Tailscale (pour l'atteindre depuis gary).
+      "zola" = {
+        AddKeysToAgent = "yes";
+        HostName = "100.67.220.15";
         User = "aristide";
         IdentityFile = "~/.ssh/siddhartha";
         IdentitiesOnly = true;

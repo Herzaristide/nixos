@@ -35,10 +35,13 @@ En cas de craquements, augmenter la taille du buffer avant de penser au noyau RT
 ## PipeWire
 
 - Support **ALSA + Pulse + JACK** (pour les applications audio pro).
-- Module d'**annulation d'écho** chargé (webrtc-aec) : expose les nœuds virtuels
-  `echo-cancel-source` / `echo-cancel-sink`. Ajouté à l'origine pour corriger la
-  boucle de rétroaction de l'assistant vocal (le TTS piper était retranscrit par
-  whisper).
+- Module d'**annulation d'écho** (webrtc-aec, `monitor.mode`) : expose
+  `echo-cancel-source`, le micro par défaut moins ce que joue la sortie par
+  défaut (lue sur son moniteur). Seule anna l'écoute (mot d'activation
+  « Karénine » et dictée) : la lecture n'est ni détournée ni retardée, le micro
+  par défaut reste brut, sans gain automatique ni suppression de bruit. Testé
+  le 16/10/2026 : ~26 dB d'atténuation, score du mot 0,99 → 0,00 sur des clips
+  joués par les haut-parleurs.
 - Règle WirePlumber : chromium reçoit `default_permissions = "all"` pour que la
   PWA BandLab puisse enregistrer l'audio.
 

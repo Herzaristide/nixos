@@ -423,8 +423,9 @@ in
       -- Karenine : la barre de conversation (panels/ConversationBar.qml) pose
       -- ses réponses sur un voile qui s'efface vers ses bords. Flou derrière
       -- tout pixel un peu opaque : le voile, la pastille, jamais le vide autour.
+      -- Même verre pour le texte des sessions (panels/AiDock.qml).
       hl.layer_rule({
-        match = { namespace = "^(quickshell-conversation)$" },
+        match = { namespace = "^(quickshell-conversation|quickshell-aidock)$" },
         blur = true,
         ignore_alpha = 0.08,
       })

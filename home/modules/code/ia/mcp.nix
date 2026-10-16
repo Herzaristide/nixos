@@ -77,14 +77,6 @@
         args = [ "mcp-for-blender==${(import ../../blender-mcp-release.nix).version}" ];
         type = "stdio";
       };
-      # Surface MCPHttp intégrée à Ardour 9 (home/modules/music/ardour.nix) :
-      # répond seulement quand Ardour tourne avec la surface activée dans
-      # Preferences → Control Surfaces. Port par défaut 4820, fermé par le
-      # pare-feu (seul le 22 est ouvert) donc injoignable hors de la machine.
-      ardour = {
-        url = "http://127.0.0.1:4820/mcp";
-        type = "http";
-      };
       penpot = {
         url = "http://localhost:4401/mcp";
         type = "http";

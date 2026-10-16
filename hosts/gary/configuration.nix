@@ -17,9 +17,6 @@
     ../../modules/power.nix
     ../../modules/zram.nix
     ../../modules/storage.nix
-    ../../modules/head.nix
-    ../../modules/greetd.nix
-    ../../modules/audio.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix
     ../../modules/impermanence.nix
@@ -29,14 +26,17 @@
   # Hostname
   networking.hostName = "gary";
 
-  # Enable GUI (Hyprland/DMS)
-  head = true;
-
-  primaryMonitor = "HDMI-A-3";
+  # Serveur de dev headless : ni greetd, ni Hyprland, ni PipeWire.
+  # Accès par SSH / Tailscale uniquement.
+  head = false;
 
   boot.loader.grub.enable = false;
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+
+  # Sans session ouverte, le manager systemd utilisateur ne tourne pas : Docker
+  # rootless et les services utilisateur n'attendraient pas le premier login.
+  users.users.aristide.linger = true;
 
   # CPU: AMD Ryzen 5 7600X (Zen 4 / Raphael, 6c/12t, AM5)
   # amd-pstate (EPP) is used automatically on modern kernels — no governor override.
@@ -45,7 +45,6 @@
   hardware.rasdaemon.enable = true;
   services.xserver.videoDrivers = [ "amdgpu" ];
   boot.initrd.kernelModules = [ "amdgpu" ];
-  renderDevice = "/dev/dri/by-path/pci-0000:13:00.0-card";
   nixpkgs.config.rocmSupport = true;
 
   hardware.graphics = {
