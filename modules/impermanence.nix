@@ -97,7 +97,6 @@ in
         # Fichier isolé : le dossier parent contient generated_completions/,
         # régénéré par home-manager à chaque activation.
         ".local/share/fish/fish_history"
-        ".local/state/tofi-drun-history"
       ];
 
       directories = [

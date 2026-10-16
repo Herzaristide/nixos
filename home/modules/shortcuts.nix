@@ -37,11 +37,6 @@
       desc = "Ouvrir Deezer";
     }
     {
-      keys = "SUPER + space";
-      lua = ''hl.dsp.exec_cmd("tofi-drun --drun-launch=true")'';
-      desc = "Lanceur d'applications (tofi)";
-    }
-    {
       keys = "SUPER + SHIFT + R";
       lua = ''hl.dsp.exec_cmd("pkill quickshell; quickshell &")'';
       desc = "Redémarrer Quickshell";

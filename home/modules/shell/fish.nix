@@ -20,7 +20,6 @@
       c = "claude";
       ca = "claude agents";
       cr = "claude --continue";
-      g = "glm";
 
       # Git
       gs = "git status";

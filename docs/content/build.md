@@ -38,18 +38,6 @@ nix flake check --no-build   # attrape les erreurs d'évaluation à bas coût
 nixfmt **/*.nix
 ```
 
-## Installer sur une nouvelle machine
-
-Le paquet custom `install-nixos` clone le flake dans `/etc/nixos`, régénère
-`hardware-configuration.nix` puis lance `nixos-rebuild` :
-
-```bash
-nix run .#install-nixos -- <git-url> <hostname>
-```
-
-Voir aussi [Paquets custom](#packages) et, pour la préparation des disques,
-[Système de fichiers](#filesystem).
-
 ## Flux de modification recommandé
 
 1. Éditer le module concerné (ne pas toucher `hardware-configuration.nix`).

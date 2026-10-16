@@ -412,14 +412,6 @@ in
     # extraConfig est désormais du Lua brut (configType = "lua").
     extraConfig = ''
 
-      -- Tofi : flou + assombrissement de l'écran sauf la zone du launcher.
-      -- Le namespace du layer-surface de tofi est "launcher" (vérifié via hyprctl layers).
-      -- API : HL.LayerRuleSpec attend `match = { namespace = ... }` + booléens (cf. stubs/hl.meta.lua).
-      hl.layer_rule({
-        match = { namespace = "^(launcher)$" },
-        dim_around = true,
-      })
-
       -- Karenine : la barre de conversation (panels/ConversationBar.qml) pose
       -- ses réponses sur un voile qui s'efface vers ses bords. Flou derrière
       -- tout pixel un peu opaque : le voile, la pastille, jamais le vide autour.

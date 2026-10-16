@@ -19,7 +19,6 @@ let
     ./modules/code/ia/claude-desktop.nix
     ./modules/alacritty.nix
     ./modules/quickshell.nix
-    ./modules/hyprland/tofi.nix
     ./modules/teams.nix
     ./modules/discord.nix
     ./modules/obs.nix

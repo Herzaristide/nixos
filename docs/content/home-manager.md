@@ -25,8 +25,6 @@ l'environnement utilisateur en même temps que le système.
 - `modules/hyprland.nix` — [Hyprland](#hyprland) en mode Lua, keybinds,
   moniteurs, workspaces spéciaux.
 - `modules/alacritty.nix` — configuration du terminal.
-- `modules/hyprland/tofi.nix` — lanceur tofi (config rendue par le
-  [daemon d'accent](#theming)).
 - `modules/chromium.nix` — chromium + wrappers PWA (`gemini-pwa`,
   `bandlab-pwa`) partageant `~/.config/chromium-$(hostname)`.
 - `modules/kde.nix` — thème minimal KDE/Qt (pour xdg-portal-kde).

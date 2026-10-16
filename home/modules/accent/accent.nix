@@ -40,7 +40,6 @@ in
   xdg.configFile."accent/templates/kdeglobals.tmpl".source = "${templates}/kdeglobals.tmpl";
   xdg.configFile."accent/templates/konsole.colorscheme.tmpl".source =
     "${templates}/konsole.colorscheme.tmpl";
-  xdg.configFile."accent/templates/tofi.config.tmpl".source = "${templates}/tofi.config.tmpl";
   xdg.configFile."accent/templates/zed-theme.json.tmpl".source = "${templates}/zed-theme.json.tmpl";
 
   # quickCss.css for Vesktop is written directly by anna (see templates.rs).
@@ -59,7 +58,6 @@ in
       ''
         accent_dir="$HOME/.config/accent"
         mkdir -p "$accent_dir/fragments"
-        mkdir -p "$HOME/.config/tofi"
 
         # Seed accent.hex with the current persisted color (or the palette default
         # on first install) so `anna init` has a source of truth to read.
