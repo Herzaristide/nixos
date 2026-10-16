@@ -198,6 +198,12 @@
       lua = ''hl.dsp.exec_cmd("chromium")'';
       desc = "Ouvrir Chromium";
     }
+    # Application mono-instance : relancer met au premier plan la fenêtre existante.
+    {
+      keys = "SUPER + C";
+      lua = ''hl.dsp.exec_cmd("claude-desktop")'';
+      desc = "Ouvrir Claude Desktop";
+    }
 
     # Tap sur Super seule. `release = true` est indispensable : sur le press,
     # l'action partirait dès qu'on enfonce Super pour composer Super+X.

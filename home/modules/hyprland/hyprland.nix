@@ -402,6 +402,7 @@ in
         hl.exec_cmd("gsettings set org.gnome.desktop.interface color-scheme prefer-dark")
         hl.exec_cmd("${hyprClosedLidLayout}")
         hl.exec_cmd("quickshell")
+        hl.exec_cmd("kdeconnectd")
         hl.exec_cmd("awww-daemon")
         hl.exec_cmd("${lib.getExe setWallpaper}")
       end)

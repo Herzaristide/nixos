@@ -103,9 +103,25 @@
     ];
   };
 
+  # KDE Connect : le téléphone (notifications, presse-papier, fichiers, le
+  # faire sonner). Ouvre 1714-1764 TCP/UDP au pare-feu, pour le trouver sur
+  # le Wi-Fi. `kdeconnectd` est lancé avec la session Hyprland
+  # (home/modules/hyprland/hyprland.nix) ; l'onglet « Téléphone » de karenine
+  # le lit par D-Bus (anna/src/phone.rs). Les clés d'appairage vivent dans
+  # ~/.config/kdeconnect, persisté (modules/impermanence.nix).
+  programs.kdeconnect.enable = true;
+
   environment.systemPackages = with pkgs; [
     brightnessctl
     grimblast
     libnotify
+    # « Fichiers » de KDE Connect monte le téléphone en sftp par sshfs.
+    sshfs
+    # L'écran du téléphone Android dans une fenêtre (bouton « Écran » de
+    # l'onglet Téléphone). adb : anna y choisit l'appareil (USB, sinon
+    # Tailscale). L'accès USB passe par les règles uaccess de systemd, sans
+    # groupe ; la clé adbkey est dans ~/.android, persisté.
+    scrcpy
+    android-tools
   ];
 }

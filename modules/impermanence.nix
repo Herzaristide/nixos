@@ -135,6 +135,7 @@ in
         ".local/share/quickshell" # karenine : notes (notes.json) + écran de l'interface (display.json)
         ".local/state/anna" # karenine : mot d'activation allumé (wake-on)
         ".config/anna" # karenine : les serveurs suivis (servers.json)
+        ".config/kdeconnect" # KDE Connect : identité de l'ordinateur + téléphones appairés
         ".config/penpot-desktop"
         ".local/share/onlyoffice"
         ".config/obsidian" # liste des vaults ouverts + géométrie des fenêtres
