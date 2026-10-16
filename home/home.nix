@@ -20,7 +20,7 @@ let
     ./modules/alacritty.nix
     ./modules/quickshell.nix
     ./modules/teams.nix
-    ./modules/discord.nix
+    ./modules/vesktop.nix
     ./modules/obs.nix
     ./modules/onlyoffice.nix
     ./modules/penpot.nix

@@ -125,6 +125,7 @@ in
         ".copilot"
         ".config/accent"
         ".config/chromium"
+        ".config/vesktop" # session Discord + réglages Vencord
         ".config/OpenRGB" # profils de périphériques (OpenRGB.json, sizes.ors)
         ".android" # adbkey (autorisation des appareils) + debug.keystore
         ".ollama"
