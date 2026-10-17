@@ -9,6 +9,5 @@
     ./yazi.nix
     ./direnv.nix
     ./zellij.nix
-    ./goose.nix
   ];
 }

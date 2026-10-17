@@ -113,16 +113,13 @@ in
           directory = ".aws";
           mode = "0700";
         }
-        {
-          directory = ".config/rclone";
-          mode = "0700";
-        }
         ".pki"
 
         # État applicatif
         ".claude"
         ".config/Claude" # app de bureau : session, historique local, config Cowork
         ".copilot"
+        ".local/share/rtk" # rtk : historique (`rtk gain`) et sorties rappelables (`rtk recall`)
         ".config/accent"
         ".config/chromium"
         ".config/vesktop" # session Discord + réglages Vencord

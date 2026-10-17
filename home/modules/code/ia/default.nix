@@ -2,12 +2,11 @@
 
 {
   imports = [
-    ./claude.nix
+    ./common.nix
     ./claude-anna.nix
     ./claude-journal.nix
     ./copilot.nix
     ./mcp.nix
-    ./rtk.nix
     ./savoir.nix
   ];
 }

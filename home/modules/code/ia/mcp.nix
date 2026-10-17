@@ -8,27 +8,12 @@
   # MCP (Model Context Protocol) servers — writes ~/.config/mcp/mcp.json
   # Consumed by Claude Code (via enableMcpIntegration).
   #
-  # Les serveurs stdio packagés dans nixpkgs sont lancés depuis le store, pas
-  # via `npx`/`uvx` : ces derniers résolvent et téléchargent le paquet à chaque
-  # démarrage du serveur, donc du code non épinglé, hors flake.lock, exécuté
-  # avec tous les droits de l'utilisateur. Le passage au store fige la version
-  # dans le lock et supprime tout accès réseau à l'exécution.
+  # Serveurs liés à un compte, une clé ou à des services de zola : postes
+  # seulement. Ceux sans accès personnel, aussi présents dans les VMs de dev,
+  # sont dans ./mcp-common.nix (même règle store plutôt que npx/uvx).
   programs.mcp = {
     enable = true;
     servers = {
-      # Remote hébergé : un seul serveur distant, partagé par toutes les sessions
-      # (fini le process local multiplié). Fonctionne en anonyme ; pour des limites
-      # plus hautes, ajouter une clé via header, ex :
-      #   headers.CONTEXT7_API_KEY = "{env:CONTEXT7_API_KEY}";
-      # ({env:…} est résolu au runtime par le client → clé jamais dans le store).
-      context7 = {
-        url = "https://mcp.context7.com/mcp";
-        type = "http";
-      };
-      playwright = {
-        command = lib.getExe pkgs.playwright-mcp;
-        type = "stdio";
-      };
       linear = {
         url = "https://mcp.linear.app/mcp";
         type = "http";
@@ -38,9 +23,9 @@
         type = "http";
       };
       # Périmètre limité aux dossiers de travail, et surtout PAS à /home/aristide
-      # entier : la racine du home donne accès à ~/.ssh, ~/.aws et
-      # ~/.config/rclone, tous persistés par impermanence. Leur mode 0700 ne
-      # protège de rien face à un process tournant sous le même uid.
+      # entier : la racine du home donne accès à ~/.ssh et ~/.aws, tous deux
+      # persistés par impermanence. Leur mode 0700 ne protège de rien face à un
+      # process tournant sous le même uid.
       # Ajouter un dossier ici est une décision explicite : ~/d3pot, l'archive,
       # en est volontairement absent.
       filesystem = {
@@ -52,10 +37,6 @@
           # La config NixOS a quitté ~/ghub pour /etc/nixos.
           "/etc/nixos"
         ];
-        type = "stdio";
-      };
-      sequential-thinking = {
-        command = lib.getExe pkgs.mcp-server-sequential-thinking;
         type = "stdio";
       };
       # Remote hébergé Tavily : clé passée en header Authorization, résolue au
@@ -81,27 +62,7 @@
         url = "http://localhost:4401/mcp";
         type = "http";
       };
-      # CodeGraph (colbymchenry/codegraph, nixpkgs) : graphe de symboles/appels
-      # du projet, l'agent l'interroge au lieu de parcourir les fichiers (moins
-      # d'appels d'outils et de tokens). Chaque projet doit être indexé une fois
-      # avec `codegraph init` (crée `.codegraph/` dans le repo), ensuite le
-      # serveur resynchronise l'index à chaque modification de fichier.
-      # `alwaysLoad` évite que Claude Code cache l'outil derrière son tool-search.
-      codegraph = {
-        command = lib.getExe pkgs.codegraph;
-        args = [
-          "serve"
-          "--mcp"
-        ];
-        type = "stdio";
-        alwaysLoad = true;
-        # Télémétrie d'usage active par défaut (opt-out, avec machine_id).
-        env.CODEGRAPH_TELEMETRY = "0";
-      };
     };
   };
 
-  # CLI pour `codegraph init` / `status` / `sync`.
-  home.packages = [ pkgs.codegraph ];
-  home.sessionVariables.CODEGRAPH_TELEMETRY = "0";
 }

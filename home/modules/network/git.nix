@@ -17,8 +17,6 @@ in
     settings = {
       user.name = "Herzaristide";
       user.email = "aristide.pichereau@gmail.com";
-      gpg.format = "ssh";
-      commit.gpgSign = true;
       init.defaultBranch = "main";
       pull.rebase = false;
       # Git Credential Manager (HTTPS); SSH remotes still use ssh config above
@@ -26,10 +24,6 @@ in
       credential.credentialStore = credentialStore;
       # Disable GCM's Avalonia GUI (broken on Wayland/Hyprland): use device code flow in terminal.
       credential.guiPrompt = "false";
-    };
-    signing = {
-      key = "~/.ssh/siddhartha.pub";
-      signByDefault = true;
     };
   };
 

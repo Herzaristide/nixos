@@ -1,0 +1,52 @@
+# Dépendances Python du serveur Hunyuan3D-2 (modules/hunyuan3d.nix), figées
+# par uv.lock à côté. Reprend le requirements.txt amont, moins ce dont
+# api_server.py n'a pas besoin (gradio, ninja/pybind11 : la texture et ses
+# extensions CUDA ne sont pas utilisées). torch/torchvision viennent de
+# l'index ROCm de PyTorch.
+#
+# Mettre à jour : `uv lock --upgrade` dans ce dossier (ou `--upgrade-package
+# <nom>`), puis rebuild de gary — le service resynchronise le venv au
+# démarrage suivant.
+[project]
+name = "hunyuan3d-server"
+version = "0"
+requires-python = "==3.12.*"
+dependencies = [
+  "torch==2.9.1",
+  "torchvision==0.24.1",
+  # Dépendance de torch ROCm, listée pour que uv la prenne sur le même index
+  # (les `sources` ne s'appliquent qu'aux dépendances directes).
+  "pytorch-triton-rocm",
+  "accelerate",
+  "diffusers",
+  "einops",
+  "fastapi",
+  "huggingface-hub",
+  "numpy",
+  "omegaconf",
+  "onnxruntime",
+  "opencv-python",
+  "pygltflib",
+  "pymeshlab",
+  "rembg",
+  "tqdm",
+  # Code amont écrit pour transformers 4.x (début 2025) ; la 5 retire des API.
+  "transformers>=4.48.0,<5",
+  "trimesh",
+  "uvicorn",
+  "xatlas",
+]
+
+[tool.uv]
+package = false
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-rocm" }
+torchvision = { index = "pytorch-rocm" }
+pytorch-triton-rocm = { index = "pytorch-rocm" }
+
+[[tool.uv.index]]
+name = "pytorch-rocm"
+url = "https://download.pytorch.org/whl/rocm6.4"
+explicit = true

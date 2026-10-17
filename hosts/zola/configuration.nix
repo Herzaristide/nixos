@@ -6,13 +6,6 @@
   ...
 }:
 
-let
-  # nixpkgs figé pour les paquets CUDA (voir l'input `nixpkgs-cuda`).
-  pkgsCuda = import inputs.nixpkgs-cuda {
-    inherit (pkgs.stdenv.hostPlatform) system;
-    config.allowUnfree = true;
-  };
-in
 {
   imports = [
     inputs.home-manager.nixosModules.default
@@ -136,17 +129,34 @@ in
   };
 
   # NVIDIA proprietary drivers.
-  # Pas de `cudaSupport` global : il recompilait ~29 paquets absents de tout
-  # cache. CUDA est activé à la carte — ollama-cuda (plus bas) et blender via
-  # l'overlay ci-dessous — et tous deux viennent de `pkgsCuda`, le nixpkgs
-  # figé de l'input `nixpkgs-cuda` (flake.nix) : un bump de nixpkgs ne les
-  # recompile plus, seul un bump de cet input le fait.
-  nixpkgs.config.nvidia.acceptLicense = true;
+  # CUDA à la carte, pas de `cudaSupport` global : seul blender en profite
+  # vraiment (Cycles sur la RTX 3070 Mobile via CUDA/OptiX). Le global
+  # recompilait aussi openusd, suitesparse, ceres-solver (dépendances de
+  # blender seulement) et obs-studio, sans gain notable. Aucun cache ne sert
+  # les variantes CUDA (unfree, pas sur Hydra) : blender recompile en local à
+  # chaque `nix flake update` — mesuré sur juin-juillet 2026, sa dérivation
+  # change à chaque bump d'unstable, même à version égale.
+  # `cudaCapabilities` limite la compilation à la seule arch sm_86 au lieu de
+  # toutes celles par défaut ; sans `cudaSupport` il ne touche rien d'autre.
+  #
+  # Pas de nixpkgs figé pour blender (l'ancien input `nixpkgs-cuda`, retiré
+  # le 2026-10-17) : une appli graphique charge à chaud le Mesa du système
+  # (/run/opengl-driver), et un Mesa compilé contre une glibc plus récente
+  # que celle du processus ne se charge pas — Blender pris dans le nixpkgs
+  # figé quittait au démarrage (« EGL Error »).
+  nixpkgs.config = {
+    nvidia.acceptLicense = true;
+    cudaCapabilities = [ "8.6" ];
+  };
   nixpkgs.overlays = [
     (final: prev: {
-      blender = pkgsCuda.blender.override { cudaSupport = true; };
+      blender = prev.blender.override { cudaSupport = true; };
     })
   ];
+
+  # Un seul build à la fois (au lieu de 2 × 6 cœurs, modules/nixos.nix) :
+  # blender CUDA à côté d'un autre gros build ne tient pas dans 16 Go.
+  nix.settings.max-jobs = lib.mkForce 1;
 
   hardware = {
     nvidia = {
@@ -208,13 +218,11 @@ in
   # — noter le casse mixte de `__VK_LAYER_NV_optimus`, seule graphie reconnue
   # par le driver.
   #
-  # ollama CUDA, ciblé sur la seule arch de zola (RTX 3070 Mobile = sm_86) au lieu
-  # des ~9 archs par défaut : ollama-cuda n'est dans aucun cache (unfree → pas sur
-  # Hydra), donc il compile en local à chaque bump de `nixpkgs-cuda` ; ne
-  # compiler qu'une arch divise d'autant le temps de build.
+  # ollama CUDA : `pkgs.ollama-cuda` (pas de `cudaSupport` global), ciblé sur
+  # sm_86 par `cudaCapabilities` — compile en local, comme blender.
   #
   # ollama désactivé pour le moment (voir modules/common.nix).
-  # services.ollama.package = pkgsCuda.ollama-cuda.override { cudaArches = [ "sm_86" ]; };
+  # services.ollama.package = pkgs.ollama-cuda;
   # services.ollama.environmentVariables = {
   #   __NV_PRIME_RENDER_OFFLOAD = "1";
   #   __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";

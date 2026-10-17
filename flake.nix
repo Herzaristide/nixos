@@ -3,11 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    # nixpkgs figé pour les paquets CUDA de zola (ollama-cuda, blender CUDA) :
-    # aucun cache ne les fournit, chaque bump de nixpkgs les recompilait. Le
-    # rev est écrit en dur pour que `nix flake update` ne le déplace pas ;
-    # le bumper à la main quand une recompilation est acceptable.
-    nixpkgs-cuda.url = "github:NixOS/nixpkgs/4975466d324710c576dc11ad614684e6bd8cad8e";
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -29,6 +24,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     impermanence.url = "github:nix-community/impermanence";
+    # VMs de dev par projet sur gary (modules/devbox.nix).
+    microvm = {
+      url = "github:microvm-nix/microvm.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

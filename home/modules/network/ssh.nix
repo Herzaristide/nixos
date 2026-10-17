@@ -54,7 +54,7 @@ in
     # After the first unlock, keep keys in ssh-agent (no passphrase on every git/ssh).
     # Directives nommées comme dans ssh_config(5) (CamelCase upstream OpenSSH).
     settings = {
-      # GitHub (clé siddhartha pour auth + signing)
+      # GitHub (clé siddhartha pour l'auth)
       "github.com" = {
         AddKeysToAgent = "yes";
         HostName = "github.com";
@@ -79,6 +79,18 @@ in
         IdentityFile = "~/.ssh/siddhartha";
         IdentitiesOnly = true;
       };
+      # VMs de dev (modules/devbox.nix) : rebond par leur hôte, sauf sur l'hôte même.
+    }
+    // lib.mapAttrs' (
+      host: h:
+      lib.nameValuePair (lib.concatStringsSep " " (lib.attrNames h.vms)) {
+        ProxyJump = lib.mkIf ((osConfig.networking.hostName or "") != host) host;
+        User = "aristide";
+        IdentityFile = "~/.ssh/siddhartha";
+        IdentitiesOnly = true;
+      }
+    ) (import ../../../modules/devbox-vms.nix)
+    // {
       # Laptop zola, via Tailscale (pour l'atteindre depuis gary).
       "zola" = {
         AddKeysToAgent = "yes";

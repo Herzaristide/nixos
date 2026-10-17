@@ -20,6 +20,21 @@ let
   # avec Claude Code en thème `dark-ansi`).
   ansiAccent = "31";
 
+  # VMs microvm de la machine, lues à l'affichage (déclarées dans
+  # modules/devbox.nix ou créées à la main) : `dev1 ● dev2 ○`, ● = en marche.
+  # Aucune sortie sans VM : fastfetch masque alors la ligne.
+  vmStatus = pkgs.writeShellScript "fastfetch-vms" ''
+    units=$(${pkgs.systemd}/bin/systemctl list-units --all --plain --no-legend 'microvm@*.service')
+    [ -z "$units" ] && exit 0
+    out="VMs"
+    while read -r unit _ active _; do
+      vm=''${unit#microvm@}
+      vm=''${vm%.service}
+      if [ "$active" = active ]; then out="$out  $vm ●"; else out="$out  $vm ○"; fi
+    done <<< "$units"
+    echo "$out"
+  '';
+
   # `nf` choisit la config compacte (logo seul) ou complète selon la largeur du terminal.
   nf = pkgs.writeShellScriptBin "nf" ''
     CFG_DIR="$HOME/.config/fastfetch"
@@ -105,6 +120,12 @@ in
         type = "disk";
         key = "◆ ";
         keyColor = ansiAccent;
+      }
+      {
+        type = "command";
+        key = "◆ ";
+        keyColor = ansiAccent;
+        text = "${vmStatus}";
       }
     ];
   };

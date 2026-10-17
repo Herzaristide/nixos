@@ -37,7 +37,6 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 ### Flake Inputs (`flake.nix`)
 
 - `nixpkgs` — nixos-unstable channel
-- `nixpkgs-cuda` — nixpkgs **frozen by rev in the URL** (so `nix flake update` never moves it), used only by zola for `ollama-cuda` and CUDA `blender`. No cache serves those, so they used to recompile on every nixpkgs bump; now they only rebuild when this rev is bumped by hand
 - `home-manager` — user environment, integrated as NixOS module
 - `nixos-wsl` — WSL2 support (exupery only)
 - `quickshell` — Wayland shell / bar runtime (replaces Waybar/DMS)
@@ -49,7 +48,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 ### System modules (`/modules/`)
 
 - `nixos.nix` — Nix-level settings (flakes, GC, `nix-ld`, `system.stateVersion`, build parallelism cap)
-- `common.nix` — defines `head` / `primaryMonitor` / `darkMode` options; locale/keyboard FR; user `aristide` (immutable, hashed pwd); docker; ollama; wires home-manager into the system
+- `common.nix` — defines `head` / `primaryMonitor` / `darkMode` options; locale/keyboard FR; user `aristide` (immutable, hashed pwd); docker; ollama (commented out — disabled on every host, see also the gary/zola configs); wires home-manager into the system
 - `network.nix` — NetworkManager + SSH (**key-only**: `PasswordAuthentication = false`, `KbdInteractiveAuthentication = false`, `PermitRootLogin = "no"`, `MaxAuthTries = 3`, `LoginGraceTime = 30`, no X11/agent forwarding) + firewall. **sshd is enabled unconditionally here, so it runs on all four hosts** — gary, zola, kafka *and* exupery (WSL) — and `services.openssh.openFirewall` (default `true`) opens port 22 on each. That is the only port opened anywhere; a host needing another opts in explicitly. (An earlier revision of this file claimed gary and zola set `services.openssh.enable = lib.mkForce false` and that kafka was the only reachable host — that `mkForce` has never existed in the tree. Corrected 2026-07-19. Note `home/modules/network/ssh.nix` declares gary as an SSH *target* at `192.168.1.138`, so a reachable gary is likely intentional.) Also disables Wake-on-LAN on every wired interface via the `disable-wake-on-lan` unit: a magic packet is unauthenticated, and since `ethtool -s … wol g` persists in the NIC across reboots, an earlier revision's WoL-enabling unit had to be actively reversed rather than merely deleted — the firmware may still enable it independently, cut it in the BIOS/UEFI for a complete disable. Also holds a **distraction blocklist** in `networking.hosts`: every YouTube domain *and*, since 2026-09-25, Twitch (`twitch.tv` + subdomains, plus the `static-cdn.jtvnw.net` / `usher.ttvnw.net` CDN and video hosts) resolve to `0.0.0.0`. It's `/etc/hosts`, so it only covers plain DNS — a browser doing DNS-over-HTTPS bypasses it.
 - `power.nix` — UPower, logind suspend rules, USB wakeup
 - `security.nix` — kernel sysctl hardening (kptr_restrict, dmesg_restrict, ptrace_scope, TCP/IP anti-spoofing), **no AppArmor** (removed 2026-07-19 — the upstream `pkgs.apparmor-profiles` that the NixOS module loads by default attach to `/usr/bin` and `/usr/lib` paths that don't exist on NixOS; verified on gary that 0 of the 202 loaded profiles referenced `/nix/store`, and 76 are `flags=(unconfined)` stubs anyway. Nothing depended on it: no systemd unit uses `AppArmorProfile=`, and rootless Docker reports `Security Options: seccomp` only. Re-enabling means hand-written profiles with store paths interpolated from Nix, plus a reboot — `enable` puts `apparmor` back in the kernel `lsm=` list), auditd (rules re-enabled 2026-07-19 after the `auditctl -R` / `-b` regression in the 4.1.2 snapshot; revert to `enable = false` if `audit-rules-nixos.service` fails again), fail2ban on sshd, LUKS auto-unlock via USB keyfile (`/dev/disk/by-partlabel/LUKSKEY`, 20s timeout then falls back to the passphrase prompt — note this trades some at-rest protection for convenience if the keyfile USB stick travels with the machine)
@@ -138,8 +137,8 @@ LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — wri
 - NVIDIA proprietary driver (`open = false`), Prime **offload** (Intel iGPU default, NVIDIA on-demand via `nvidia-offload <cmd>`)
 - Heavy Wayland-friendly env vars: `GBM_BACKEND=nvidia-drm`, `WLR_NO_HARDWARE_CURSORS=1`, `LIBVA_DRIVER_NAME=iHD` (Chrome video decode on Intel iGPU to avoid nvidia-vaapi bugs)
 - `services.auto-cpufreq` + `thermald` + `powertop` for laptop power management
-- `services.ollama.package = pkgsCuda.ollama-cuda.override { cudaArches = [ "sm_86" ]; }` and `blender.override { cudaSupport = true; }`, both taken from `pkgsCuda` (the frozen `nixpkgs-cuda` input), with explicit `__NV_PRIME_RENDER_OFFLOAD` env so ollama systemd service picks the dGPU
-- No CUDA binary cache: `cuda-maintainers.cachix.org` was shut down (HTTP 401) and removed 2026-09-30; `cache.nixos-cuda.org` did not carry these builds either. The frozen `nixpkgs-cuda` input replaces caching
+- **Global `nixpkgs.config.cudaSupport = true`** with `cudaCapabilities = [ "8.6" ]` (RTX 3070 Mobile only) — the counterpart of gary's `rocmSupport`: every CUDA-capable package (blender, openimagedenoise, opensubdiv, obs-studio, suitesparse, ceres-solver…) is built with it and compiles locally. **Don't take GUI apps from a frozen nixpkgs**: a frozen `nixpkgs-cuda` input (removed 2026-10-17) made Blender quit at startup with `EGL Error` once the system Mesa was built against a newer glibc than the app — Mesa is dlopened from `/run/opengl-driver` into the app's process. ollama is disabled; if re-enabled, `pkgs.ollama` is already CUDA here and only needs the commented `__NV_PRIME_RENDER_OFFLOAD` env
+- No CUDA binary cache: `cuda-maintainers.cachix.org` was shut down (HTTP 401) and removed 2026-09-30; `cache.nixos-cuda.org` did not carry these builds either. CUDA packages therefore rebuild locally on nixpkgs bumps that touch them
 - Primary monitor: `eDP-1` (built-in)
 
 ### gary (desktop — AMD CPU + AMD GPU)
@@ -149,7 +148,7 @@ LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — wri
 - ROCm stack for ML: `rocm-smi`, `rocminfo`, `clr`, `rocm-runtime`, `hipcc`
 - `/opt/rocm` tmpfiles symlink to `pkgs.rocmPackages.clr` (PyTorch/TF default lookup path)
 - **ROCm arch mapping**: RX 7600 XT is `gfx1102` but upstream rocBLAS ships kernels for the RDNA3 flagship `gfx1100` (not `gfx1102`). System-wide `HSA_OVERRIDE_GFX_VERSION=11.0.0` exposes the card as `gfx1100` so rocBLAS finds its Tensile kernels. No custom overlay → unmodified rocmPackages come straight from the Hydra binary cache (no 30-minute Tensile kernel regeneration on rebuild).
-- `services.ollama.package = pkgs.ollama-rocm` (the explicit `HSA_OVERRIDE_GFX_VERSION` also covers other ROCm consumers on this host).
+- ollama is disabled (commented out); `HSA_OVERRIDE_GFX_VERSION` covers every ROCm consumer on this host.
 - `services.hardware.openrgb` (motherboard = amd) — RGB control for the ITE ARGB controller (case fans), Corsair mouse, RAM and GPU over SMBus
 - Primary monitor: `DP-1` (Samsung C27R50x)
 
@@ -202,7 +201,7 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 - `aristide` is in groups: `networkmanager wheel video render audio storage greeter` (plus `kvm` on hosts importing `modules/android.nix`, for the emulator's KVM acceleration)
 - **No `docker` group membership** — Docker runs rootless (`virtualisation.docker.rootless.enable`), so the daemon isn't running as root and group membership wouldn't grant a root-equivalent escape path anyway; deliberately left out
 - Sudo NOPASSWD allowlist: `smartctl`, `dmidecode` (read-only hardware queries)
-- Git identity commits as signed (`gpg.format = "ssh"`, `commit.gpgSign = true`, key `~/.ssh/siddhartha.pub`); credentials for HTTPS remotes go through `git-credential-manager` backed by GNOME Keyring/secretservice on headful hosts, or an in-memory cache on headless hosts — no plaintext credential store
+- Git commits are **not signed** (signing removed 2026-10-17: `~/.ssh/siddhartha` stays out of the dev VMs, and signing there would attribute Claude's commits to the user); credentials for HTTPS remotes go through `git-credential-manager` backed by GNOME Keyring/secretservice on headful hosts, or an in-memory cache on headless hosts — no plaintext credential store
 - **GNOME Keyring** is the Secret Service store for `git-credential-manager` (HTTPS remotes), Zed, Copilot CLI and Chromium ("Chromium Safe Storage"). It is unlocked by `pam_gnome_keyring` at the greetd login, and started as a systemd user service from `home/head.nix` (`services.gnome-keyring`, `secrets` component only — ssh-agent lives in `home/modules/network/ssh.nix`). Do **not** rely on D-Bus activation alone: an activated daemon comes up locked and prompts for a password mid-session. Note the default keyring is `Default_Keyring`, unlocked by chaining from `login` — PAM only ever unlocks `login` directly
 
 ## Custom packages (`packages.x86_64-linux`)

@@ -21,6 +21,8 @@
     ../../modules/security.nix
     ../../modules/impermanence.nix
     ../../modules/print.nix
+    ../../modules/hunyuan3d.nix
+    ../../modules/devbox.nix
   ];
 
   # Hostname

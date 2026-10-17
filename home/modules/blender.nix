@@ -31,7 +31,7 @@ let
 in
 {
   # Backend Cycles compilé dans le paquet : HIP sur gary (rocmSupport global),
-  # CUDA/OptiX sur zola (overlay blender-cuda dans son configuration.nix).
+  # CUDA/OptiX sur zola (overlay blender dans son configuration.nix).
   home.packages = [ pkgs.blender ];
 
   # Nom de fichier = nom de module de l'add-on ; `blender_mcp.py` est celui
