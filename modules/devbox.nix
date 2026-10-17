@@ -1,7 +1,7 @@
 # VMs de développement persistantes et génériques (microvm.nix + cloud-hypervisor).
 #
 # Ajouter une VM = une entrée sous son hôte dans `devbox-vms.nix`, puis rebuild.
-# Importé par chaque hôte qui a des VMs (gary, zola).
+# Importé par chaque hôte qui a des VMs (gary pour l'instant, kafka plus tard).
 #   - toujours allumées (autostart), et un `nixos-rebuild switch` ne les coupe pas
 #     (restartIfChanged = false) : `systemctl restart microvm@<vm>` pour appliquer un changement ;
 #   - état sous /var/lib/microvms/<vm>/ (sur @, hors impermanence de /home) ;
@@ -154,11 +154,11 @@ let
           Tu tournes dans la VM de dev `${name}` sur gary. Elle est joignable depuis le
           tailnet de l'utilisateur sous le nom `${name}`, comme une préprod.
 
-          ## Le projet
+          ## Les projets
 
-          - La VM sert un seul projet, cloné dans `~/projet`. Les sessions lancées depuis
-            claude.ai/code ou l'app mobile ont chacune leur git worktree : travaille
-            dedans, sur sa branche, jamais sur `main`.
+          - Les projets sont clonés directement dans `~` (`~/<projet>`). Les sessions
+            lancées depuis claude.ai/code ou l'app mobile ont chacune leur git
+            worktree : travaille dedans, sur sa branche, jamais sur `main`.
           - Une feature finie : commit, push de la branche, puis Pull Request avec `gh pr
             create`. Ne merge jamais toi-même, c'est l'utilisateur qui relit et merge.
           - Les outils du projet viennent de son `flake.nix` (`nix develop`, ou direnv
@@ -238,38 +238,59 @@ let
             ];
             home.stateVersion = "25.11";
 
-            # Remote Control permanent, à la manière des sessions cloud : le projet
-            # de la VM (un seul, cloné dans ~/projet) est servi à claude.ai/code et à
-            # l'app mobile, et chaque session lancée de là-bas a son propre git
-            # worktree. Une fois par VM à la main : `/login` (abonnement, pas de clé
-            # API), puis `claude remote-control` dans ~/projet pour accepter RC et la
-            # confiance au dossier, qui demandent un terminal ; d'ici là le service
+            # Remote Control permanent, à la manière des sessions cloud : chaque
+            # dépôt git cloné directement dans ~ (~/thot, ~/cybion…) est servi à
+            # claude.ai/code et à l'app mobile sous `<vm>-<dépôt>`, chaque session
+            # lancée de là-bas dans son propre git worktree. Une fois par dépôt à la
+            # main : `claude auth login` (abonnement, pas de clé API, une fois par
+            # VM), puis `claude remote-control` dans le dépôt pour accepter RC et la
+            # confiance au dossier, qui demandent un terminal ; d'ici là l'instance
             # échoue et réessaie. Sortant en HTTPS seulement.
-            systemd.user.services.claude-rc = {
+            systemd.user.services."claude-rc@" = {
               Unit = {
-                Description = "Claude Code Remote Control pour ~/projet";
+                Description = "Claude Code Remote Control pour ~/%I";
                 After = [ "network-online.target" ];
-                ConditionPathExists = "%h/projet/.git";
+                ConditionPathExists = "%h/%I/.git";
                 StartLimitIntervalSec = 0;
               };
               Service = {
-                WorkingDirectory = "%h/projet";
+                WorkingDirectory = "%h/%I";
                 # PATH d'une session : claude, git, nix, docker. direnv charge le
                 # devShell du projet, hérité par les sessions et leurs commandes.
                 Environment = [
                   "PATH=/etc/profiles/per-user/aristide/bin:/run/current-system/sw/bin:/run/wrappers/bin"
                 ];
-                ExecStart = "${pkgs.direnv}/bin/direnv exec %h/projet claude remote-control --spawn worktree --permission-mode acceptEdits --remote-control-session-name-prefix ${name}";
+                ExecStart = "${pkgs.direnv}/bin/direnv exec %h/%I claude remote-control --spawn worktree --permission-mode acceptEdits --remote-control-session-name-prefix ${name}-%I";
                 Restart = "always";
                 RestartSec = 30;
               };
-              Install.WantedBy = [ "default.target" ];
             };
-            # Démarre le service dès que le dépôt est cloné, sans attendre un reboot.
-            systemd.user.paths.claude-rc = {
-              Unit.Description = "Attend le clone de ~/projet";
-              Path.PathExists = "%h/projet/.git";
-              Install.WantedBy = [ "default.target" ];
+            # Démarre une instance par dépôt de ~, au boot puis chaque minute : un
+            # dépôt tout juste cloné est servi sans rien déclarer. Démarrer une
+            # instance déjà active ne fait rien.
+            systemd.user.services.claude-rc-scan = {
+              Unit.Description = "Remote Control pour chaque dépôt git de ~";
+              Service = {
+                Type = "oneshot";
+                ExecStart = toString (
+                  pkgs.writeShellScript "claude-rc-scan" ''
+                    for git in "$HOME"/*/.git; do
+                      [ -e "$git" ] || continue
+                      repo=$(basename "$(dirname "$git")")
+                      ${pkgs.systemd}/bin/systemctl --user start --no-block \
+                        "claude-rc@$(${pkgs.systemd}/bin/systemd-escape "$repo").service"
+                    done
+                  ''
+                );
+              };
+            };
+            systemd.user.timers.claude-rc-scan = {
+              Unit.Description = "Cherche les nouveaux dépôts de ~ à servir";
+              Timer = {
+                OnStartupSec = "10s";
+                OnUnitActiveSec = "1min";
+              };
+              Install.WantedBy = [ "timers.target" ];
             };
           };
         };
