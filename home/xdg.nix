@@ -14,7 +14,6 @@ let
   # ci-dessous est alors la seule chose qui les crée.
   tree = [
     "ciph3r"
-    "cl0ud"
     "d3pot"
     "f3tch"
     "sc0re"
@@ -61,7 +60,7 @@ in
     # pas user-dirs.dirs (scripts, yt-dlp) dépendent de cet export.
     setSessionVariables = true;
 
-    # Ne créerait que les dossiers XDG ci-dessus ; ciph3r, sc0re, cl0ud,
+    # Ne créerait que les dossiers XDG ci-dessus ; ciph3r, sc0re,
     # sh3lf et v4ult n'en sont pas. Une seule liste (`tree`) décrit l'arborescence.
     createDirectories = false;
   };

@@ -146,14 +146,17 @@ in
 
         ## Montrer ton travail
 
-        - Pour faire tester une app, expose-la sur un port de la plage **8000-8099**,
-          en écoutant sur `0.0.0.0` (pas `127.0.0.1`), puis donne l'URL
+        - **8000-8009 sont réservés à la préprod** du projet (sa pile
+          `docker-compose.preprod.yml`, projet compose `<nom>-preprod`) : n'y touche pas,
+          ne l'arrête pas, ne réutilise pas ses volumes.
+        - Pour faire tester ton travail, expose-le sur un port de **8010-8099**, en
+          écoutant sur `0.0.0.0` (pas `127.0.0.1`), puis donne l'URL
           `http://${host}:<port>`.
         - Plusieurs tâches tournent en parallèle sur ce serveur : avant de prendre un
           port, vérifie qu'il est libre (`ss -ltn`) et ne coupe jamais un service que tu
           n'as pas lancé.
         - Avec Docker Compose (rootless), publie le port de cette plage
-          (`ports: ["8001:3000"]`) ; garde les ports internes des services tels quels.
+          (`ports: ["8010:3000"]`) ; garde les ports internes des services tels quels.
           Donne au projet un nom propre au worktree (`docker compose -p <dépôt>-<branche>`)
           pour ne pas écraser les conteneurs d'une autre session sur le même dépôt.
       ''

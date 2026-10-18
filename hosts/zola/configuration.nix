@@ -148,10 +148,34 @@
     nvidia.acceptLicense = true;
     cudaCapabilities = [ "8.6" ];
   };
+  #
+  # Blender démarre toujours sur la RTX (viewport, EEVEE, Cycles) : le binaire
+  # est enveloppé avec les variables de PRIME offload, les mêmes que le wrapper
+  # `nvidia-offload` (voir ollama plus bas). L'enveloppe est un symlinkJoin
+  # autour du blender CUDA, donc le changer ne recompile pas blender. Le
+  # .desktop lance `blender` via le PATH : il passe aussi par le wrapper.
   nixpkgs.overlays = [
-    (final: prev: {
-      blender = prev.blender.override { cudaSupport = true; };
-    })
+    (
+      final: prev:
+      let
+        blenderCuda = prev.blender.override { cudaSupport = true; };
+      in
+      {
+        blender = prev.symlinkJoin {
+          name = "blender-nvidia-${blenderCuda.version}";
+          inherit (blenderCuda) pname version meta;
+          paths = [ blenderCuda ];
+          nativeBuildInputs = [ prev.makeWrapper ];
+          postBuild = ''
+            wrapProgram $out/bin/blender \
+              --set __NV_PRIME_RENDER_OFFLOAD 1 \
+              --set __NV_PRIME_RENDER_OFFLOAD_PROVIDER NVIDIA-G0 \
+              --set __GLX_VENDOR_LIBRARY_NAME nvidia \
+              --set __VK_LAYER_NV_optimus NVIDIA_only
+          '';
+        };
+      }
+    )
   ];
 
   # Un seul build à la fois (au lieu de 2 × 6 cœurs, modules/nixos.nix) :

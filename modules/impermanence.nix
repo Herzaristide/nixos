@@ -179,10 +179,6 @@ in
         # toujours sous /mnt (modules/storage.nix) et udisks2 monte les
         # amovibles dans /run/media/$USER, chemin qu'il ne sait pas changer.
         "sh3lf"
-        # Miroir local du Drive (cf. home/modules/network/rclone.nix) : la
-        # persistance n'est PAS optionnelle ici — un bisync qui repart d'un
-        # dossier vide déclenche un --resync intégral à chaque boot.
-        "cl0ud"
 
         ".cache/nvidia" # GLCache (zola)
       ]
