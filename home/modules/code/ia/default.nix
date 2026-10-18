@@ -6,7 +6,6 @@
     ./claude-anna.nix
     ./claude-journal.nix
     ./copilot.nix
-    ./mcp.nix
     ./savoir.nix
   ];
 }

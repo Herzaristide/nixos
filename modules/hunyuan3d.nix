@@ -17,6 +17,10 @@
 # que l'impermanence ne touche pas. Premier démarrage : ~10 Go à télécharger,
 # suivre avec `journalctl -fu hunyuan3d`.
 #
+# Pas de démarrage au boot : le serveur occupe ~18 Gio de RAM (poids chargés
+# côté CPU en plus du GPU), de quoi saturer gary à côté des microVM. On le
+# lance à la main : `sudo systemctl start hunyuan3d`, puis `stop` après usage.
+#
 # Limites :
 #   - forme seule : la texture demande les extensions CUDA `custom_rasterizer`
 #     et `mesh_processor`, non compilées ici (laisser « Generate Texture »
@@ -40,6 +44,8 @@ let
   # Modèle par défaut d'api_server.py : DiT mini-turbo + son VAE turbo
   # (chargé par enable_flashvdm). hy3dgen cherche d'abord sous
   # $HY3DGEN_MODELS/<repo>/<subfolder>, où on les dépose à cette révision.
+  # Chaque poids existe en .ckpt et en .safetensors ; api_server.py passe
+  # use_safetensors=True, on ne prend donc que ces derniers (~4 Go de moins).
   modelRepo = "tencent/Hunyuan3D-2mini";
   modelRev = "f90a0f7df7d5e6f71109cf333f6a95a0ae3194a6"; # 2025-10-17
   modelSubfolders = [
@@ -68,6 +74,19 @@ let
     libxcb
     libsm
     libice
+    # torch / triton
+    zstd
+    xz
+    bzip2
+    # pymeshlab
+    e2fsprogs # libcom_err
+    fontconfig
+    freetype
+    gmp
+    libgpg-error
+    p11-kit
+    # numba (parallélisme TBB)
+    tbb
   ];
 
   start = pkgs.writeShellScript "hunyuan3d-start" ''
@@ -80,7 +99,9 @@ let
       echo "hunyuan3d: téléchargement de ${modelRepo}@${modelRev}"
       venv/bin/hf download ${modelRepo} --revision ${modelRev} \
         --local-dir models/${modelRepo} \
-        --include ${lib.concatMapStringsSep " " (s: "'${s}/*'") modelSubfolders}
+        --include ${
+          lib.concatMapStringsSep " " (s: "'${s}/config.yaml' '${s}/*.safetensors'") modelSubfolders
+        }
       rm -f models/.rev-*
       touch models/.rev-${modelRev}
     fi
@@ -94,7 +115,6 @@ in
 {
   systemd.services.hunyuan3d = {
     description = "Hunyuan3D-2 API server (ROCm)";
-    wantedBy = [ "multi-user.target" ];
     wants = [ "network-online.target" ];
     after = [ "network-online.target" ];
 
@@ -113,20 +133,39 @@ in
       # Même mapping gfx1102 → gfx1100 que la variable système de gary, que
       # les services ne voient pas (environment.variables = sessions seules).
       HSA_OVERRIDE_GFX_VERSION = "11.0.0";
+      # torch voit aussi l'iGPU Raphael (gfx1036, maquillé en gfx1100 par
+      # l'override ci-dessus) en cuda:1 ; on ne garde que la RX 7600 XT.
+      HIP_VISIBLE_DEVICES = "0";
     };
 
     serviceConfig = {
       ExecStart = start;
-      DynamicUser = true;
+      # Pas de DynamicUser : systemd 261 monte alors le StateDirectory
+      # (/var/lib/private/hunyuan3d, bind idmappé) en noexec dans le
+      # namespace du service — `venv/bin/hf` sortait en « Permission denied »
+      # (126), et les .so de torch n'auraient pas pu être mappés exécutables.
+      # En quittant DynamicUser, systemd ramène le répertoire de
+      # /var/lib/private vers /var/lib mais ne le rechown pas : sur disque,
+      # l'idmapping laissait tout à nobody (65534), d'où un
+      # `chown -R hunyuan3d:hunyuan3d /var/lib/hunyuan3d` manuel (2026-10-17).
+      User = "hunyuan3d";
+      Group = "hunyuan3d";
       StateDirectory = "hunyuan3d";
-      SupplementaryGroups = [
-        "video"
-        "render"
-      ];
       Restart = "on-failure";
       RestartSec = 30;
       # Premier démarrage = téléchargements de plusieurs Go.
       TimeoutStartSec = "infinity";
     };
   };
+
+  users.users.hunyuan3d = {
+    isSystemUser = true;
+    group = "hunyuan3d";
+    home = stateDir;
+    extraGroups = [
+      "video"
+      "render"
+    ];
+  };
+  users.groups.hunyuan3d = { };
 }

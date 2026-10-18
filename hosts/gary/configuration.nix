@@ -22,7 +22,7 @@
     ../../modules/impermanence.nix
     ../../modules/print.nix
     ../../modules/hunyuan3d.nix
-    ../../modules/devbox.nix
+    ../../modules/agents.nix
   ];
 
   # Hostname

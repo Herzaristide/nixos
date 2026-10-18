@@ -7,8 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Flake-based NixOS configuration managing four hosts:
 
 - **zola** (laptop): Intel + NVIDIA hybrid graphics, Prime **offload** mode, full GUI
-- **gary** (desktop): AMD Ryzen 5 7600X + Radeon RX 7600 XT (ROCm/HIP), full GUI
-- **kafka** (headless server): Intel + NVIDIA NVS 310 (nouveau), UEFI + systemd-boot, single NVMe SSD
+- **gary** (headless dev server): AMD Ryzen 5 7600X + Radeon RX 7600 XT (ROCm/HIP), no GUI, holds no personal secrets; runs the autonomous Claude agents under the `claude` user
+- **kafka** (headless dev server): Intel + NVIDIA NVS 310 (nouveau, no compute GPU), UEFI + systemd-boot, single NVMe SSD; runs Claude agents under `claude` like gary
 - **exupery** (WSL2): headless development environment
 
 ## Build and Deployment
@@ -43,7 +43,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `karenine` — the Quickshell interface (QML layout) **and** the `anna` engine (Rust: accent/palette theming + hardware stats). `github:Herzaristide/karenine`
 - `explorer` — custom file manager (`github:Herzaristide/Explorer`)
 - `disko` — declarative partitioning; each host's layout is its own `hosts/<host>/disko.nix`
-- `impermanence` — declarative `/home`, wired by `modules/impermanence.nix` on zola and gary only
+- `impermanence` — declarative `/home`, wired by `modules/impermanence.nix` on zola, gary and kafka
 
 ### System modules (`/modules/`)
 
@@ -56,7 +56,8 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `greetd.nix` — login screen: greetd + regreet, reskinned (CSS + wallpaper + clock widget) to match the Quickshell palette. Replaces the old getty-autologin flow — a password prompt is now required at every boot/logout. The greeter's compositor is **Hyprland**, not `cage`: cage exposes no output configuration (no rotation, no positioning), which left gary's upside-down DP-4 rendering inverted at login. The greeter reads the same monitor list as the session (`modules/monitors.nix`) and applies the same `renderDevice` GPU pinning. Its config is **Lua**, like the session (migrated 2026-08-22): hyprlang (`.conf`) is deprecated since 0.55 and 0.56 paints "You are using the .conf config format, support for which will be removed in Hyprland 0.57." across the login screen. Hyprland picks its parser from the file extension (`src/config/ConfigManager.cpp`), so the `.lua` filename passed to `--config` is what selects the Lua manager — there is no flag for it
 - `monitors.nix` — the monitor list (output/mode/position/scale/transform), shared verbatim between the user's Hyprland session (`home/modules/hyprland/hyprland.nix`, Lua attrsets) and the greeter's Hyprland (`modules/greetd.nix`, rendered to `hl.monitor{}` calls). All hosts' outputs are listed together; each host only matches its own
 - `head.nix` — GUI layer: declares the Hyprland session entry consumed by greetd, XDG portal (hyprland + kde), fonts (JetBrains Mono only), printing. **No gaming profile** — Steam, Proton-GE, gamescope, gamemode, MangoHud and the controller udev rules were removed on 2026-09-25 along with `modules/gaming.nix` and `home/modules/gaming.nix`; don't re-add them without asking. The Hyprland window rules for `steam`/`steam_app_*`/`gamescope` and `general.allow_tearing` went with them, as did the `.steam` / `.local/share/Steam` persistence entries (the shader caches `~/.cache/mesa_shader_cache` and `~/.cache/nvidia` stay — they serve every GPU app)
-- `impermanence.nix` — declarative `/home` on zola and gary: `@home` is wiped and recreated at every boot by an initrd unit, only the paths listed in `environment.persistence."/keep"` survive (details under "Filesystem layout"). Not imported by kafka or exupery
+- `impermanence.nix` — declarative `/home` on zola, gary and kafka: `@home` is wiped and recreated at every boot by an initrd unit, only the paths listed in `environment.persistence."/keep"` survive (details under "Filesystem layout"). Not imported by exupery
+- `agents.nix` — gary and kafka (the dev servers): the `claude` user (uid 1001, home `/home/claude` with its own `environment.persistence."/keep".users.claude` list: `~/f0rge` — where agents must clone —, `.claude`, `.claude.json`, `.config/gh`, docker rootless, direnv, rtk, uv and Hugging Face caches; groups `video`/`render` for ROCm, **no wheel/sudo**, key-only login, `linger`). Its home-manager config reuses the shell + `ia/common.nix` (Claude Code settings, LSPs, rtk, **all** MCP servers — the former `mcp-common.nix` split was dropped 2026-10-18) and runs `claude-rc@<repo>` Remote Control for every git repo cloned in `~/f0rge` (rescanned each minute, `--spawn worktree`, session prefix `<host>-<repo>`). Agent rules live in its `~/.claude/CLAUDE.md` (ports 8000-8099 on `0.0.0.0`, PRs only, never merge). Limits: `user-1001.slice` MemoryHigh 65% / MemoryMax 80% of host RAM / CPUWeight 50; mangle/OUTPUT chain `agents-out` drops its traffic to LAN, tailnet and private ranges (v4 + v6), loopback and replies to inbound allowed. GPU wording and `HSA_OVERRIDE_GFX_VERSION` only where `nixpkgs.config.rocmSupport` is set (gary). One-time manual setup as `claude` on each host (`ssh claude@gary` / `ssh claude@kafka` — no `-A`: the key must never reach an agent session): `gh auth login` with a fine-grained token (chosen repos, Contents + Pull requests, no Workflows, never `nixos`), `claude auth login`, `claude remote-control` once per repo
 - `audio.nix` — low-latency tweaks (`threadirqs`, ALSA seq modules, `@audio` PAM limits, plugin search paths), PipeWire (ALSA/JACK/Pulse), echo-cancel module, WirePlumber rule granting chromium `rwx` audio permissions (read/write/execute, deliberately not the `m` metadata bit) so the BandLab PWA can record — the rule matches on binary name, so it applies to every chromium process (all PWAs + regular browsing share the same binary), not just BandLab
 
 ### Home-manager config (`/home/`)
@@ -86,8 +87,8 @@ QuickShell is the Wayland shell (bottom bar + side panel + Ollama chat + notes +
 
 `head` (bool, default false) is defined in `modules/common.nix`. Hosts set it explicitly:
 
-- `head = true` (gary, zola) — pulls in `modules/head.nix` and the headful home-manager modules (Hyprland, Quickshell, Walker, KDE/Qt theming, accent daemon, chromium, alacritty, etc.)
-- `head = false` (exupery, kafka) — only CLI/server modules
+- `head = true` (zola) — pulls in `modules/head.nix` and the headful home-manager modules (Hyprland, Quickshell, Walker, KDE/Qt theming, accent daemon, chromium, alacritty, etc.)
+- `head = false` (gary, exupery, kafka) — only CLI/server modules
 
 `primaryMonitor` (string) is the Hyprland output that receives workspaces 1-5 and the Quickshell bar. Defaults to `HDMI-A-1`; zola overrides to `eDP-1`.
 
@@ -113,18 +114,19 @@ Each UEFI host has **its own** disko file, wired in `flake.nix`: `hosts/zola/dis
 
 - zola / gary: GPT + ESP (FAT32, `/boot`, `fmask=0077`/`dmask=0077`) + LUKS2 (`allowDiscards=true`) → btrfs on `/dev/nvme0n1`
 - WSL host (exupery): no disko, no bootloader
-- btrfs subvolumes: `@` (`/`), `@home` (`/home`), `@nix` (`/nix`), plus `@keep` on zola/gary
+- btrfs subvolumes: `@` (`/`), `@home` (`/home`), `@nix` (`/nix`), plus `@keep` on zola/gary/kafka
 - Mount options: `compress=zstd noatime space_cache=v2 discard=async ssd`
 - To target a different disk on a future host, override `disko.devices.disk.main.device` with `lib.mkForce` in that host's `configuration.nix`.
 
 LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — write the file before running disko, or pass it via `nixos-anywhere --extra-files`.
 
-### Impermanence — `/home` only, zola and gary only
+### Impermanence — `/home` only, zola, gary and kafka
 
-`modules/impermanence.nix` is imported by **zola and gary only** (`hosts/<host>/configuration.nix`). kafka and exupery (WSL) don't import it and are fully persistent — WSL couldn't run it anyway: its filesystem comes from the Windows-side image, there is no LUKS, no btrfs subvolume, and no systemd initrd to roll anything back in.
+`modules/impermanence.nix` is imported by **zola, gary and kafka** (`hosts/<host>/configuration.nix`; kafka since 2026-10-18). exupery (WSL) doesn't import it and is fully persistent — WSL couldn't run it anyway: its filesystem comes from the Windows-side image, there is no LUKS, no btrfs subvolume, and no systemd initrd to roll anything back in.
 
 - **Only `@home` is wiped.** The initrd unit `rollback-home` recreates an empty `@home` at every boot; `@` (`/`) and `@nix` are never touched. So `/var/lib/nixos`, `/var/lib/*` and everything else under `/` survives — which is why `enableWarnings = false` on `environment.persistence` is correct here rather than a papered-over bug (the module's warning assumes an ephemeral root).
 - What survives lives on the `@keep` subvolume, mounted `neededForBoot` at `/keep/home`, and is listed file-by-file / directory-by-directory under `environment.persistence."/keep".users.aristide`. **Anything not in that list is gone at the next boot.**
+- The list is split by role: a shared part (shell history, `.claude`, `.ssh` for `known_hosts`, docker rootless, uv, direnv, shader cache), a `config.head` part (zola: secrets, GUI app state, personal data dirs) and a `!config.head` part (dev servers gary and kafka: `~/f0rge` only — the one place to clone repos, since impermanence cannot persist a home root). `claude` has its own list in `modules/agents.nix`. The servers therefore keep no secret and no stray file across reboots by construction.
 - `@keep` is the old `@home` renamed, so `aristide/` already lands on `/keep/home/aristide` — that's what made the initial migration a rename rather than a file copy. The module's header still points at `scripts/impermanence-migrate.sh`, which **no longer exists** in the tree (dropped once the migration was done; recover it from git history if a new host ever needs it).
 - **Wipes are archived, not deleted**: the old `@home` is moved to `old_roots/<timestamp>` and only purged after `retentionDays = 30`. A path forgotten in the list stays recoverable for a month.
 - **Guard rail**: if `@keep` is absent, `rollback-home` logs and exits without touching anything, so adding the module to a host that hasn't been migrated destroys nothing.
@@ -150,7 +152,7 @@ LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — wri
 - **ROCm arch mapping**: RX 7600 XT is `gfx1102` but upstream rocBLAS ships kernels for the RDNA3 flagship `gfx1100` (not `gfx1102`). System-wide `HSA_OVERRIDE_GFX_VERSION=11.0.0` exposes the card as `gfx1100` so rocBLAS finds its Tensile kernels. No custom overlay → unmodified rocmPackages come straight from the Hydra binary cache (no 30-minute Tensile kernel regeneration on rebuild).
 - ollama is disabled (commented out); `HSA_OVERRIDE_GFX_VERSION` covers every ROCm consumer on this host.
 - `services.hardware.openrgb` (motherboard = amd) — RGB control for the ITE ARGB controller (case fans), Corsair mouse, RAM and GPU over SMBus
-- Primary monitor: `DP-1` (Samsung C27R50x)
+- **Dev server since 2026-10-18**: zola is the only workstation (identity, keys, vault, browsers, accounts); gary was purged of every personal secret and file (moved to `/mnt/crucial/gary-2026-10-18/`, still to be sorted) and only carries project clones and Claude instances. Two Unix accounts: `aristide` = admin (wheel) + supervised work, projects cloned in `~/f0rge` (git over SSH with the key forwarded from zola, `ssh -A gary` — never stored on gary); `claude` = unsupervised agents (`modules/agents.nix`). The former microVMs (`modules/devbox.nix`, microvm.nix input) were removed the same day: nearly every project needs the GPU, which a VM could only get by passthrough (card taken from the host, VM RAM pinned).
 
 ### kafka (headless server — Intel + NVS 310, UEFI)
 
@@ -158,7 +160,8 @@ LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — wri
 - NVIDIA NVS 310 (Fermi / GF119) — too old for the current proprietary driver; uses **in-tree nouveau** for a clean KMS console. No GUI stack.
 - UEFI boot via systemd-boot (no GRUB), but the T3610 firmware has no NVMe driver: the **ESP lives on a USB stick** (FAT label `KAFKABOOT`, pinned by `/dev/disk/by-id/usb-…`) acting as a boot relay — the firmware boots the stick, whose kernel carries the NVMe driver, unlocks the LUKS volume and mounts the btrfs root. The stick must be plugged in during `nixos-rebuild`, or systemd-boot can't write its entries (`/boot` is `nofail`).
 - Single NVMe SSD on `/dev/nvme0n1`, carrying **only** LUKS2 + btrfs (`@`/`@home`/`@nix`, no ESP) — own layout in `hosts/kafka/disko.nix`
-- No impermanence: `@home` is persistent here
+- Impermanence since 2026-10-18 (same server list as gary). Migration, **before** the first switch: `sudo mount -o subvolid=5 /dev/mapper/cryptroot /mnt && sudo btrfs subvolume snapshot /mnt/@home /mnt/@keep && sudo umount /mnt` — without `@keep`, the `neededForBoot` mount of `/keep/home` fails. The first boot archives the old `@home` to `old_roots/` (30 days), and everything in aristide's home outside the list (`~/f0rge` + tooling) is gone from the live system — which is also how kafka gets purged of personal files. Move anything worth keeping into `~/f0rge` or off the machine first
+- Dev server like gary since 2026-10-18: imports `modules/agents.nix` (`claude` user, no GPU)
 
 ### exupery (WSL2)
 

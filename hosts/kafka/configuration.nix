@@ -18,7 +18,9 @@
     ../../modules/storage.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix
+    ../../modules/impermanence.nix
     ../../modules/print.nix
+    ../../modules/agents.nix
   ];
 
   # Hostname

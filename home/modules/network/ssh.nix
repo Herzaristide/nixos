@@ -79,18 +79,6 @@ in
         IdentityFile = "~/.ssh/siddhartha";
         IdentitiesOnly = true;
       };
-      # VMs de dev (modules/devbox.nix) : rebond par leur hôte, sauf sur l'hôte même.
-    }
-    // lib.mapAttrs' (
-      host: h:
-      lib.nameValuePair (lib.concatStringsSep " " (lib.attrNames h.vms)) {
-        ProxyJump = lib.mkIf ((osConfig.networking.hostName or "") != host) host;
-        User = "aristide";
-        IdentityFile = "~/.ssh/siddhartha";
-        IdentitiesOnly = true;
-      }
-    ) (import ../../../modules/devbox-vms.nix)
-    // {
       # Laptop zola, via Tailscale (pour l'atteindre depuis gary).
       "zola" = {
         AddKeysToAgent = "yes";

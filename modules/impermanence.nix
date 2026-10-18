@@ -1,6 +1,11 @@
 # Home déclaratif : /home repart vide à chaque boot, seuls les chemins listés
 # ci-dessous survivent. Migration initiale : scripts/impermanence-migrate.sh
-{ inputs, ... }:
+{
+  config,
+  inputs,
+  lib,
+  ...
+}:
 
 let
   cryptDevice = "/dev/mapper/cryptroot";
@@ -90,6 +95,10 @@ in
     # et ses uid-map/gid-map survivent normalement.
     # À réactiver si un jour l'impermanence s'étend à / (cf. « étape 1 »).
     enableWarnings = false;
+    # zola (head) est le poste principal : identité, secrets, apps et données.
+    # Les serveurs de dev (gary, kafka), vidés de tout secret personnel le
+    # 2026-10-18 et dédiés au dev, ne gardent que l'outillage et ~/f0rge, où
+    # sont clonés les dépôts. Les agents ont leur propre liste (modules/agents.nix).
     users.aristide = {
       files = [
         ".claude.json"
@@ -100,11 +109,29 @@ in
       ];
 
       directories = [
-        # Secrets
+        # known_hosts partout ; les clés privées, sur le poste seulement.
         {
           directory = ".ssh";
           mode = "0700";
         }
+
+        # État applicatif
+        ".claude"
+        ".local/share/rtk" # rtk : historique (`rtk gain`) et sorties rappelables (`rtk recall`)
+        ".local/share/direnv" # allow-list ; sans elle, tout devDir redemande `direnv allow`
+        # Le cache d'uv, seul runtime dont l'état pèse.
+        ".local/share/uv"
+
+        # Docker rootless : le data-root est dans le home, pas /var/lib/docker.
+        ".local/share/docker"
+        ".docker"
+
+        # Caches de shaders : régénérables, mais les reconstruire à chaque boot
+        # se paie en saccades dans toute application GPU (Blender, Chromium…).
+        ".cache/mesa_shader_cache" # AMD/Intel (gary, iGPU de zola)
+      ]
+      ++ lib.optionals config.head [
+        # Secrets
         {
           directory = ".local/share/keyrings";
           mode = "0700";
@@ -116,17 +143,14 @@ in
         ".pki"
 
         # État applicatif
-        ".claude"
         ".config/Claude" # app de bureau : session, historique local, config Cowork
         ".copilot"
-        ".local/share/rtk" # rtk : historique (`rtk gain`) et sorties rappelables (`rtk recall`)
         ".config/accent"
         ".config/chromium"
         ".config/vesktop" # session Discord + réglages Vencord
         ".config/OpenRGB" # profils de périphériques (OpenRGB.json, sizes.ors)
         ".android" # adbkey (autorisation des appareils) + debug.keystore
         ".ollama"
-        ".local/share/direnv" # allow-list ; sans elle, tout devDir redemande `direnv allow`
         ".local/state/wireplumber" # volumes et routage audio par périphérique
         ".local/share/zed" # extensions + historique de l'éditeur
         ".local/share/quickshell" # karenine : notes (notes.json) + écran de l'interface (display.json)
@@ -140,14 +164,9 @@ in
         ".local/share/infinite-fusion" # jeu (clone git, plusieurs Go) + préfixe Wine, où vivent les sauvegardes
 
         # Gros téléchargements — régénérables mais lents (SDK Android 4,6 Go,
-        # modèles whisper), et le cache d'uv, seul runtime dont l'état pèse.
+        # modèles whisper).
         ".local/share/android"
         ".local/share/whisper"
-        ".local/share/uv"
-
-        # Docker rootless : le data-root est dans le home, pas /var/lib/docker.
-        ".local/share/docker"
-        ".docker"
 
         # Données
         "ciph3r"
@@ -165,10 +184,11 @@ in
         # dossier vide déclenche un --resync intégral à chaque boot.
         "cl0ud"
 
-        # Caches de shaders : régénérables, mais les reconstruire à chaque boot
-        # se paie en saccades dans toute application GPU (Blender, Chromium…).
-        ".cache/mesa_shader_cache" # AMD/Intel (gary, iGPU de zola)
         ".cache/nvidia" # GLCache (zola)
+      ]
+      ++ lib.optionals (!config.head) [
+        # Serveurs de dev : les clones de travail, seul endroit de ~ où cloner.
+        "f0rge"
       ];
     };
   };
