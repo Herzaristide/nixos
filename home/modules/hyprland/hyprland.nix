@@ -475,6 +475,10 @@ in
         hl.exec_cmd("${hyprClosedLidLayout}")
         hl.exec_cmd("quickshell")
         hl.exec_cmd("kdeconnectd")
+        -- L'agent Bluetooth (modules/bluetooth.nix) : appareil connecté,
+        -- demandes d'appairage, envoyés au serveur de notifications de karenine.
+        -- Hyprland ne lance pas les autostarts XDG, d'où cette ligne.
+        hl.exec_cmd("blueman-applet")
         hl.exec_cmd("${lib.getExe wallpaper}")
       end)
     '';

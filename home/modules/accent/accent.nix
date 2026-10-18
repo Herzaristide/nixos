@@ -9,7 +9,9 @@ let
   # NixOS blue — used to seed accent.hex on first install only.
   defaultAccent = "#5277c3";
   defaultMode = if darkMode then "dark" else "light";
-  defaultIconsTheme = "Arcanum-Accent";
+  # No icon pack installed: point KDE/Qt at the freedesktop base theme
+  # (an empty value would make anna fall back to "Arcanum-Accent").
+  defaultIconsTheme = "hicolor";
 
   # Theme templates ship inside the anna package (single source of truth for
   # the template set). They are installed read-only under

@@ -54,6 +54,7 @@
   home.packages = with pkgs; [
     watchexec
     kdePackages.xdg-desktop-portal-kde
+    wl-clipboard
   ];
 
   # FluidSynth doesn't ship a .desktop entry (CLI only). Provide one so

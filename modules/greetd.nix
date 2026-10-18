@@ -41,6 +41,11 @@ let
         export AQ_DRM_DEVICES="$(${pkgs.coreutils}/bin/readlink -f ${config.renderDevice})"
       fi
     ''}
+    # L'agent ssh de home-manager (services.ssh-agent) : sans cette variable,
+    # ce que lance Hyprland (quickshell et son Explorer sshfs, les terminaux)
+    # ne voit pas la clé chargée et retombe sur la clé chiffrée, qui échoue
+    # en BatchMode.
+    export SSH_AUTH_SOCK="''${SSH_AUTH_SOCK:-$XDG_RUNTIME_DIR/ssh-agent}"
     exec ${config.programs.hyprland.package}/bin/start-hyprland
   '';
 

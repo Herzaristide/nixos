@@ -7,21 +7,8 @@
 }:
 
 let
-  # Arcanum - Red icon theme by StormRosenaa (GPL-3.0)
-  # https://codeberg.org/StormRosenaa/Arcanum
-  arcanum-red-icons = pkgs.runCommand "arcanum-red-icons" { } ''
-    mkdir -p "$out/share/icons"
-    tar -xf ${
-      pkgs.fetchurl {
-        url = "https://codeberg.org/StormRosenaa/Arcanum/raw/branch/main/Arcanum%20-%20Red.tar.xz";
-        name = "arcanum-red.tar.xz";
-        hash = "sha256-6rHeZNKEAZRW2wjNCNjeCZLUYBhfgm9d2NQ17RPyi0I=";
-      }
-    } -C "$out/share/icons"
-  '';
-
   # Slot Plasma Themes — GPL-3.0 by L4ki
-  # Only the GTK theme and icon themes are used here (Hyprland, not KDE Plasma).
+  # Only the GTK theme is used here (Hyprland, not KDE Plasma).
   slot-src = pkgs.fetchFromGitHub {
     owner = "L4ki";
     repo = "Slot-Plasma-Themes";
@@ -41,12 +28,6 @@ let
 
 in
 {
-  # Both Arcanum themes declare `Inherits=…,Adwaita,hicolor` in their
-  # index.theme, so GTK and Qt/KDE (kf.iconthemes) look up Adwaita as a
-  # fallback parent. Without it installed they warn "Icon theme Adwaita not
-  # found" and lose fallback icons — so ship it.
-  home.packages = [ pkgs.adwaita-icon-theme ];
-
   # GTK theme — Slot Dark (Hyprland-compatible GTK theme by L4ki)
   gtk = {
     enable = true;
@@ -54,13 +35,6 @@ in
       # Slot only ships a dark variant; fall back to Breeze for light mode.
       name = if darkMode then "Slot-Dark-GTK" else "Breeze";
       package = if darkMode then slot-gtk-theme else pkgs.kdePackages.breeze-gtk;
-    };
-    iconTheme = {
-      # Arcanum-Accent is generated at activation time by anna:
-      # it copies all SVGs from "Arcanum - Red" and recolors #ff6666/#5a0d0d
-      # to match the current accent hue. Falls back to "Arcanum - Red" via Inherits.
-      name = "Arcanum-Accent";
-      package = arcanum-red-icons; # installs the base theme used as source
     };
     font = {
       name = "JetBrains Mono";
@@ -91,13 +65,6 @@ in
       name = "breeze";
       package = pkgs.kdePackages.breeze;
     };
-  };
-
-  # Icon themes — symlinked into ~/.local/share/icons/ so both GTK and Qt/KDE
-  # find them without any cache generation step.
-  xdg.dataFile."icons/Arcanum - Red" = {
-    source = "${arcanum-red-icons}/share/icons/Arcanum - Red";
-    force = true;
   };
 
   # XDG menu spec entry point. Without it, kbuildsycoca6 never scans

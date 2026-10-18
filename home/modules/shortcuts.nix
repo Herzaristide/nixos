@@ -690,16 +690,6 @@
       action = "SearchForward";
       desc = "Recherche dans le scrollback";
     }
-    # Ctrl+V = coller au prompt du shell (remplace le « quoted insert », rarement
-    # utilisé). Ctrl+C n'est PAS rebindé : il reste SIGINT (interrompre un
-    # programme). Copier au terminal = Ctrl+Shift+C, ou la sélection souris qui
-    # copie automatiquement (selection.save_to_clipboard = true).
-    {
-      key = "V";
-      mods = "Control";
-      action = "Paste";
-      desc = "Coller";
-    }
   ];
 
   # ── micro (éditeur en terminal) ──────────────────────────────────────────
@@ -785,19 +775,6 @@
       key = "CtrlRight";
       action = "SelectRight";
       desc = "Sélectionner vers la droite";
-    }
-    # Ctrl+C / Ctrl+V = copier/coller (déjà les défauts micro, rendus explicites).
-    # micro tourne en mode brut : il reçoit Ctrl+C comme touche (copier), pas
-    # comme SIGINT — donc ça fonctionne aussi lancé dans Alacritty.
-    {
-      key = "CtrlC";
-      action = "Copy";
-      desc = "Copier";
-    }
-    {
-      key = "CtrlV";
-      action = "Paste";
-      desc = "Coller";
     }
   ];
 }
