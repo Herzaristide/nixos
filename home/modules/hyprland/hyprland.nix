@@ -320,6 +320,16 @@ in
           float = true;
           center = true;
         }
+        # Recopie d'écran du téléphone (scrcpy) : flottante, à la taille que
+        # scrcpy calcule d'après le ratio du téléphone. Le wrapper Nix donne
+        # la classe `.scrcpy-wrapped`.
+        {
+          match = {
+            class = "^(\\.?scrcpy(-wrapped)?)$";
+          };
+          float = true;
+          center = true;
+        }
         # File-chooser dialogs (titre)
         {
           match = {

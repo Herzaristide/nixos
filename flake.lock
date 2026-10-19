@@ -103,11 +103,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792316972,
-        "narHash": "sha256-3UfXnDeFHgJSDpgJrPlmtTRSfbWP+JbqBvkSQJ0Ps6k=",
+        "lastModified": 1792368293,
+        "narHash": "sha256-SEGa9cDQucv+wyihbIfiCpHNU6+D37YxVSujaWgXA58=",
         "owner": "Herzaristide",
         "repo": "karenine",
-        "rev": "549e53f65b0b4e8437610ceb08c89c0e1aa24f67",
+        "rev": "7893292112ae89122103386c5e8bd8f85b5190c0",
         "type": "github"
       },
       "original": {

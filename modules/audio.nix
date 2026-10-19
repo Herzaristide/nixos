@@ -132,6 +132,19 @@ in
       ];
     };
     wireplumber.extraConfig = {
+      # Un casque Bluetooth ne change de mode que quand on le lui demande
+      # (Musique / Appel, menu Bluetooth de karenine). Avec la bascule
+      # automatique, WirePlumber tient une entrée virtuelle `bluez_input.<MAC>`
+      # et passe le casque en mode appel dès qu'un programme l'enregistre,
+      # puis le rend en musique quand il s'arrête. Le mot d'éveil d'anna
+      # écoute en continu (echo-cancel) : le casque basculait au hasard des
+      # captures qui s'ouvrent et se ferment. Sans elle, le micro du casque
+      # n'existe qu'en mode Appel, comme une entrée ordinaire.
+      "51-bluetooth-no-autoswitch" = {
+        "wireplumber.settings" = {
+          "bluetooth.autoswitch-to-headset-profile" = false;
+        };
+      };
       # Allow Chrome/BandLab PWA to access microphone and audio.
       # "rwx" (read/write/execute), not "all" (= "rwxm"): chromium only needs
       # to enumerate nodes and open its own capture/playback streams, never to
