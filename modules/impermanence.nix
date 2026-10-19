@@ -106,6 +106,12 @@ in
         # Fichier isolé : le dossier parent contient generated_completions/,
         # régénéré par home-manager à chaque activation.
         ".local/share/fish/fish_history"
+      ]
+      ++ lib.optionals config.head [
+        # Signets de la barre latérale de Nautilus (et des sélecteurs de
+        # fichiers GTK). Fichier isolé : settings.ini, à côté, est géré par
+        # home-manager.
+        ".config/gtk-3.0/bookmarks"
       ];
 
       directories = [
@@ -153,14 +159,19 @@ in
         ".ollama"
         ".local/state/wireplumber" # volumes et routage audio par périphérique
         ".local/share/zed" # extensions + historique de l'éditeur
-        ".local/share/quickshell" # karenine : notes (notes.json) + écran de l'interface (display.json)
+        ".local/share/quickshell" # karenine : écran de l'interface (display.json)
+        # karenine : les notes d'anna (notes.json + images), dans
+        # $XDG_DATA_HOME/anna/notes (anna/src/notes.rs::dir). Pas tout
+        # .local/share/anna : whisper/ y est un lien géré par home-manager.
+        ".local/share/anna/notes"
         ".local/state/anna" # karenine : mot d'activation allumé (wake-on)
-        ".local/state/wallpaper" # fond d'écran vidéo choisi (cf. hyprland.nix, `wallpaper set`)
         ".config/anna" # karenine : les serveurs suivis (servers.json)
         ".config/kdeconnect" # KDE Connect : identité de l'ordinateur + téléphones appairés
         ".config/penpot-desktop"
         ".local/share/onlyoffice"
         ".config/obsidian" # liste des vaults ouverts + géométrie des fenêtres
+        ".local/state/ajar" # dernier livre ouvert, position du curseur, thème choisi à la main
+        ".local/share/nautilus" # Nautilus : scripts du clic droit + étiquettes
         ".local/share/infinite-fusion" # jeu (clone git, plusieurs Go) + préfixe Wine, où vivent les sauvegardes
 
         # Gros téléchargements — régénérables mais lents (SDK Android 4,6 Go,

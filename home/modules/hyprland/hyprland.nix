@@ -39,120 +39,12 @@ let
     hyprctl dispatch 'hl.dsp.focus({ monitor = "HDMI-A-1" })'
   '';
 
-  # Fond d'écran animé : les vidéos déposées dans ~/d3pot/vid/fonds, jouées en
-  # boucle par mpvpaper, la même sur chaque écran (`ALL`), recadrée pour le
-  # remplir (`panscan=1.0`). Décodage matériel VA-API (Radeon sur gary, iGPU
-  # Intel sur zola via LIBVA_DRIVER_NAME=iHD). `--auto-pause` suspend la lecture
-  # quand le fond est entièrement masqué.
-  #
-  # mpvpaper n'ouvre qu'un seul mpv pour tous les écrans : `wallpaper set`
-  # change donc de vidéo à chaud par son socket IPC (`loadfile … replace`),
-  # sans relancer le lecteur ni repasser par un fond noir. C'est la commande
-  # qu'appelle la source « fonds » de karenine (services/WallpaperSource.qml).
-  # Le choix survit au reboot dans ~/.local/state/wallpaper (persisté dans
-  # modules/impermanence.nix).
-  #
-  # La vidéo choisie est aussi recopiée dans /var/lib/wallpaper/current
-  # (dossier créé par modules/greetd.nix) : c'est là que la lisent le greeter,
-  # qui n'a pas accès à ~, et le lockscreen. Copie par reflink : /var et /home
-  # sont sur le même btrfs, elle ne coûte presque rien.
-  wallpaper = pkgs.writeShellApplication {
-    name = "wallpaper";
-    runtimeInputs = with pkgs; [
-      mpvpaper
-      socat
-      jq
-      coreutils
-      findutils
-    ];
-    text = ''
-      dir="$HOME/d3pot/vid/fonds"
-      state="''${XDG_STATE_HOME:-$HOME/.local/state}/wallpaper/current"
-      sock="''${XDG_RUNTIME_DIR:-/tmp}/mpvpaper.sock"
-      shared=/var/lib/wallpaper
-
-      list() {
-        [ -d "$dir" ] || return 0
-        find -L "$dir" -maxdepth 1 -type f \
-          \( -iname '*.mp4' -o -iname '*.webm' -o -iname '*.mkv' \
-             -o -iname '*.mov' -o -iname '*.gif' \) | sort
-      }
-
-      # Le choix enregistré s'il existe encore, sinon la première vidéo.
-      current() {
-        if [ -f "$state" ] && [ -f "$(cat "$state")" ]; then
-          cat "$state"
-        else
-          list | head -n 1
-        fi
-      }
-
-      ipc() {
-        socat - "UNIX-CONNECT:$sock" >/dev/null 2>&1
-      }
-
-      # Recopie la vidéo dans le dossier partagé, sauf si c'est déjà elle.
-      # Écrite à côté puis renommée : un lecteur qui l'ouvre à ce moment voit
-      # l'ancienne ou la nouvelle, jamais une copie à moitié faite. Sans le
-      # dossier (hôte sans greeter), on ne fait rien.
-      share() {
-        [ -d "$shared" ] && [ -w "$shared" ] || return 0
-        [ "$(cat "$shared/source" 2>/dev/null)" = "$1" ] && [ -f "$shared/current" ] && return 0
-        cp --reflink=auto -- "$1" "$shared/.current.tmp" &&
-          chmod 0644 "$shared/.current.tmp" &&
-          mv -f -- "$shared/.current.tmp" "$shared/current" &&
-          printf '%s\n' "$1" >"$shared/source"
-      }
-
-      start() {
-        video=$(current)
-        if [ -z "$video" ]; then
-          echo "wallpaper: aucune vidéo dans $dir" >&2
-          exit 1
-        fi
-        share "$video" &
-        exec mpvpaper --auto-pause \
-          -o "no-audio loop hwdec=auto-safe panscan=1.0 input-ipc-server=$sock" \
-          ALL "$video"
-      }
-
-      case "''${1:-start}" in
-      start) start ;;
-      # Une ligne par vidéo : « * » devant celle qui joue, un espace sinon.
-      list)
-        cur=$(current)
-        list | while IFS= read -r f; do
-          if [ "$f" = "$cur" ]; then printf '*\t%s\n' "$f"; else printf ' \t%s\n' "$f"; fi
-        done
-        ;;
-      current) current ;;
-      set)
-        video=$(realpath -- "''${2:?usage: wallpaper set <vidéo>}")
-        [ -f "$video" ] || { echo "wallpaper: $video introuvable" >&2; exit 1; }
-        mkdir -p "$(dirname "$state")"
-        printf '%s\n' "$video" >"$state"
-        share "$video" || echo "wallpaper: copie vers $shared impossible" >&2
-        # Lecteur absent (tué, ou dossier vide au démarrage) : on le lance.
-        jq -cn --arg f "$video" '{command: ["loadfile", $f, "replace"]}' | ipc ||
-          setsid -f "$0" start >/dev/null 2>&1
-        ;;
-      *)
-        echo "usage: wallpaper [start|list|current|set <vidéo>]" >&2
-        exit 2
-        ;;
-      esac
-    '';
-  };
-
   shortcuts = import ../shortcuts.nix {
     inherit pkgs;
     lidLayoutPath = toString hyprClosedLidLayout;
   };
 in
 {
-  # Sur le PATH : karenine appelle `wallpaper list` / `wallpaper set`.
-  home.packages = [ wallpaper ];
-
   wayland.windowManager.hyprland = {
     enable = true;
     configType = "lua";
@@ -237,8 +129,6 @@ in
 
         decoration = {
           rounding = 2;
-          active_opacity = 0.90;
-          inactive_opacity = 0.80;
         };
 
         misc = {
@@ -302,10 +192,10 @@ in
       }) shortcuts.hyprland;
 
       window_rule = [
-        # Dolphin flottant par défaut, taille réduite et centré
+        # Nautilus flottant par défaut, taille réduite et centré
         {
           match = {
-            class = "^(org.kde.dolphin)$";
+            class = "^(org.gnome.Nautilus)$";
           };
           float = true;
           size = "1000 650";
@@ -458,9 +348,8 @@ in
       -- Karenine : la barre de conversation (panels/ConversationBar.qml) pose
       -- ses réponses sur un voile qui s'efface vers ses bords. Flou derrière
       -- tout pixel un peu opaque : le voile, la pastille, jamais le vide autour.
-      -- Même verre pour le texte des sessions (panels/AiDock.qml).
       hl.layer_rule({
-        match = { namespace = "^(quickshell-conversation|quickshell-aidock)$" },
+        match = { namespace = "^quickshell-conversation$" },
         blur = true,
         ignore_alpha = 0.08,
       })
@@ -489,7 +378,6 @@ in
         -- demandes d'appairage, envoyés au serveur de notifications de karenine.
         -- Hyprland ne lance pas les autostarts XDG, d'où cette ligne.
         hl.exec_cmd("blueman-applet")
-        hl.exec_cmd("${lib.getExe wallpaper}")
       end)
     '';
   };

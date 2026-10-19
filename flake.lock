@@ -1,5 +1,41 @@
 {
   "nodes": {
+    "ajar": {
+      "inputs": {
+        "crane": "crane",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792427160,
+        "narHash": "sha256-lAVN05dFoacRr8pa7JFiS1wqVmNzZGPrAykoUJO6ln0=",
+        "owner": "Herzaristide",
+        "repo": "ajar",
+        "rev": "3c696b233f9b710c49f7a34da59a94486dd156a7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Herzaristide",
+        "repo": "ajar",
+        "type": "github"
+      }
+    },
+    "crane": {
+      "locked": {
+        "lastModified": 1792350552,
+        "narHash": "sha256-292lvpvxTGKryKxh3/3tcIVi85CwYGdl4oOi113Sob8=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "e675a36b7377bebe41d548388a2501cbb16d380d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
     "disko": {
       "inputs": {
         "nixpkgs": [
@@ -43,11 +79,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792098797,
-        "narHash": "sha256-u4DIIZgznEGzByxXrxWCXK19VcMtTBmi/M9gZ7Jk9bM=",
+        "lastModified": 1792438393,
+        "narHash": "sha256-C9hsBAUY/K7W7+CBSRdrT7XaX/ulVm3RuRBJNjmEM/A=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "640725978b99076e18e069f6e7d2959124584f8f",
+        "rev": "b74e23e34d3172802fdd60d4a1a01978f95e1898",
         "type": "github"
       },
       "original": {
@@ -103,11 +139,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792368293,
-        "narHash": "sha256-SEGa9cDQucv+wyihbIfiCpHNU6+D37YxVSujaWgXA58=",
+        "lastModified": 1792448265,
+        "narHash": "sha256-9jhATp7FDkfmU6px/toBLyF/QA0oIMRkISKxgF3U06w=",
         "owner": "Herzaristide",
         "repo": "karenine",
-        "rev": "7893292112ae89122103386c5e8bd8f85b5190c0",
+        "rev": "2f8ad82b46ca45ca623f94d2902e1efa4fa90f42",
         "type": "github"
       },
       "original": {
@@ -191,6 +227,7 @@
     },
     "root": {
       "inputs": {
+        "ajar": "ajar",
         "disko": "disko",
         "home-manager": "home-manager",
         "impermanence": "impermanence",

@@ -57,7 +57,7 @@ in
     };
   };
 
-  # Qt theming — Breeze (consistent with KDE apps like Dolphin)
+  # Qt theming — Breeze (consistent with KDE apps like Okular)
   qt = {
     enable = true;
     platformTheme.name = "kde";
@@ -68,7 +68,7 @@ in
   };
 
   # XDG menu spec entry point. Without it, kbuildsycoca6 never scans
-  # share/applications, KApplicationTrader returns nothing, and Dolphin's
+  # share/applications, KApplicationTrader returns nothing, and KDE apps' (Okular, Ark)
   # "Open with" dialog comes up empty. Distros that ship a full DE get this
   # file from plasma-workspace / gnome-menus / xfce4-session — none are
   # installed here, so drop the standard freedesktop.org boilerplate.
@@ -93,7 +93,7 @@ in
   '';
 
   # Nix store paths change on every rebuild; the cached KService database keeps
-  # pointing at gone-away .desktop files, leaving Dolphin's "Open with" dialog
+  # pointing at gone-away .desktop files, leaving the KDE apps' "Open with" dialog
   # empty.  Drop the stale caches and rebuild so the dialog repopulates.
   home.activation.rebuildKsycoca = lib.hm.dag.entryAfter [ "installPackages" ] ''
     run rm -f "$HOME/.cache/ksycoca6_"*

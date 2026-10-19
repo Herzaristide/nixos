@@ -81,35 +81,6 @@ let
     + lib.optionalString (m ? transform) ", transform = ${toString m.transform}"
     + " })";
 
-  wallpaperPng = ../src/nix-wallpaper-binary-black_2k.png;
-
-  # Le fond d'écran est dessiné par le compositeur, et surtout PAS par regreet :
-  # son option `background.path` passe le fichier à `gtk::MediaFile` (backend
-  # GStreamer) avec `set_loop(true)` + `play()` (src/gui/component.rs). Une image
-  # fixe « jouée en boucle » atteint sa fin à chaque frame et repart aussitôt :
-  # la boucle GTK est affamée et le greeter cesse de répondre en quelques
-  # secondes (c'est ce qui déclenchait l'ANR d'Hyprland).
-  hyprpaperConf = pkgs.writeText "greetd-hyprpaper.conf" ''
-    preload = ${wallpaperPng}
-    wallpaper = ,${wallpaperPng}
-    splash = false
-    ipc = off
-  '';
-
-  # Fond du greeter : la vidéo de la session (recopiée dans
-  # /var/lib/wallpaper/current par la commande `wallpaper`, cf.
-  # home/modules/hyprland/hyprland.nix), jouée par mpvpaper sous le greeter
-  # Quickshell, qui est transparent. Tant qu'aucune vidéo n'a été partagée
-  # (premier boot), l'image fixe de hyprpaper la remplace.
-  greeterBackground = pkgs.writeShellScript "greetd-background" ''
-    if [ -s /var/lib/wallpaper/current ]; then
-      exec ${lib.getExe pkgs.mpvpaper} \
-        -o "no-audio loop hwdec=auto-safe panscan=1.0" \
-        ALL /var/lib/wallpaper/current
-    fi
-    exec ${lib.getExe pkgs.hyprpaper} -c ${hyprpaperConf}
-  '';
-
   # Config Lua, et non hyprlang (`.conf`) : depuis 0.55 hyprlang est déprécié, et
   # 0.56 affiche à l'écran « You are using the .conf config format, support for
   # which will be removed in Hyprland 0.57. » — sur le greeter, donc en travers de
@@ -160,8 +131,6 @@ let
     -- Remplace `exec-once` : en mode Lua l'autostart passe par l'événement
     -- `hyprland.start` (même mécanique que la session, cf. home/modules/hyprland).
     hl.on("hyprland.start", function()
-      hl.exec_cmd("${greeterBackground}")
-
       -- Le greeter Quickshell (karenine) rend la main une fois la session
       -- confiée à greetd ; on ferme alors le compositeur pour que greetd
       -- enchaîne sur la session utilisateur. S'il échoue (code non nul), regreet
@@ -197,14 +166,8 @@ in
   # Destination des logs du compositeur du greeter : lisible sans privilèges
   # (contrairement à /run/user/999) et persistant d'un boot à l'autre, sinon un
   # écran de login cassé n'est diagnosticable que depuis un TTY en root.
-  #
-  # /var/lib/wallpaper : la vidéo de fond partagée entre la session (qui l'écrit,
-  # d'où le propriétaire aristide) et le greeter / le lockscreen (qui la lisent).
-  # Sous / et non sous ~ : le greeter n'a pas accès à /home, et / n'est pas
-  # effacé au boot (l'impermanence ne touche que @home).
   systemd.tmpfiles.rules = [
     "d /var/log/greeter 0755 greeter greeter -"
-    "d /var/lib/wallpaper 0755 aristide users -"
   ];
 
   # Le compositeur du greeter est Hyprland et non cage : cage n'expose aucun
@@ -233,8 +196,9 @@ in
       GTK.application_prefer_dark_theme = true;
       appearance.greeting_msg = "Bonjour, aristide.";
 
-      # Pas de `background` ici : c'est hyprpaper qui dessine le fond (voir
-      # hyprpaperConf plus haut pour la raison — GStreamer).
+      # Jamais de `background` : regreet passe le fichier à `gtk::MediaFile`
+      # (GStreamer) en boucle, ce qui affame la boucle GTK et fige le greeter
+      # en quelques secondes (src/gui/component.rs).
 
       # Horloge collée en haut de l'écran (frame #clock_frame).
       widget.clock = {
@@ -249,13 +213,13 @@ in
     # portant la classe `background` — la boîte de login (centre), #clock_frame (haut)
     # et la barre reboot/poweroff (bas).
     extraCss = ''
-      /* Transparente : le fond d'écran est dessiné par hyprpaper, en dessous. */
+      /* Fond uni, à la couleur de la palette : plus de fond d'écran. */
       window.background {
-        background-color: transparent;
+        background-color: #0d0d0d;
         color: #e0e0ff;
       }
 
-      /* Les frames en surimpression : cartes translucides sur le wallpaper. */
+      /* Les frames en surimpression : cartes translucides sur le fond uni. */
       frame.background {
         background-color: rgba(13, 13, 13, 0.82);
         border: 1px solid #2a2a2a;

@@ -12,7 +12,7 @@
 
   # Run Electron/Chromium apps in native Wayland mode. Required so Chromium uses
   # wl_data_device for drag-and-drop: without it Chromium runs under XWayland and
-  # cross-protocol DnD from native Wayland apps (Dolphin) silently fails.
+  # cross-protocol DnD from native Wayland apps (Nautilus) silently fails.
   environment.variables.NIXOS_OZONE_WL = "1";
 
   # dconf: required for GTK app settings and GNOME applications

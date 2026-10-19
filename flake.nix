@@ -24,6 +24,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     impermanence.url = "github:nix-community/impermanence";
+    ajar = {
+      url = "github:Herzaristide/ajar";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

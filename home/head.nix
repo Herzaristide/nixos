@@ -110,7 +110,7 @@
       # mimeapps.list, qui est en lecture seule (géré par home-manager).
       "x-scheme-handler/claude" = [ "com.anthropic.Claude.desktop" ];
       "x-terminal-emulator" = [ "Alacritty.desktop" ];
-      "inode/directory" = [ "zed-url-handler.desktop" ];
+      "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
       "application/pdf" = [ "org.kde.okular.desktop" ];
       "audio/midi" = [ "fluidsynth.desktop" ];
       "audio/x-midi" = [ "fluidsynth.desktop" ];

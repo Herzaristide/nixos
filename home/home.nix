@@ -25,6 +25,7 @@ let
     ./modules/onlyoffice.nix
     ./modules/penpot.nix
     ./modules/obsidian.nix
+    ./modules/ajar.nix
     ./modules/accent/accent.nix
     ./modules/kde
     ./modules/chromium.nix

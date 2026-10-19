@@ -18,6 +18,7 @@
     ../../modules/zram.nix
     ../../modules/storage.nix
     ../../modules/head.nix
+    ../../modules/nautilus.nix
     ../../modules/greetd.nix
     ../../modules/audio.nix
     ../../modules/bluetooth.nix

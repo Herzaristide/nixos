@@ -9,9 +9,10 @@ let
   # NixOS blue — used to seed accent.hex on first install only.
   defaultAccent = "#5277c3";
   defaultMode = if darkMode then "dark" else "light";
-  # No icon pack installed: point KDE/Qt at the freedesktop base theme
-  # (an empty value would make anna fall back to "Arcanum-Accent").
-  defaultIconsTheme = "hicolor";
+  # Reversal recoloured to the accent: anna generates it under
+  # ~/.local/share/icons at startup and on every accent change (source
+  # baked into its wrapper, see karenine anna/src/icons.rs).
+  defaultIconsTheme = "Reversal-Accent";
 
   # Theme templates ship inside the anna package (single source of truth for
   # the template set). They are installed read-only under
@@ -23,6 +24,10 @@ in
   home.packages = [
     anna # provides the unified `anna` binary (daemon + client + init)
   ];
+
+  # GTK reads the theme name from settings.ini/dconf; Qt from kdeglobals,
+  # rendered by anna from icons_theme.txt (seeded below).
+  gtk.iconTheme.name = defaultIconsTheme;
 
   # Templates installed read-only under ~/.config/accent/templates/.
   # anna reads these and writes rendered output to ~/.config/accent/fragments/
