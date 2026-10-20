@@ -111,6 +111,12 @@
   # ~/.config/kdeconnect, persisté (modules/impermanence.nix).
   programs.kdeconnect.enable = true;
 
+  # Enregistrer l'écran (bouton de la barre du haut de karenine, Ctrl+Impr) :
+  # anna lance gpu-screen-recorder, qui encode sur la carte graphique. Le
+  # module pose le wrapper gsr-kms-server (cap_sys_admin) qui lit l'écran
+  # sans passer par le portail, donc sans fenêtre de choix à chaque fois.
+  programs.gpu-screen-recorder.enable = true;
+
   environment.systemPackages = with pkgs; [
     brightnessctl
     grimblast

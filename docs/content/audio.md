@@ -47,4 +47,4 @@ En cas de craquements, augmenter la taille du buffer avant de penser au noyau RT
 
 ## Assistant vocal
 
-Outils préinstallés : `whisper-cpp`, `piper-tts`, `sox`, `aubio`.
+Outils préinstallés : `whisper-cpp`, `sox`, `aubio`. Les réponses du pilote sont lues par anna elle-même (voix Piper sous `~/.local/share/anna/piper/`, liées par `home/modules/code/ia/claude-anna.nix`), sans le paquet `piper-tts`.

@@ -295,6 +295,37 @@
       desc = "Capture de l'écran entier";
     }
 
+    # Enregistrements, tenus par anna (karenine anna/src/recorder.rs) : le
+    # même raccourci lance, puis arrête. L'écran (gpu-screen-recorder, avec le
+    # son de l'ordinateur) va dans $XDG_VIDEOS_DIR, le son (FLAC) dans
+    # $XDG_MUSIC_DIR ; une notification donne le fichier. Les mêmes boutons
+    # sont dans la barre du haut et l'onglet Musique de karenine.
+    {
+      keys = "CTRL + Print";
+      lua = ''hl.dsp.exec_cmd("anna record screen area")'';
+      desc = "Enregistrer une zone de l'écran (ou arrêter)";
+    }
+    {
+      keys = "CTRL + SHIFT + Print";
+      lua = ''hl.dsp.exec_cmd("anna record screen screen")'';
+      desc = "Enregistrer l'écran entier (ou arrêter)";
+    }
+    {
+      keys = "SUPER + A";
+      lua = ''hl.dsp.exec_cmd("anna record audio mic")'';
+      desc = "Enregistrer le micro (ou arrêter)";
+    }
+    {
+      keys = "SUPER + SHIFT + A";
+      lua = ''hl.dsp.exec_cmd("anna record audio mix")'';
+      desc = "Enregistrer le micro et le son de l'ordinateur (ou arrêter)";
+    }
+    {
+      keys = "SUPER + Print";
+      lua = ''hl.dsp.exec_cmd("anna record stop")'';
+      desc = "Arrêter tous les enregistrements";
+    }
+
     {
       keys = "XF86AudioRaiseVolume";
       lua = ''hl.dsp.exec_cmd("wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 3%+")'';

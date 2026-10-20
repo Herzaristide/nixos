@@ -8,7 +8,7 @@
   # les modèles récents passent aussi en IPP Everywhere sans pilote).
   services.printing = {
     enable = true;
-    drivers = [ pkgs.hplip ];
+    # drivers = [ pkgs.hplip ]; # désactivé : build hplip 3.26.4 cassé (makeCWrapper), à réactiver après correctif nixpkgs
   };
 
   # Découverte mDNS/DNS-SD : indispensable pour qu'une imprimante réseau (Wi-Fi
