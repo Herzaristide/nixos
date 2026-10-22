@@ -24,6 +24,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     impermanence.url = "github:nix-community/impermanence";
+    # Zen Browser (fork de Firefox) : absent de nixpkgs, flake communautaire
+    # qui fournit paquet + module home-manager.
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
+    };
     ajar = {
       url = "github:Herzaristide/ajar";
       inputs.nixpkgs.follows = "nixpkgs";

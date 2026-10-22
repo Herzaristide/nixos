@@ -43,6 +43,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `karenine` — the Quickshell interface (QML layout) **and** the `anna` engine (Rust: accent/palette theming + hardware stats). `github:Herzaristide/karenine`
 - `explorer` — custom file manager (`github:Herzaristide/Explorer`)
 - `disko` — declarative partitioning; each host's layout is its own `hosts/<host>/disko.nix`
+- `zen-browser` — Zen Browser package + home-manager module (`github:0xc000022070/zen-browser-flake`)
 - `impermanence` — declarative `/home`, wired by `modules/impermanence.nix` on zola, gary and kafka
 
 ### System modules (`/modules/`)
@@ -68,6 +69,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `modules/hyprland/hyprland.nix` — Hyprland config in **Lua** mode (`configType = "lua"`), keybinds, monitor setup and workspace rules (no special workspaces since 2026-10-16). Has a lid-closed-layout helper script for zola.
 - `modules/alacritty.nix` — terminal config
 - `modules/chromium.nix` — chromium package + PWA wrappers (`gemini-pwa`, `bandlab-pwa`, `ytmusic-pwa`) sharing `~/.config/chromium` profile. The former `claude-pwa` wrapper was dropped 2026-09-04 in favour of the `claude-desktop` package
+- `modules/zen-browser.nix` — Zen Browser (headful only) from the community flake `github:0xc000022070/zen-browser-flake` (not in nixpkgs), `homeModules.beta`, binary `zen-beta`. Secondary browser: chromium stays `BROWSER`/default mime handler. Profiles in `~/.config/zen` (persisted). Also declares the `zen` MCP server: nixpkgs' `firefox-devtools-mcp` (Mozilla, WebDriver BiDi via geckodriver) with `--firefoxPath` pointing at Zen; it launches its own instance on a temporary profile, never the user's session
 - `modules/infinite-fusion.nix` — Pokémon Infinite Fusion (fangame, not in nixpkgs). `Game.exe` is a 64-bit Windows build of mkxp-z (also not in nixpkgs), so the `infinite-fusion` launcher runs it under `wineWow64Packages.stable`. The game is **not** in the store: the first launch shallow-clones `github:infinitefusion/infinitefusion-e18` (branch `releases` — the player branch, 6.8.2 as of 2026-07; `main` is stale since 2025-01 — several GB) into `~/.local/share/infinite-fusion/game` (in an alacritty window so progress is visible); the Wine prefix — which holds the saves, under `AppData/Roaming` — is `~/.local/share/infinite-fusion/prefix`. Both are persisted in `modules/impermanence.nix`. `infinite-fusion --update` pulls the latest commit (`reset --hard`, untracked sprites downloaded by the game are kept); `--performance` starts the upstream `InfiniteFusion-performance.exe` instead. Not a return of the gaming profile — no Steam/Proton/gamescope
 - `modules/kde.nix` — minimal KDE/Qt theming (for xdg-portal-kde + appearance protocol)
 - `modules/accent/accent.nix` — installs the anna engine (from the karenine flake) + its templates, systemd user service, and seed activation (see "Theming" below)
