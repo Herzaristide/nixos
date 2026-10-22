@@ -7,26 +7,17 @@
 let
   home = config.home.homeDirectory;
 
-  # L'arborescence du home, identique sur les quatre hôtes. Sur zola et gary,
-  # les dossiers de premier niveau sont aussi listés dans
-  # modules/impermanence.nix — sans quoi ils seraient recréés vides à chaque
-  # boot. kafka et exupery (WSL) n'ont pas d'impermanence : l'activation
-  # ci-dessous est alors la seule chose qui les crée.
+  # L'arborescence du home, identique sur les quatre hôtes : un seul niveau,
+  # des noms de quatre lettres. Sur zola, gary et kafka, les dossiers sont
+  # aussi listés dans modules/impermanence.nix — sans quoi ils seraient
+  # recréés vides à chaque boot. exupery (WSL) n'a pas d'impermanence :
+  # l'activation ci-dessous est alors la seule chose qui les crée.
   tree = [
-    "ciph3r"
-    "d3pot"
-    "f3tch"
-    "sc0re"
-    "sh3lf"
-    # Vault Obsidian (cf. home/modules/obsidian.nix). Le nom est réattribué :
-    # l'archive qui le portait est devenue d3pot.
-    "v4ult"
-    # Les trois dossiers XDG qui ont un sens ici vivent sous d3pot plutôt qu'à
-    # la racine du home : d3pot est déjà persisté en entier, donc rien à
-    # ajouter à impermanence.
-    "d3pot/img"
-    "d3pot/snd"
-    "d3pot/vid"
+    "code" # dépôts et projets
+    "docs" # documents, livres Ajar, partitions
+    "drop" # téléchargements
+    "lens" # images et vidéos
+    "tune" # audio
   ];
 in
 {
@@ -37,13 +28,12 @@ in
   xdg.userDirs = {
     enable = true;
 
-    download = "${home}/f3tch";
-    documents = "${home}/d3pot";
-    # ~/d3pot/gpoc et consorts : c'est là que vivent les dépôts, pas ~/Projects.
-    projects = "${home}/d3pot";
-    pictures = "${home}/d3pot/img";
-    music = "${home}/d3pot/snd";
-    videos = "${home}/d3pot/vid";
+    download = "${home}/drop";
+    documents = "${home}/docs";
+    projects = "${home}/code";
+    pictures = "${home}/lens";
+    videos = "${home}/lens";
+    music = "${home}/tune";
 
     # Pas d'équivalent dans cette arborescence. On pointe sur $HOME plutôt que
     # de mettre `null` : `null` retire l'entrée de user-dirs.dirs, et GLib
@@ -60,8 +50,7 @@ in
     # pas user-dirs.dirs (scripts, yt-dlp) dépendent de cet export.
     setSessionVariables = true;
 
-    # Ne créerait que les dossiers XDG ci-dessus ; ciph3r, sc0re,
-    # sh3lf et v4ult n'en sont pas. Une seule liste (`tree`) décrit l'arborescence.
+    # Une seule liste (`tree`) décrit l'arborescence.
     createDirectories = false;
   };
 

@@ -24,12 +24,10 @@ let
     ./modules/obs.nix
     ./modules/onlyoffice.nix
     ./modules/penpot.nix
-    ./modules/obsidian.nix
     ./modules/ajar.nix
     ./modules/accent/accent.nix
     ./modules/kde
     ./modules/chromium.nix
-    ./modules/zen-browser.nix
     ./modules/blender.nix
     ./modules/music
     ./modules/infinite-fusion.nix

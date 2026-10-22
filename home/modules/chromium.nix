@@ -88,13 +88,13 @@ in
     ];
   };
 
-  # ManagedBookmarks: home-manager n'expose pas `extraOpts`, donc on écrit
+  # Policies : home-manager n'expose pas `extraOpts`, donc on écrit
   # directement le fichier de policy par-utilisateur.
   xdg.configFile."chromium/policies/managed/preferences.json".text = builtins.toJSON {
     TranslateEnabled = false;
     # Le profil Chromium est persisté : il a mémorisé ~/Downloads et ignore
     # XDG_DOWNLOAD_DIR une fois créé. Seule la policy force le changement.
-    DownloadDirectory = "${config.home.homeDirectory}/f3tch";
+    DownloadDirectory = "${config.home.homeDirectory}/drop";
     # 2 = aucun site ne peut afficher de notifications (bloque les pubs push).
     DefaultNotificationsSetting = 2;
 
@@ -109,23 +109,6 @@ in
           "https://claude.ai"
           "https://claude.com"
         ];
-      }
-    ];
-  };
-
-  xdg.configFile."chromium/policies/managed/bookmarks.json".text = builtins.toJSON {
-    ManagedBookmarks = [
-      {
-        name = "GitHub";
-        url = "https://github.com";
-      }
-      {
-        name = "Claude";
-        url = "https://claude.ai";
-      }
-      {
-        name = "Figma";
-        url = "https://www.figma.com";
       }
     ];
   };

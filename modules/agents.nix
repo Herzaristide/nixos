@@ -12,7 +12,7 @@
 # À faire une fois sous `claude` (`ssh claude@<hôte>`) : `gh auth login` avec un
 # token fine-grained (dépôts choisis, Contents + Pull requests, sans Workflows,
 # jamais le dépôt nixos), `claude auth login`, puis pour chaque dépôt cloné dans
-# ~/f0rge : `claude remote-control` une fois pour accepter RC et la confiance au dossier.
+# ~/code : `claude remote-control` une fois pour accepter RC et la confiance au dossier.
 {
   config,
   lib,
@@ -46,14 +46,14 @@ in
 
   # /home est remis à zéro à chaque boot (modules/impermanence.nix, importé par
   # chaque hôte qui importe ce module) : seul ce qui suit survit. Les clones vont
-  # dans ~/f0rge, car impermanence ne sait pas persister la racine d'un home.
+  # dans ~/code, car impermanence ne sait pas persister la racine d'un home.
   environment.persistence."/keep".users.claude = {
     files = [
       ".claude.json"
       ".local/share/fish/fish_history"
     ];
     directories = [
-      "f0rge"
+      "code"
       ".claude" # session claude.ai (credentials), réglages, historique
       {
         directory = ".config/gh"; # token GitHub fine-grained
@@ -135,7 +135,7 @@ in
 
         ## Les projets
 
-        - Les projets sont clonés dans `~/f0rge` (`~/f0rge/<projet>`), seul
+        - Les projets sont clonés dans `~/code` (`~/code/<projet>`), seul
           dossier de travail qui survit au reboot : rien d'autre dans `~`. Les sessions
           lancées depuis claude.ai/code ou l'app mobile ont chacune leur git
           worktree : travaille dedans, sur sa branche, jamais sur `main`.
@@ -189,39 +189,39 @@ in
       systemd.user.sessionVariables = lib.mkIf rocm { HSA_OVERRIDE_GFX_VERSION = "11.0.0"; };
 
       # Remote Control permanent, à la manière des sessions cloud : chaque dépôt
-      # git cloné dans ~/f0rge est servi à claude.ai/code et à l'app mobile
+      # git cloné dans ~/code est servi à claude.ai/code et à l'app mobile
       # sous `<hôte>-<dépôt>`, chaque session lancée de là-bas dans son propre git
       # worktree. Tant que `claude auth login` puis `claude remote-control` n'ont
       # pas été faits à la main dans le dépôt, l'instance échoue et réessaie.
       systemd.user.services."claude-rc@" = {
         Unit = {
-          Description = "Claude Code Remote Control pour ~/f0rge/%I";
+          Description = "Claude Code Remote Control pour ~/code/%I";
           After = [ "network-online.target" ];
-          ConditionPathExists = "%h/f0rge/%I/.git";
+          ConditionPathExists = "%h/code/%I/.git";
           StartLimitIntervalSec = 0;
         };
         Service = {
-          WorkingDirectory = "%h/f0rge/%I";
+          WorkingDirectory = "%h/code/%I";
           # PATH d'une session : claude, git, nix, docker. direnv charge le
           # devShell du projet, hérité par les sessions et leurs commandes.
           Environment = [
             "PATH=/etc/profiles/per-user/claude/bin:/run/current-system/sw/bin:/run/wrappers/bin"
           ];
-          ExecStart = "${pkgs.direnv}/bin/direnv exec %h/f0rge/%I claude remote-control --spawn worktree --permission-mode acceptEdits --remote-control-session-name-prefix ${host}-%I";
+          ExecStart = "${pkgs.direnv}/bin/direnv exec %h/code/%I claude remote-control --spawn worktree --permission-mode acceptEdits --remote-control-session-name-prefix ${host}-%I";
           Restart = "always";
           RestartSec = 30;
         };
       };
-      # Démarre une instance par dépôt de ~/f0rge, au boot puis chaque minute : un dépôt
+      # Démarre une instance par dépôt de ~/code, au boot puis chaque minute : un dépôt
       # tout juste cloné est servi sans rien déclarer. Démarrer une instance déjà
       # active ne fait rien.
       systemd.user.services.claude-rc-scan = {
-        Unit.Description = "Remote Control pour chaque dépôt git de ~/f0rge";
+        Unit.Description = "Remote Control pour chaque dépôt git de ~/code";
         Service = {
           Type = "oneshot";
           ExecStart = toString (
             pkgs.writeShellScript "claude-rc-scan" ''
-              for git in "$HOME"/f0rge/*/.git; do
+              for git in "$HOME"/code/*/.git; do
                 [ -e "$git" ] || continue
                 repo=$(basename "$(dirname "$git")")
                 ${pkgs.systemd}/bin/systemctl --user start --no-block \
@@ -232,7 +232,7 @@ in
         };
       };
       systemd.user.timers.claude-rc-scan = {
-        Unit.Description = "Cherche les nouveaux dépôts de ~/f0rge à servir";
+        Unit.Description = "Cherche les nouveaux dépôts de ~/code à servir";
         Timer = {
           OnStartupSec = "10s";
           OnUnitActiveSec = "1min";

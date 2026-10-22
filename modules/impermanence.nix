@@ -97,7 +97,7 @@ in
     enableWarnings = false;
     # zola (head) est le poste principal : identité, secrets, apps et données.
     # Les serveurs de dev (gary, kafka), vidés de tout secret personnel le
-    # 2026-10-18 et dédiés au dev, ne gardent que l'outillage et ~/f0rge, où
+    # 2026-10-18 et dédiés au dev, ne gardent que l'outillage et ~/code, où
     # sont clonés les dépôts. Les agents ont leur propre liste (modules/agents.nix).
     users.aristide = {
       files = [
@@ -106,6 +106,9 @@ in
         # Fichier isolé : le dossier parent contient generated_completions/,
         # régénéré par home-manager à chaque activation.
         ".local/share/fish/fish_history"
+        # Session `gh auth login` (compte, et token si pas de keyring).
+        # Fichier isolé : config.yml, à côté, est géré par home-manager.
+        ".config/gh/hosts.yml"
       ]
       ++ lib.optionals config.head [
         # Signets de la barre latérale de Nautilus (et des sélecteurs de
@@ -153,7 +156,6 @@ in
         ".copilot"
         ".config/accent"
         ".config/chromium"
-        ".config/zen" # Zen Browser : profils (session, historique, extensions)
         ".config/vesktop" # session Discord + réglages Vencord
         ".config/OpenRGB" # profils de périphériques (OpenRGB.json, sizes.ors)
         ".android" # adbkey (autorisation des appareils) + debug.keystore
@@ -170,7 +172,6 @@ in
         ".config/kdeconnect" # KDE Connect : identité de l'ordinateur + téléphones appairés
         ".config/penpot-desktop"
         ".local/share/onlyoffice"
-        ".config/obsidian" # liste des vaults ouverts + géométrie des fenêtres
         ".local/state/ajar" # dernier livre ouvert, position du curseur, thème choisi à la main
         ".local/share/nautilus" # Nautilus : scripts du clic droit + étiquettes
         ".local/share/infinite-fusion" # jeu (clone git, plusieurs Go) + préfixe Wine, où vivent les sauvegardes
@@ -181,22 +182,17 @@ in
         ".local/share/whisper"
 
         # Données
-        "ciph3r"
-        "sc0re"
-        "f3tch"
-        "d3pot" # l'archive : documents, dépôts et médias (ex-v4ult)
-        "v4ult" # vault Obsidian — des notes, donc rien de régénérable ici
-        # Destiné aux disques non système et amovibles. Le dossier existe, mais
-        # aucun montage n'y est encore branché : les disques déclarés vivent
-        # toujours sous /mnt (modules/storage.nix) et udisks2 monte les
-        # amovibles dans /run/media/$USER, chemin qu'il ne sait pas changer.
-        "sh3lf"
+        "code"
+        "docs"
+        "drop"
+        "lens"
+        "tune"
 
         ".cache/nvidia" # GLCache (zola)
       ]
       ++ lib.optionals (!config.head) [
         # Serveurs de dev : les clones de travail, seul endroit de ~ où cloner.
-        "f0rge"
+        "code"
       ];
     };
   };
