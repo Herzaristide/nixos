@@ -50,6 +50,14 @@ let
         -e "s|^\(\s*\)#     device=device|\1    device=device|" \
         -e "s|^\(\s*\)# )$|\1)|" \
         api_server.py
+
+      # Décodage VAE de l'image 1024² par tuiles : d'un bloc, la dernière
+      # convolution d'upsampling demande 4,5 Gio de plus que les ~3 Gio
+      # laissés libres par les deux pipelines (OOM HIP). Tuilé : pic 1,8 Gio.
+      substituteInPlace hy3dgen/text2image.py --replace-fail \
+        '        ).to(device)' \
+        '        ).to(device)
+              self.pipe.vae.enable_tiling()'
     '';
   };
 
