@@ -161,6 +161,14 @@ in
       # d'attention : HunyuanDiT (4096 tokens) demandait 3 Gio de plus et
       # sortait en OOM HIP à côté des ~12 Gio des deux pipelines.
       TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL = "1";
+      # Les solveurs MIOpen « Winograd Fury » sont des binaires précompilés
+      # pour la vraie gfx1100 : sur la gfx1102 maquillée par l'override,
+      # ils font tomber la file GPU (HSA_STATUS_ERROR_INVALID_ISA, « Illegal
+      # opcode » côté noyau). Seules les convolutions fp16 les choisissent —
+      # le VAE de HunyuanDiT, pas le modèle de forme. MIOpen retombe alors
+      # sur ConvBinWinogradRxSf2x3g1.
+      MIOPEN_DEBUG_AMD_WINOGRAD_FURY_RXS_F2X3 = "0";
+      MIOPEN_DEBUG_AMD_WINOGRAD_FURY_RXS_F3X2 = "0";
     };
 
     serviceConfig = {
