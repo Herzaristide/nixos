@@ -34,12 +34,29 @@ let
   stateDir = "/var/lib/hunyuan3d";
 
   # Branche main de Tencent-Hunyuan/Hunyuan3D-2, 2025-10-28.
-  src = pkgs.fetchFromGitHub {
-    owner = "Tencent-Hunyuan";
-    repo = "Hunyuan3D-2";
-    rev = "f8db63096c8282cb27354314d896feba5ba6ff8a";
-    hash = "sha256-tbPuhnCqUcSnttdTs/DxcYLQWterNlbWyNqTHmUxcOs=";
+  src = pkgs.applyPatches {
+    name = "hunyuan3d-src";
+    src = pkgs.fetchFromGitHub {
+      owner = "Tencent-Hunyuan";
+      repo = "Hunyuan3D-2";
+      rev = "f8db63096c8282cb27354314d896feba5ba6ff8a";
+      hash = "sha256-tbPuhnCqUcSnttdTs/DxcYLQWterNlbWyNqTHmUxcOs=";
+    };
+    # Réactive le text-to-image (HunyuanDiT), commenté en amont : les 4
+    # lignes du pipeline_t2i dans Hunyuan3DDiTFlowMatchingPipeline.__init__.
+    postPatch = ''
+      sed -i \
+        -e "s|^\(\s*\)# self.pipeline_t2i = HunyuanDiTPipeline(|\1self.pipeline_t2i = HunyuanDiTPipeline(|" \
+        -e "s|^\(\s*\)#     'Tencent-Hunyuan/HunyuanDiT-v1.1-Diffusers-Distilled',|\1    '${t2iRepo}',|" \
+        -e "s|^\(\s*\)#     device=device|\1    device=device|" \
+        -e "s|^\(\s*\)# )$|\1)|" \
+        api_server.py
+    '';
   };
+
+  # Text-to-image : HunyuanDiT distillé (fp16, ~10 Go avec le texte encodeur
+  # mT5), chargé en plus de la forme sur le GPU.
+  t2iRepo = "Tencent-Hunyuan/HunyuanDiT-v1.1-Diffusers-Distilled";
 
   # Modèle par défaut d'api_server.py : DiT mini-turbo + son VAE turbo
   # (chargé par enable_flashvdm). hy3dgen cherche d'abord sous
@@ -105,6 +122,10 @@ let
       rm -f models/.rev-*
       touch models/.rev-${modelRev}
     fi
+
+    # HunyuanDiT passe par diffusers : cache HF standard (HF_HOME), pas models/.
+    # Sans effet une fois les poids en cache ; hors ligne ensuite.
+    venv/bin/hf download ${t2iRepo}
 
     # api_server.py écrit son cache (gradio_cache/) et ses logs dans le cwd.
     HF_HUB_OFFLINE=1 exec venv/bin/python ${src}/api_server.py \

@@ -29,6 +29,8 @@ dependencies = [
   "pygltflib",
   "pymeshlab",
   "rembg",
+  # Tokenizer mT5 du text-to-image (HunyuanDiT).
+  "sentencepiece",
   "tqdm",
   # Code amont écrit pour transformers 4.x (début 2025) ; la 5 retire des API.
   "transformers>=4.48.0,<5",
