@@ -18,15 +18,14 @@
 # suivre avec `journalctl -fu hunyuan3d`.
 #
 # Pas de démarrage au boot : le serveur occupe ~18 Gio de RAM (poids chargés
-# côté CPU en plus du GPU), de quoi saturer gary à côté des microVM. On le
-# lance à la main : `sudo systemctl start hunyuan3d`, puis `stop` après usage.
+# côté CPU en plus du GPU) et ~12 Gio de VRAM, de quoi gêner les agents de
+# gary. On le lance à la main : `sudo systemctl start hunyuan3d`, puis `stop`
+# après usage.
 #
-# Limites :
-#   - forme seule : la texture demande les extensions CUDA `custom_rasterizer`
-#     et `mesh_processor`, non compilées ici (laisser « Generate Texture »
-#     décoché dans Blender) ;
-#   - image seule : le text-to-image (HunyuanDiT) est commenté en amont dans
-#     api_server.py, une requête texte seule échoue.
+# Limite : forme seule — la texture demande les extensions CUDA
+# `custom_rasterizer` et `mesh_processor`, non compilées ici (laisser
+# « Generate Texture » décoché dans Blender). Le texte seul passe par
+# HunyuanDiT (text → image → mesh), réactivé ci-dessous.
 { pkgs, lib, ... }:
 
 let
@@ -157,6 +156,11 @@ in
       # torch voit aussi l'iGPU Raphael (gfx1036, maquillé en gfx1100 par
       # l'override ci-dessus) en cuda:1 ; on ne garde que la RX 7600 XT.
       HIP_VISIBLE_DEVICES = "0";
+      # Sans ça, torch ROCm n'a ni flash ni mem-efficient attention sur RDNA3
+      # et retombe sur la SDPA « math », qui matérialise la matrice
+      # d'attention : HunyuanDiT (4096 tokens) demandait 3 Gio de plus et
+      # sortait en OOM HIP à côté des ~12 Gio des deux pipelines.
+      TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL = "1";
     };
 
     serviceConfig = {
