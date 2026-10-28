@@ -17,7 +17,7 @@ Bascule chaque machine entre profil serveur et profil graphique complet.
 - **`head = true`** ([gary](#gary), [zola](#zola)) — tire `modules/head.nix` et
   les modules home-manager graphiques : [Hyprland](#hyprland),
   [Quickshell](#quickshell), thème/accent, KDE/Qt, chromium, alacritty…
-- **`head = false`** ([exupery](#exupery), [kafka](#kafka)) — uniquement les
+- **`head = false`** ([wsl](#wsl), [kafka](#kafka)) — uniquement les
   modules CLI/serveur.
 
 ## `primaryMonitor` (string, défaut `HDMI-A-1`)

@@ -117,7 +117,17 @@
         exupery = nixpkgs.lib.nixosSystem {
           modules = [
             { nixpkgs.hostPlatform = system; }
+            inputs.disko.nixosModules.disko
+            ./hosts/exupery/disko.nix
             ./hosts/exupery/configuration.nix
+          ];
+          specialArgs = { inherit inputs; };
+        };
+
+        wsl = nixpkgs.lib.nixosSystem {
+          modules = [
+            { nixpkgs.hostPlatform = system; }
+            ./hosts/wsl/configuration.nix
           ];
           specialArgs = { inherit inputs; };
         };

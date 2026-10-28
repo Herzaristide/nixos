@@ -1,5 +1,6 @@
 {
   head ? false,
+  tablet ? false,
   ...
 }:
 
@@ -34,7 +35,10 @@ let
   ];
 in
 {
-  imports = headlessModules ++ (if head then headfullModules else [ ]);
+  imports =
+    headlessModules
+    ++ (if head then headfullModules else [ ])
+    ++ (if head && tablet then [ ./modules/tablet.nix ] else [ ]);
 
   # Home Manager settings
   home.username = "aristide";

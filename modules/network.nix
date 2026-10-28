@@ -5,7 +5,7 @@
 }:
 
 {
-  # NetworkManager (overridden to false on exupery/WSL)
+  # NetworkManager (overridden to false on wsl)
   networking.networkmanager.enable = lib.mkDefault true;
   networking.networkmanager.wifi.macAddress = "stable";
   networking.networkmanager.ethernet.macAddress = "stable";

@@ -145,6 +145,17 @@ in
         };
       };
 
+      # Glisser à 3 doigts gauche/droite sur le pavé tactile : workspace
+      # voisin sur le même écran. Sur exupery, home/modules/tablet.nix étend
+      # le geste à l'écran tactile (gestures.workspace_swipe_touch).
+      gesture = [
+        {
+          fingers = 3;
+          direction = "horizontal";
+          action = "workspace";
+        }
+      ];
+
       # Liste partagée avec le greeter (cf. modules/monitors.nix).
       monitor = import ../../../modules/monitors.nix;
 

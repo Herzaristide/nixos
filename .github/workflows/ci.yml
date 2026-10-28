@@ -41,7 +41,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        host: [zola, gary, kafka, exupery]
+        host: [zola, gary, kafka, exupery, wsl]
     steps:
       - uses: actions/checkout@v4
 

@@ -7,9 +7,9 @@ links: [architecture, flake, hosts, build]
 
 # Configuration NixOS
 
-Documentation de ma configuration **NixOS flake-based**, qui gère **quatre
+Documentation de ma configuration **NixOS flake-based**, qui gère **cinq
 machines** à partir d'une source unique : un ordinateur portable, un poste de
-travail, un serveur sans écran et un environnement WSL2.
+travail, une tablette 2-en-1, un serveur sans écran et un environnement WSL2.
 
 Home-manager est intégré comme module NixOS : un seul `nixos-rebuild` met à jour
 le système **et** l'environnement utilisateur en une passe.
@@ -18,12 +18,12 @@ le système **et** l'environnement utilisateur en une passe.
 
 - 🧭 [Architecture générale](#architecture) — comment les pièces s'assemblent.
 - 🧩 [Le flake et ses inputs](#flake) — les briques externes.
-- 🖥️ [Les quatre hôtes](#hosts) — zola, gary, kafka, exupery.
+- 🖥️ [Les cinq hôtes](#hosts) — zola, exupery, gary, kafka, wsl.
 - 🛠️ [Build & déploiement](#build) — les commandes du quotidien.
 
 ## Points forts
 
-- **Un seul dépôt** pour quatre machines aux profils très différents (Intel+NVIDIA,
+- **Un seul dépôt** pour cinq machines aux profils très différents (Intel+NVIDIA,
   AMD+ROCm, serveur nouveau, WSL2).
 - **Option `head`** qui bascule chaque hôte entre profil graphique complet et
   profil serveur — voir [les options transversales](#options).

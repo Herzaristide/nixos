@@ -1,6 +1,6 @@
 # nixos
 
-Configuration NixOS basée sur des flakes, gérant quatre machines via un dépôt unique. Home-manager est intégré comme module NixOS : `nixos-rebuild` met donc à jour le système **et** l'environnement utilisateur en une seule passe.
+Configuration NixOS basée sur des flakes, gérant cinq machines via un dépôt unique. Home-manager est intégré comme module NixOS : `nixos-rebuild` met donc à jour le système **et** l'environnement utilisateur en une seule passe.
 
 ## Machines gérées
 
@@ -9,7 +9,8 @@ Configuration NixOS basée sur des flakes, gérant quatre machines via un dépô
 | `zola`    | Laptop                | Intel + NVIDIA (Prime *offload*)  | Interface graphique complète (Hyprland)           |
 | `gary`    | Desktop                | AMD Ryzen 5 7600X + Radeon 7600 XT (ROCm/HIP) | Interface graphique complète (Hyprland)           |
 | `kafka`   | Serveur headless       | Intel + NVIDIA NVS 310 (nouveau)  | UEFI + systemd-boot, sans interface graphique     |
-| `exupery` | WSL2                   | —                                  | Environnement de développement headless           |
+| `exupery` | 2-en-1 (Latitude 7200) | Intel UHD 620                      | Interface graphique complète + tablette           |
+| `wsl`     | WSL2                   | —                                  | Environnement de développement headless           |
 
 ## Utilisation
 
@@ -52,8 +53,8 @@ secrets/                   # Secrets chiffrés
 
 `head` (booléen, `modules/common.nix`) détermine si un host reçoit la couche graphique complète :
 
-- `head = true` (gary, zola) → `modules/head.nix` + modules home-manager graphiques (Hyprland, Quickshell, KDE/Qt theming, Chromium, Alacritty...)
-- `head = false` (exupery, kafka) → uniquement les modules CLI/serveur
+- `head = true` (zola, exupery) → `modules/head.nix` + modules home-manager graphiques (Hyprland, Quickshell, KDE/Qt theming, Chromium, Alacritty...)
+- `head = false` (gary, kafka, wsl) → uniquement les modules CLI/serveur
 
 `primaryMonitor` définit le moniteur Hyprland recevant les workspaces 1-5 et la barre Quickshell. `darkMode` pilote le thème (dconf/GTK/Qt + démon d'accent).
 

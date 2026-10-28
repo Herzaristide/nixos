@@ -4,12 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-Flake-based NixOS configuration managing four hosts:
+Flake-based NixOS configuration managing five hosts:
 
 - **zola** (laptop): Intel + NVIDIA hybrid graphics, Prime **offload** mode, full GUI
+- **exupery** (Dell Latitude 7200 2-in-1): Intel UHD 620 only, full GUI like zola + tablet features (auto-rotation, on-screen keyboard, howdy)
 - **gary** (headless dev server): AMD Ryzen 5 7600X + Radeon RX 7600 XT (ROCm/HIP), no GUI, holds no personal secrets; runs the autonomous Claude agents under the `claude` user
 - **kafka** (headless dev server): Intel + NVIDIA NVS 310 (nouveau, no compute GPU), UEFI + systemd-boot, single NVMe SSD; runs Claude agents under `claude` like gary
-- **exupery** (WSL2): headless development environment
+- **wsl** (WSL2): headless development environment (named `exupery` until 2026-10-28 — the name now belongs to the Latitude)
 
 ## Build and Deployment
 
@@ -38,26 +39,26 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 
 - `nixpkgs` — nixos-unstable channel
 - `home-manager` — user environment, integrated as NixOS module
-- `nixos-wsl` — WSL2 support (exupery only)
+- `nixos-wsl` — WSL2 support (wsl only)
 - `quickshell` — Wayland shell / bar runtime (replaces Waybar/DMS)
 - `karenine` — the Quickshell interface (QML layout) **and** the `anna` engine (Rust: accent/palette theming + hardware stats). `github:Herzaristide/karenine`
 - `explorer` — custom file manager (`github:Herzaristide/Explorer`)
 - `disko` — declarative partitioning; each host's layout is its own `hosts/<host>/disko.nix`
-- `impermanence` — declarative `/home`, wired by `modules/impermanence.nix` on zola, gary and kafka
+- `impermanence` — declarative `/home`, wired by `modules/impermanence.nix` on zola, exupery, gary and kafka
 
 ### System modules (`/modules/`)
 
 - `nixos.nix` — Nix-level settings (flakes, GC, `nix-ld`, `system.stateVersion`, build parallelism cap)
-- `common.nix` — defines `head` / `primaryMonitor` / `darkMode` options; locale/keyboard FR; user `aristide` (immutable, hashed pwd); docker; ollama (commented out — disabled on every host, see also the gary/zola configs); wires home-manager into the system
-- `network.nix` — NetworkManager + SSH (**key-only**: `PasswordAuthentication = false`, `KbdInteractiveAuthentication = false`, `PermitRootLogin = "no"`, `MaxAuthTries = 3`, `LoginGraceTime = 30`, no X11/agent forwarding) + firewall. **sshd is enabled unconditionally here, so it runs on all four hosts** — gary, zola, kafka *and* exupery (WSL) — and `services.openssh.openFirewall` (default `true`) opens port 22 on each. That is the only port opened anywhere; a host needing another opts in explicitly. (An earlier revision of this file claimed gary and zola set `services.openssh.enable = lib.mkForce false` and that kafka was the only reachable host — that `mkForce` has never existed in the tree. Corrected 2026-07-19. Note `home/modules/network/ssh.nix` declares gary as an SSH *target* at `192.168.1.138`, so a reachable gary is likely intentional.) Also disables Wake-on-LAN on every wired interface via the `disable-wake-on-lan` unit: a magic packet is unauthenticated, and since `ethtool -s … wol g` persists in the NIC across reboots, an earlier revision's WoL-enabling unit had to be actively reversed rather than merely deleted — the firmware may still enable it independently, cut it in the BIOS/UEFI for a complete disable. Also holds a **distraction blocklist** in `networking.hosts`: every YouTube domain *and*, since 2026-09-25, Twitch (`twitch.tv` + subdomains, plus the `static-cdn.jtvnw.net` / `usher.ttvnw.net` CDN and video hosts) resolve to `0.0.0.0`. It's `/etc/hosts`, so it only covers plain DNS — a browser doing DNS-over-HTTPS bypasses it.
+- `common.nix` — defines `head` / `primaryMonitor` / `darkMode` / `tablet` options; locale/keyboard FR; user `aristide` (immutable, hashed pwd); docker; ollama (commented out — disabled on every host, see also the gary/zola configs); wires home-manager into the system
+- `network.nix` — NetworkManager + SSH (**key-only**: `PasswordAuthentication = false`, `KbdInteractiveAuthentication = false`, `PermitRootLogin = "no"`, `MaxAuthTries = 3`, `LoginGraceTime = 30`, no X11/agent forwarding) + firewall. **sshd is enabled unconditionally here, so it runs on all five hosts** — gary, zola, exupery, kafka *and* wsl — and `services.openssh.openFirewall` (default `true`) opens port 22 on each. That is the only port opened anywhere; a host needing another opts in explicitly. (An earlier revision of this file claimed gary and zola set `services.openssh.enable = lib.mkForce false` and that kafka was the only reachable host — that `mkForce` has never existed in the tree. Corrected 2026-07-19. Note `home/modules/network/ssh.nix` declares gary as an SSH *target* at `192.168.1.138`, so a reachable gary is likely intentional.) Also disables Wake-on-LAN on every wired interface via the `disable-wake-on-lan` unit: a magic packet is unauthenticated, and since `ethtool -s … wol g` persists in the NIC across reboots, an earlier revision's WoL-enabling unit had to be actively reversed rather than merely deleted — the firmware may still enable it independently, cut it in the BIOS/UEFI for a complete disable. Also holds a **distraction blocklist** in `networking.hosts`: every YouTube domain *and*, since 2026-09-25, Twitch (`twitch.tv` + subdomains, plus the `static-cdn.jtvnw.net` / `usher.ttvnw.net` CDN and video hosts) resolve to `0.0.0.0`. It's `/etc/hosts`, so it only covers plain DNS — a browser doing DNS-over-HTTPS bypasses it.
 - `power.nix` — UPower, logind suspend rules, USB wakeup
 - `security.nix` — kernel sysctl hardening (kptr_restrict, dmesg_restrict, ptrace_scope, TCP/IP anti-spoofing), **no AppArmor** (removed 2026-07-19 — the upstream `pkgs.apparmor-profiles` that the NixOS module loads by default attach to `/usr/bin` and `/usr/lib` paths that don't exist on NixOS; verified on gary that 0 of the 202 loaded profiles referenced `/nix/store`, and 76 are `flags=(unconfined)` stubs anyway. Nothing depended on it: no systemd unit uses `AppArmorProfile=`, and rootless Docker reports `Security Options: seccomp` only. Re-enabling means hand-written profiles with store paths interpolated from Nix, plus a reboot — `enable` puts `apparmor` back in the kernel `lsm=` list), auditd (rules re-enabled 2026-07-19 after the `auditctl -R` / `-b` regression in the 4.1.2 snapshot; revert to `enable = false` if `audit-rules-nixos.service` fails again), fail2ban on sshd, LUKS auto-unlock via USB keyfile (`/dev/disk/by-partlabel/LUKSKEY`, 20s timeout then falls back to the passphrase prompt — note this trades some at-rest protection for convenience if the keyfile USB stick travels with the machine)
 - `storage.nix` — mdadm RAID, fstrim, NTFS support, udisks2 auto-mount hardened with `noexec,nosuid,nodev`. The cross-host whitelist of external/internal mounts (`/mnt/maxtor`, `/mnt/samsung`, `/mnt/raid`) is currently commented out pending a disk changeover; only `/mnt/crucial` (uuid-pinned, `nofail`) is active
 - `greetd.nix` — login screen: greetd + regreet, reskinned (CSS + clock widget, solid `#0d0d0d` background — no wallpaper anywhere since 2026-10-19) to match the Quickshell palette. Replaces the old getty-autologin flow — a password prompt is now required at every boot/logout. The greeter's compositor is **Hyprland**, not `cage`: cage exposes no output configuration (no rotation, no positioning), which left gary's upside-down DP-4 rendering inverted at login. The greeter reads the same monitor list as the session (`modules/monitors.nix`) and applies the same `renderDevice` GPU pinning. Its config is **Lua**, like the session (migrated 2026-08-22): hyprlang (`.conf`) is deprecated since 0.55 and 0.56 paints "You are using the .conf config format, support for which will be removed in Hyprland 0.57." across the login screen. Hyprland picks its parser from the file extension (`src/config/ConfigManager.cpp`), so the `.lua` filename passed to `--config` is what selects the Lua manager — there is no flag for it
 - `monitors.nix` — the monitor list (output/mode/position/scale/transform), shared verbatim between the user's Hyprland session (`home/modules/hyprland/hyprland.nix`, Lua attrsets) and the greeter's Hyprland (`modules/greetd.nix`, rendered to `hl.monitor{}` calls). All hosts' outputs are listed together; each host only matches its own
 - `head.nix` — GUI layer: declares the Hyprland session entry consumed by greetd, XDG portal (hyprland + kde), fonts (JetBrains Mono only), printing. **No gaming profile** — Steam, Proton-GE, gamescope, gamemode, MangoHud and the controller udev rules were removed on 2026-09-25 along with `modules/gaming.nix` and `home/modules/gaming.nix`; don't re-add them without asking. The Hyprland window rules for `steam`/`steam_app_*`/`gamescope` and `general.allow_tearing` went with them, as did the `.steam` / `.local/share/Steam` persistence entries (the shader caches `~/.cache/mesa_shader_cache` and `~/.cache/nvidia` stay — they serve every GPU app)
-- `nautilus.nix` — zola only: Nautilus is **the** file manager (Super+F, `inode/directory`, floating 1000×650 centred via a Hyprland window rule; Dolphin and a brief Nemo were dropped 2026-10-19) + gvfs + `nautilus-open-any-terminal` → Alacritty. Themed by the anna libadwaita fragment (`gtk4-colors.css`), which only works because the binary is wrapped with `--unset GTK_THEME`: the session-wide `GTK_THEME=Breeze-Dark` names a theme that isn't installed and makes libadwaita fall back to a generic grey. The wrapper also rewrites the two D-Bus `.service` files (`org.gnome.Nautilus`, `org.freedesktop.FileManager1`) that hardcode the original binary path. Sidebar bookmarks (`~/.config/gtk-3.0/bookmarks`) and `~/.local/share/nautilus` are persisted
-- `impermanence.nix` — declarative `/home` on zola, gary and kafka: `@home` is wiped and recreated at every boot by an initrd unit, only the paths listed in `environment.persistence."/keep"` survive (details under "Filesystem layout"). Not imported by exupery
+- `nautilus.nix` — zola and exupery: Nautilus is **the** file manager (Super+F, `inode/directory`, floating 1000×650 centred via a Hyprland window rule; Dolphin and a brief Nemo were dropped 2026-10-19) + gvfs + `nautilus-open-any-terminal` → Alacritty. Themed by the anna libadwaita fragment (`gtk4-colors.css`), which only works because the binary is wrapped with `--unset GTK_THEME`: the session-wide `GTK_THEME=Breeze-Dark` names a theme that isn't installed and makes libadwaita fall back to a generic grey. The wrapper also rewrites the two D-Bus `.service` files (`org.gnome.Nautilus`, `org.freedesktop.FileManager1`) that hardcode the original binary path. Sidebar bookmarks (`~/.config/gtk-3.0/bookmarks`) and `~/.local/share/nautilus` are persisted
+- `impermanence.nix` — declarative `/home` on zola, exupery, gary and kafka: `@home` is wiped and recreated at every boot by an initrd unit, only the paths listed in `environment.persistence."/keep"` survive (details under "Filesystem layout"). Not imported by wsl
 - `agents.nix` — gary and kafka (the dev servers): the `claude` user (uid 1001, home `/home/claude` with its own `environment.persistence."/keep".users.claude` list: `~/code` — where agents must clone —, `.claude`, `.claude.json`, `.config/gh`, docker rootless, direnv, rtk, uv and Hugging Face caches; groups `video`/`render` for ROCm, **no wheel/sudo**, key-only login, `linger`). Its home-manager config reuses the shell + `ia/common.nix` (Claude Code settings, LSPs, rtk, **all** MCP servers — the former `mcp-common.nix` split was dropped 2026-10-18) and runs `claude-rc@<repo>` Remote Control for every git repo cloned in `~/code` (rescanned each minute, `--spawn worktree`, session prefix `<host>-<repo>`). Agent rules live in its `~/.claude/CLAUDE.md` (ports 8000-8099 on `0.0.0.0`, PRs only, never merge). Limits: `user-1001.slice` MemoryHigh 65% / MemoryMax 80% of host RAM / CPUWeight 50; mangle/OUTPUT chain `agents-out` drops its traffic to LAN, tailnet and private ranges (v4 + v6), loopback and replies to inbound allowed. GPU wording and `HSA_OVERRIDE_GFX_VERSION` only where `nixpkgs.config.rocmSupport` is set (gary). One-time manual setup as `claude` on each host (`ssh claude@gary` / `ssh claude@kafka` — no `-A`: the key must never reach an agent session): `gh auth login` with a fine-grained token (chosen repos, Contents + Pull requests, no Workflows, never `nixos`), `claude auth login`, `claude remote-control` once per repo
 - `audio.nix` — low-latency tweaks (`threadirqs`, ALSA seq modules, `@audio` PAM limits, plugin search paths), PipeWire (ALSA/JACK/Pulse), echo-cancel module, WirePlumber rule granting chromium `rwx` audio permissions (read/write/execute, deliberately not the `m` metadata bit) so the BandLab PWA can record — the rule matches on binary name, so it applies to every chromium process (all PWAs + regular browsing share the same binary), not just BandLab
 
@@ -88,10 +89,12 @@ QuickShell is the Wayland shell (bottom bar + side panel + Ollama chat + notes +
 
 `head` (bool, default false) is defined in `modules/common.nix`. Hosts set it explicitly:
 
-- `head = true` (zola) — pulls in `modules/head.nix` and the headful home-manager modules (Hyprland, Quickshell, Walker, KDE/Qt theming, accent daemon, chromium, alacritty, etc.)
-- `head = false` (gary, exupery, kafka) — only CLI/server modules
+- `head = true` (zola, exupery) — pulls in `modules/head.nix` and the headful home-manager modules (Hyprland, Quickshell, Walker, KDE/Qt theming, accent daemon, chromium, alacritty, etc.)
+- `head = false` (gary, kafka, wsl) — only CLI/server modules
 
-`primaryMonitor` (string) is the Hyprland output that receives workspaces 1-5 and the Quickshell bar. Defaults to `HDMI-A-1`; zola overrides to `eDP-1`.
+`primaryMonitor` (string) is the Hyprland output that receives workspaces 1-5 and the Quickshell bar. Defaults to `HDMI-A-1`; zola and exupery override to `eDP-1`.
+
+`tablet` (bool, default false, exupery only) adds `home/modules/tablet.nix` when `head` is also true: two user services bound to `graphical-session.target` — `hypr-auto-rotate` (iio-sensor-proxy `monitor-sensor --accel` → `hyprctl eval` of `hl.monitor` + `input.touchdevice.transform`, using the eDP-1 entry of `modules/monitors.nix`; the rotation is also stored in `$XDG_RUNTIME_DIR/hypr-rotation` and re-applied from the Lua config, because anna's `hyprctl reload` would otherwise reset it) and `hypr-osk` (wvkbd, shown when no `/dev/input/by-path/*-usb-*-event-kbd` exists — the 7200's detachable keyboard is USB; wvkbd has no AZERTY layout). iio-hyprland/rot8 are unusable here: they call `hyprctl keyword`.
 
 `darkMode` (bool, default true) drives the color scheme broadcast to dconf, GTK, Qt, and the accent daemon's seed defaults.
 
@@ -115,16 +118,17 @@ To change the active accent at runtime: `anna set "#5277c3"`.
 Each UEFI host has **its own** disko file, wired in `flake.nix`: `hosts/zola/disko.nix`, `hosts/gary/disko.nix`, `hosts/kafka/disko.nix`. zola's and gary's are byte-identical; kafka's differs (ESP on a USB stick, see its section). The pre-split shared copy `modules/disko.nix` was deleted on 2026-08-24 — imported by nobody and missing `@keep`; a merge from a stale remote branch had resurrected it along with ~56 other long-deleted files. (Corrected 2026-08-24 — this file previously described the shared-layout arrangement, which the per-host split replaced.)
 
 - zola / gary: GPT + ESP (FAT32, `/boot`, `fmask=0077`/`dmask=0077`) + LUKS2 (`allowDiscards=true`) → btrfs on `/dev/nvme0n1`
-- WSL host (exupery): no disko, no bootloader
+- exupery: own copy of zola's layout (`hosts/exupery/disko.nix`)
+- WSL host (wsl): no disko, no bootloader
 - btrfs subvolumes: `@` (`/`), `@home` (`/home`), `@nix` (`/nix`), plus `@keep` on zola/gary/kafka
 - Mount options: `compress=zstd noatime space_cache=v2 discard=async ssd`
 - To target a different disk on a future host, override `disko.devices.disk.main.device` with `lib.mkForce` in that host's `configuration.nix`.
 
 LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — write the file before running disko, or pass it via `nixos-anywhere --extra-files`.
 
-### Impermanence — `/home` only, zola, gary and kafka
+### Impermanence — `/home` only, zola, exupery, gary and kafka
 
-`modules/impermanence.nix` is imported by **zola, gary and kafka** (`hosts/<host>/configuration.nix`; kafka since 2026-10-18). exupery (WSL) doesn't import it and is fully persistent — WSL couldn't run it anyway: its filesystem comes from the Windows-side image, there is no LUKS, no btrfs subvolume, and no systemd initrd to roll anything back in.
+`modules/impermanence.nix` is imported by **zola, exupery, gary and kafka** (`hosts/<host>/configuration.nix`; kafka since 2026-10-18, exupery since its creation on 2026-10-28). wsl doesn't import it and is fully persistent — WSL couldn't run it anyway: its filesystem comes from the Windows-side image, there is no LUKS, no btrfs subvolume, and no systemd initrd to roll anything back in.
 
 - **Only `@home` is wiped.** The initrd unit `rollback-home` recreates an empty `@home` at every boot; `@` (`/`) and `@nix` are never touched. So `/var/lib/nixos`, `/var/lib/*` and everything else under `/` survives — which is why `enableWarnings = false` on `environment.persistence` is correct here rather than a papered-over bug (the module's warning assumes an ephemeral root).
 - What survives lives on the `@keep` subvolume, mounted `neededForBoot` at `/keep/home`, and is listed file-by-file / directory-by-directory under `environment.persistence."/keep".users.aristide`. **Anything not in that list is gone at the next boot.**
@@ -166,7 +170,14 @@ LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — wri
 - Impermanence since 2026-10-18 (same server list as gary). Migration, **before** the first switch: `sudo mount -o subvolid=5 /dev/mapper/cryptroot /mnt && sudo btrfs subvolume snapshot /mnt/@home /mnt/@keep && sudo umount /mnt` — without `@keep`, the `neededForBoot` mount of `/keep/home` fails. The first boot archives the old `@home` to `old_roots/` (30 days), and everything in aristide's home outside the list (`~/code` + tooling) is gone from the live system — which is also how kafka gets purged of personal files. Move anything worth keeping into `~/code` or off the machine first
 - Dev server like gary since 2026-10-18: imports `modules/agents.nix` (`claude` user, no GPU)
 
-### exupery (WSL2)
+### exupery (Dell Latitude 7200 2-in-1)
+
+- Intel Core i5-8365U (Whiskey Lake, 4c/8t), 16 GB, Intel UHD 620 only (`LIBVA_DRIVER_NAME=iHD`, no NVIDIA variables); 12.3" 1920×1280 touchscreen on `eDP-1`, accelerometer via the Intel Sensor Hub (`hardware.sensor.iio.enable`)
+- Same module set as zola (impermanence included, `head = true`, `tablet = true`), same disko layout on `/dev/nvme0n1`; `auto-cpufreq` capped at 1.6 GHz / no turbo on battery, 4.1 GHz on AC; `fwupd` for Dell BIOS updates; `max-jobs = 1`
+- **howdy** (IR camera, `linux-enable-ir-emitter`) is `sufficient` but enabled **only** for the Quickshell lock and `polkit-1` (`security.pam.howdy.enable = false` globally): greetd/login must take the password so `pam_gnome_keyring` can unlock the keyring, and sudo stays password-only since howdy can be fooled by a photo. IR device assumed `/dev/video2` — check with `v4l2-ctl --list-devices`. One-time setup: `sudo linux-enable-ir-emitter configure`, `sudo howdy add`
+- No `hardware-configuration.nix` (like zola): `modules/kernel.nix` + `not-detected.nix` cover it
+
+### wsl (WSL2)
 
 - Imports `nixos-wsl.nixosModules.default`, `wsl.enable = true`
 - No bootloader, NetworkManager disabled (uses Windows host networking)

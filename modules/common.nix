@@ -34,6 +34,15 @@
     description = "Use dark color scheme (false = light mode).";
   };
 
+  # 2-en-1 à écran tactile (exupery) : rotation automatique d'eDP-1 et clavier
+  # virtuel quand aucun clavier physique n'est branché (home/modules/tablet.nix).
+  # Sans effet sans `head = true`.
+  options.tablet = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+    description = "Enable 2-in-1 tablet features (auto-rotation, on-screen keyboard).";
+  };
+
   # Persistent /dev/dri path of the DRM card the Wayland compositor should
   # render on. When set, greetd.nix resolves it to its real card node at login
   # and exports AQ_DRM_DEVICES before exec'ing Hyprland, so aquamarine (and
@@ -144,7 +153,7 @@
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINi5jJe0xviTwThXWub9t7JdgvJ4OSKhhPfGJSyXbpEg aristide.pichereau@gmail.com"
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMKEUyD7riAHBYuRqajNOv+kRWK7b/ORBrVNtmBCipfl aristide.pichereau@gmail.com"
-        # Hôte Windows du WSL — ssh vers exupery en passant par localhostForwarding
+        # Hôte Windows du WSL — ssh vers wsl en passant par localhostForwarding
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK9zbhv9Y143Ra5TKB7x3+3MoYIOztyJXQcwv7M49qfb aristide@windows"
       ];
       extraGroups = [
@@ -188,6 +197,7 @@
       extraSpecialArgs = {
         inherit inputs;
         head = config.head;
+        tablet = config.tablet;
         darkMode = config.darkMode;
         primaryMonitor = config.primaryMonitor;
         anna = inputs.karenine.packages.${pkgs.stdenv.hostPlatform.system}.anna;

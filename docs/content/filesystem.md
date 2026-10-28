@@ -15,7 +15,7 @@ Tous les hôtes UEFI partagent un **layout disko unique** dans `modules/disko.ni
 - **Hôtes UEFI** ([zola](#zola), [gary](#gary), [kafka](#kafka)) :
   GPT + ESP (FAT32, `/boot`, `fmask=0077`/`dmask=0077`) + LUKS2
   (`allowDiscards=true`) → **btrfs** sur `/dev/nvme0n1`.
-- **Hôte WSL** ([exupery](#exupery)) : pas de disko, pas de bootloader.
+- **Hôte WSL** ([wsl](#wsl)) : pas de disko, pas de bootloader.
 
 ## Sous-volumes btrfs
 

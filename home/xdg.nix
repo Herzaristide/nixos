@@ -10,7 +10,7 @@ let
   # L'arborescence du home, identique sur les quatre hôtes : un seul niveau,
   # des noms de quatre lettres. Sur zola, gary et kafka, les dossiers sont
   # aussi listés dans modules/impermanence.nix — sans quoi ils seraient
-  # recréés vides à chaque boot. exupery (WSL) n'a pas d'impermanence :
+  # recréés vides à chaque boot. wsl n'a pas d'impermanence :
   # l'activation ci-dessous est alors la seule chose qui les crée.
   tree = [
     "code" # dépôts et projets

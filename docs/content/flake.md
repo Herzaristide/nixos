@@ -16,7 +16,7 @@ links: [architecture, build, filesystem, packages]
 | --- | --- | --- |
 | `nixpkgs` | `nixos-unstable` | Canal principal des paquets. |
 | `home-manager` | nix-community | Environnement utilisateur, intégré comme module NixOS. |
-| `nixos-wsl` | nix-community | Support WSL2 (hôte [exupery](#exupery)). |
+| `nixos-wsl` | nix-community | Support WSL2 (hôte [wsl](#wsl)). |
 
 | `quickshell` | git.outfoxxed.me | Shell Wayland (voir [Quickshell](#quickshell)). |
 | `karenine` | `github:Herzaristide/karenine` | Projet personnel intégré. |
@@ -27,8 +27,8 @@ duplication de versions.
 
 ## Outputs
 
-- **`nixosConfigurations`** — un système par hôte : `zola`, `gary`, `kafka`,
-  `exupery`. Chaque hôte reçoit `nixpkgs.hostPlatform = x86_64-linux`, le module
+- **`nixosConfigurations`** — un système par hôte : `zola`, `exupery`, `gary`, `kafka`,
+  `wsl`. Chaque hôte reçoit `nixpkgs.hostPlatform = x86_64-linux`, le module
   disko partagé (sauf [kafka](#kafka), qui a son propre `disko.nix`), et sa
   `configuration.nix`.
 - **`homeConfigurations.aristide`** — une configuration home-manager
