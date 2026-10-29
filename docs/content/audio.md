@@ -12,11 +12,11 @@ Configuré dans `modules/audio.nix` (voir [Modules système](#system-modules)).
 ## Réglages basse latence
 
 musnix a été retiré le 2026-07-19. Le noyau temps réel n'est pas envisageable
-sur zola (le pilote NVIDIA propriétaire refuse de compiler contre
+sur bernanos (le pilote NVIDIA propriétaire refuse de compiler contre
 `CONFIG_PREEMPT_RT`) et n'est pas nécessaire ici : PipeWire + rtkit tiennent
 3-6 ms sur un buffer de 128-256 frames, sous le seuil de perception. musnix
 forçait de surcroît `cpuFreqGovernor = "performance"` sans `mkDefault`, ce qui
-écrasait le `powersave` de zola.
+écrasait le `powersave` de bernanos.
 
 Ce qu'il apportait réellement est désormais écrit directement dans le module :
 

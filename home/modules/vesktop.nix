@@ -21,7 +21,7 @@ in
   # Vesktop (Vencord) à la place du client Discord officiel : il partage l'écran
   # via le WebRTC standard de Chromium + xdg-desktop-portal (son compris, via
   # venmic), là où le moteur vidéo natif de Discord (encodage NVENC) faisait
-  # planter son processus GPU sur zola et bloquait xdg-desktop-portal-hyprland.
+  # planter son processus GPU sur bernanos et bloquait xdg-desktop-portal-hyprland.
   # Le thème est fourni par anna (quickCss.css, cf. modules/accent/accent.nix).
   home.packages = [ vesktop ];
 }

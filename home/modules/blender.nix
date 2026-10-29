@@ -30,8 +30,9 @@ let
   blenderVersion = lib.versions.majorMinor pkgs.blender.version;
 in
 {
-  # Backend Cycles compilé dans le paquet : HIP sur gary (rocmSupport global),
-  # CUDA/OptiX sur zola (overlay blender dans son configuration.nix).
+  # Module headful seulement (bernanos, exupery). Backend Cycles compilé dans
+  # le paquet : CUDA/OptiX sur bernanos (overlay blender dans son
+  # configuration.nix), CPU/iGPU Intel sur exupery.
   home.packages = [ pkgs.blender ];
 
   # Nom de fichier = nom de module de l'add-on ; `blender_mcp.py` est celui

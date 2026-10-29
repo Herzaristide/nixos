@@ -34,15 +34,6 @@
     description = "Use dark color scheme (false = light mode).";
   };
 
-  # 2-en-1 à écran tactile (exupery) : rotation automatique d'eDP-1 et clavier
-  # virtuel quand aucun clavier physique n'est branché (home/modules/tablet.nix).
-  # Sans effet sans `head = true`.
-  options.tablet = lib.mkOption {
-    type = lib.types.bool;
-    default = false;
-    description = "Enable 2-in-1 tablet features (auto-rotation, on-screen keyboard).";
-  };
-
   # Persistent /dev/dri path of the DRM card the Wayland compositor should
   # render on. When set, greetd.nix resolves it to its real card node at login
   # and exports AQ_DRM_DEVICES before exec'ing Hyprland, so aquamarine (and
@@ -177,11 +168,11 @@
       setSocketVariable = true;
     };
 
-    # ollama désactivé pour le moment (voir aussi hosts/{gary,zola}/configuration.nix).
+    # ollama désactivé pour le moment (voir aussi hosts/{gary,bernanos}/configuration.nix).
     # services.ollama = {
     #   enable = true;
     #   host = "127.0.0.1";
-    #   package = lib.mkDefault pkgs.ollama; # zola surcharge par ollama-cuda
+    #   package = lib.mkDefault pkgs.ollama; # bernanos surcharge par ollama-cuda
     # };
 
     # Périphériques Logitech sans fil (clavier MX Keys Mini via récepteur Logi Bolt) :
@@ -197,10 +188,27 @@
       extraSpecialArgs = {
         inherit inputs;
         head = config.head;
-        tablet = config.tablet;
         darkMode = config.darkMode;
         primaryMonitor = config.primaryMonitor;
-        anna = inputs.karenine.packages.${pkgs.stdenv.hostPlatform.system}.anna;
+        # Le mot d'éveil d'anna (karenine, anna/src/claude/wake.rs) : le nom de
+        # la machine quand karenine livre un modèle à ce nom (« Bernanos »,
+        # « Exupéry »), « Karénine » sinon. Posé par un wrapper par-dessus le
+        # paquet : changer de mot ne recompile pas anna.
+        anna =
+          let
+            base = inputs.karenine.packages.${pkgs.stdenv.hostPlatform.system}.anna;
+            host = config.networking.hostName;
+            word = if lib.elem host (base.wakeWords or [ ]) then host else "karenine";
+          in
+          pkgs.symlinkJoin {
+            name = "anna-${word}";
+            paths = [ base ];
+            nativeBuildInputs = [ pkgs.makeWrapper ];
+            postBuild = ''
+              wrapProgram "$out/bin/anna" --set ANNA_WAKE_WORD ${word}
+            '';
+            inherit (base) meta;
+          };
       };
       users.aristide = import ../home/home.nix;
     };

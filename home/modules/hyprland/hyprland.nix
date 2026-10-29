@@ -146,7 +146,7 @@ in
       };
 
       # Glisser à 3 doigts gauche/droite sur le pavé tactile : workspace
-      # voisin sur le même écran. Sur exupery, home/modules/tablet.nix étend
+      # voisin sur le même écran. Sur exupery, hosts/exupery/configuration.nix étend
       # le geste à l'écran tactile (gestures.workspace_swipe_touch).
       gesture = [
         {
@@ -186,7 +186,7 @@ in
         }
         {
           workspace = "9";
-          # Le HP, par description : DP-4 sur gary, DP-3 sur zola.
+          # Le HP, par description : DP-4 sur gary, DP-3 sur bernanos.
           monitor = "desc:HP Inc. HP E24q G5 CNC3021TQS";
           default = true;
         }

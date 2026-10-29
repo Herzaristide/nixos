@@ -1,4 +1,4 @@
-# Shared disko partition layout for all NVMe SSD hosts (zola, gary, exupery, kafka).
+# Shared disko partition layout for all NVMe SSD hosts (bernanos, gary, exupery, kafka).
 # UEFI + LUKS2 + btrfs on /dev/nvme0n1, ESP restricted to root.
 # Override disko.devices.disk.main.device per host if the disk path differs.
 {

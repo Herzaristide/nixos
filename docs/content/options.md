@@ -14,7 +14,7 @@ comportement d'un hôte.
 
 Bascule chaque machine entre profil serveur et profil graphique complet.
 
-- **`head = true`** ([gary](#gary), [zola](#zola)) — tire `modules/head.nix` et
+- **`head = true`** ([gary](#gary), [bernanos](#bernanos)) — tire `modules/head.nix` et
   les modules home-manager graphiques : [Hyprland](#hyprland),
   [Quickshell](#quickshell), thème/accent, KDE/Qt, chromium, alacritty…
 - **`head = false`** ([wsl](#wsl), [kafka](#kafka)) — uniquement les
@@ -24,7 +24,7 @@ Bascule chaque machine entre profil serveur et profil graphique complet.
 
 Sortie Hyprland qui reçoit les workspaces 1-5 et la barre Quickshell.
 
-- [zola](#zola) surcharge en `eDP-1`, [gary](#gary) utilise `DP-1`.
+- [bernanos](#bernanos) surcharge en `eDP-1`, [gary](#gary) utilise `DP-1`.
 - La valeur est **consommée par [Quickshell](#quickshell)** : la changer réécrit
   `~/.config/quickshell/shell.qml` (le motif `@PRIMARY_MONITOR@` est remplacé
   via `builtins.replaceStrings`).

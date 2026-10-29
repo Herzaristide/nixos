@@ -18,7 +18,7 @@ le système **et** l'environnement utilisateur en une passe.
 
 - 🧭 [Architecture générale](#architecture) — comment les pièces s'assemblent.
 - 🧩 [Le flake et ses inputs](#flake) — les briques externes.
-- 🖥️ [Les cinq hôtes](#hosts) — zola, exupery, gary, kafka, wsl.
+- 🖥️ [Les cinq hôtes](#hosts) — bernanos, exupery, gary, kafka, wsl.
 - 🛠️ [Build & déploiement](#build) — les commandes du quotidien.
 
 ## Points forts

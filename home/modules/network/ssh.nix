@@ -79,8 +79,8 @@ in
         IdentityFile = "~/.ssh/siddhartha";
         IdentitiesOnly = true;
       };
-      # Laptop zola, via Tailscale (pour l'atteindre depuis gary).
-      "zola" = {
+      # Laptop bernanos, via Tailscale (pour l'atteindre depuis gary).
+      "bernanos" = {
         AddKeysToAgent = "yes";
         HostName = "100.67.220.15";
         User = "aristide";

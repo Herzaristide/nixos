@@ -28,8 +28,8 @@
   # donc dans son cgroup : au-delà de MemoryHigh le noyau les freine (reclaim,
   # zram), à MemoryMax l'OOM-killer tue *dans ce cgroup* — un build qui échoue
   # plutôt qu'un bureau qui gèle. Sans ça, une grosse compilation C++/CUDA
-  # (blender, openusd… avec `cudaSupport` sur zola) a saturé les 16 Go et figé
-  # zola 20 min avant extinction forcée (2026-10-17). En % de la RAM physique
+  # (blender, openusd… avec `cudaSupport` sur bernanos) a saturé les 16 Go et figé
+  # bernanos 20 min avant extinction forcée (2026-10-17). En % de la RAM physique
   # pour valoir sur chaque hôte.
   systemd.services.nix-daemon.serviceConfig = {
     MemoryHigh = "40%";

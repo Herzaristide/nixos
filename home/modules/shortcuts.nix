@@ -378,7 +378,7 @@
       opts = {
         locked = true;
       };
-      desc = "Fermeture du capot (zola)";
+      desc = "Fermeture du capot (bernanos)";
     }
     {
       keys = "switch:off:Lid Switch";
@@ -392,7 +392,7 @@
       opts = {
         locked = true;
       };
-      desc = "Ouverture du capot (zola)";
+      desc = "Ouverture du capot (bernanos)";
     }
   ];
 

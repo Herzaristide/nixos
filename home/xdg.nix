@@ -8,7 +8,7 @@ let
   home = config.home.homeDirectory;
 
   # L'arborescence du home, identique sur les quatre hôtes : un seul niveau,
-  # des noms de quatre lettres. Sur zola, gary et kafka, les dossiers sont
+  # des noms de quatre lettres. Sur bernanos, gary et kafka, les dossiers sont
   # aussi listés dans modules/impermanence.nix — sans quoi ils seraient
   # recréés vides à chaque boot. wsl n'a pas d'impermanence :
   # l'activation ci-dessous est alors la seule chose qui les crée.
@@ -22,7 +22,7 @@ let
 in
 {
   # Dossiers XDG. Le module est headless (importé par home/home.nix hors du
-  # bloc `head`) pour que WSL et kafka aient le même home que zola et gary :
+  # bloc `head`) pour que WSL et kafka aient le même home que bernanos et gary :
   # sans ça, XDG_DOWNLOAD_DIR y vaut ~/Downloads et les chemins divergent
   # d'un hôte à l'autre.
   xdg.userDirs = {

@@ -2,14 +2,14 @@
 title: Points d'attention
 group: Système
 summary: Les pièges à connaître — NVIDIA, ROCm, Hyprland Lua, Zed.
-links: [zola, gary, hyprland, home-manager]
+links: [bernanos, gary, hyprland, home-manager]
 ---
 
 # Points d'attention
 
 Les subtilités à garder en tête avant de modifier la config.
 
-1. **NVIDIA sur [zola](#zola)** : `WLR_NO_HARDWARE_CURSORS=1` est obligatoire —
+1. **NVIDIA sur [bernanos](#bernanos)** : `WLR_NO_HARDWARE_CURSORS=1` est obligatoire —
    la désactiver tue le curseur sous Wayland.
 2. **ROCm sur [gary](#gary)** : ne pas réintroduire d'overlay `gpuTargets`.
    rocBLAS amont a déjà `gfx1100`, et on y mappe la RX 7600 XT (`gfx1102`) via

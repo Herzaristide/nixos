@@ -3,7 +3,17 @@
   ...
 }:
 
+# Couche graphique : tout ce qui sert à un hôte à écran, indépendamment du
+# matériel (CPU, GPU, alimentation, caméra et écrans restent dans
+# hosts/<hôte>/configuration.nix). L'importer suffit : il pose `head = true`.
 {
+  imports = [
+    ./greetd.nix
+    ./nautilus.nix
+  ];
+
+  head = true;
+
   # Disable the experimental Fontations (Rust/Skrifa) font rendering backend.
   # NixOS 26.05 enables FC_FONTATIONS=1 by default, but this causes white/blank
   # glyph squares in GTK popup windows (file dialogs, git popups, etc.).
@@ -31,14 +41,34 @@
   # session also unlocks the keyring git-credential-manager stores into.
   security.pam.services.quickshell.enableGnomeKeyring = true;
 
+  # Reconnaissance faciale (howdy). Enregistrer son visage une fois par
+  # machine avec `sudo howdy add` (état sous /etc et /var/lib, racine non
+  # effacée par l'impermanence). La caméra (`settings.video.device_path`) est
+  # du matériel : chaque hôte la fixe dans sa configuration.
+  services.howdy = {
+    enable = true;
+    # « sufficient » : le visage suffit, le mot de passe reste possible en
+    # repli. Le défaut « required » en ferait un second facteur obligatoire.
+    control = "sufficient";
+  };
+  # howdy se trompe avec une bonne photo : il ne déverrouille que l'écran de
+  # verrouillage (Quickshell) et les invites polkit. Ni greetd/login — le mot
+  # de passe y déverrouille aussi GNOME Keyring (pam_gnome_keyring), qu'un
+  # login par visage laisserait verrouillé —, ni sudo, qui reste au mot de passe.
+  security.pam.howdy.enable = false;
+  security.pam.services.quickshell.howdy.enable = true;
+  security.pam.services.polkit-1.howdy.enable = true;
+
   # XDG Portal (for file picker, screen sharing in Hyprland)
   # xdg-desktop-portal-kde exposes color-scheme (dark mode) to Chrome/Gemini, etc.
   # via kdeglobals — no GNOME/GTK infrastructure required.
   # xdph alone doesn't implement the appearance protocol.
+  # xdph itself comes from programs.hyprland (portalPackage, built against the
+  # session's Hyprland): listing pkgs.xdg-desktop-portal-hyprland here too adds
+  # a second store path and user-units fails on the duplicate .service.
   xdg.portal = {
     enable = true;
     extraPortals = [
-      pkgs.xdg-desktop-portal-hyprland
       pkgs.kdePackages.xdg-desktop-portal-kde
     ];
     config.common = {
@@ -71,7 +101,7 @@
   # règles d'application de l'accent restent par hôte : les périphériques
   # diffèrent (cf. hosts/gary pour RAM + ventilateurs).
   #
-  # Désactivé ici le temps des tests sur le clavier de zola : sur ce laptop
+  # Désactivé ici le temps des tests sur le clavier de bernanos : sur ce laptop
   # OpenRGB ne détecte aucun contrôleur (`--list-devices` → 0, aucune chaîne
   # SteelSeries dans le binaire : le KLC 1038:113a n'a pas de driver amont) et
   # ne sert donc à rien tant qu'on n'en aura pas écrit un. Activé chez gary,

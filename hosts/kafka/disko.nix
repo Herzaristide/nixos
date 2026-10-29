@@ -4,7 +4,7 @@
 # l'ESP/boot vit donc sur une CLÉ USB qui sert de relais de boot, et le NVMe
 # ne porte QUE LUKS2 + btrfs. Layout déclaratif complet -> réinstall propre.
 #
-# Diffère du disko partagé (modules/disko.nix, utilisé par zola/gary) qui place
+# Diffère du disko partagé (modules/disko.nix, utilisé par bernanos/gary) qui place
 # l'ESP sur le NVMe. kafka importe ce fichier à la place, via flake.nix.
 {
   disko.devices = {

@@ -2,7 +2,7 @@
 title: Hyprland
 group: Bureau
 summary: Configuration Hyprland en mode Lua — keybinds, moniteurs, workspaces spéciaux.
-links: [home-manager, zola, theming, quickshell]
+links: [home-manager, bernanos, theming, quickshell]
 ---
 
 # Hyprland
@@ -22,12 +22,12 @@ Le compositeur Wayland, configuré côté [home-manager](#home-manager)
 - Clavier : AZERTY français (`kb_layout = "fr"`).
 - Souris : accélération plate + `force_no_accel = true` (1:1).
 - `cursor.no_hardware_cursors = 1` — requis pour NVIDIA + Wayland (voir
-  [zola](#zola)).
+  [bernanos](#bernanos)).
 - `decoration.active_opacity = 0.75` / `inactive_opacity = 0.60`.
 
 ## Écran & couleur
 
-- Sur [zola](#zola), `hypr-closed-lid-layout` déplace les workspaces 1-5 vers
+- Sur [bernanos](#bernanos), `hypr-closed-lid-layout` déplace les workspaces 1-5 vers
   `HDMI-A-1` et désactive `eDP-1` quand le capot est fermé.
 - La couleur d'accent est sourcée depuis un fragment généré par le
   [daemon d'accent](#theming).

@@ -20,7 +20,7 @@ in
   # tiennent déjà 3-6 ms de latence, largement sous le seuil de perception), il
   # ne restait que les quelques réglages ci-dessous, et il forçait au passage
   # `powerManagement.cpuFreqGovernor = "performance"` sans mkDefault, ce qui
-  # écrasait silencieusement le gouverneur "powersave" de zola.
+  # écrasait silencieusement le gouverneur "powersave" de bernanos.
 
   # Les interruptions deviennent des threads ordonnançables : c'est ce qui
   # permet de prioriser celle de la carte son et d'éviter les xruns.

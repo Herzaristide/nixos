@@ -94,12 +94,12 @@
       };
 
       nixosConfigurations = {
-        zola = nixpkgs.lib.nixosSystem {
+        bernanos = nixpkgs.lib.nixosSystem {
           modules = [
             { nixpkgs.hostPlatform = system; }
             inputs.disko.nixosModules.disko
-            ./hosts/zola/disko.nix
-            ./hosts/zola/configuration.nix
+            ./hosts/bernanos/disko.nix
+            ./hosts/bernanos/configuration.nix
           ];
           specialArgs = { inherit inputs; };
         };

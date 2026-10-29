@@ -18,8 +18,6 @@
     ../../modules/zram.nix
     ../../modules/storage.nix
     ../../modules/head.nix
-    ../../modules/nautilus.nix
-    ../../modules/greetd.nix
     ../../modules/audio.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix
@@ -27,6 +25,24 @@
     ../../modules/impermanence.nix
     ../../modules/print.nix
   ];
+
+  # Hostname
+  networking.hostName = "bernanos";
+
+  # Primary monitor: built-in screen (laptop)
+  primaryMonitor = "eDP-1";
+
+  # Bootloader (systemd-boot for UEFI; GRUB disabled)
+  boot.loader.grub.enable = false;
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
+  # CPU: Intel — KVM virtualization + microcode update
+  boot.kernelModules = [ "kvm-intel" ];
+  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+
+  # Mises à jour BIOS/firmware via LVFS (`fwupdmgr update`).
+  services.fwupd.enable = true;
 
   # --- Battery / CPU power management (laptop, Intel) ---
   # Disable power-profiles-daemon (conflicts with auto-cpufreq)
@@ -75,32 +91,21 @@
     ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1b1c", ATTR{idProduct}=="1b94", ATTR{power/autosuspend_delay_ms}="300000"
   '';
 
-  # CPU: Intel — KVM virtualization + microcode update
-  boot.kernelModules = [ "kvm-intel" ];
-  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
-
-  # Hostname
-  networking.hostName = "zola";
-
   # Fermer le capot suspend réellement la machine (modules/power.nix l'ignore
-  # par défaut, pertinent seulement ici — zola est le seul hôte avec un capot).
-  # hypridle (home/modules/hyprland/hyprlock.nix) verrouille déjà l'écran via
-  # before_sleep_cmd avant toute mise en veille, donc fermer le capot verrouille
-  # aussi la session, pas seulement l'écran.
+  # par défaut). hypridle (home/modules/hyprland/lock.nix) verrouille déjà
+  # l'écran via before_sleep_cmd avant toute mise en veille, donc fermer le
+  # capot verrouille aussi la session, pas seulement l'écran.
   services.logind.settings.Login.HandleLidSwitch = lib.mkForce "suspend";
 
-  # Head configuration
-  head = true;
+  # Un seul build à la fois (au lieu de 2 × 6 cœurs, modules/nixos.nix) :
+  # blender CUDA à côté d'un autre gros build ne tient pas dans 16 Go.
+  nix.settings.max-jobs = lib.mkForce 1;
 
-  # Primary monitor: built-in screen (laptop)
-  primaryMonitor = "eDP-1";
+  # howdy (modules/head.nix) : pas de caméra IR sur bernanos, seulement la webcam
+  # RGB (SunplusIT HD Webcam) ; /dev/video3 est son nœud de métadonnées.
+  services.howdy.settings.video.device_path = "/dev/video2";
 
-  # Bootloader (systemd-boot for UEFI; GRUB disabled)
-  boot.loader.grub.enable = false;
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
-  # --- GPU (NVIDIA, Zola: Prime Intel+Nvidia, Wayland) ---
+  # --- GPU (NVIDIA, Bernanos: Prime Intel+Nvidia, Wayland) ---
   boot.kernelParams = [
     "nvidia-drm.modeset=1" # Enable mode setting for Wayland
     # "nvidia_drm.fbdev=1" # Enable framebuffer device (crucial for Wayland)
@@ -133,7 +138,7 @@
   # CUDA à la carte, pas de `cudaSupport` global : seul blender en profite
   # vraiment (Cycles sur la RTX 3070 Mobile via CUDA/OptiX). Le global
   # recompilait aussi openusd, suitesparse, ceres-solver (dépendances de
-  # blender seulement) et obs-studio, sans gain notable. Aucun cache ne sert
+  # blender seulement), sans gain notable. Aucun cache ne sert
   # les variantes CUDA (unfree, pas sur Hydra) : blender recompile en local à
   # chaque `nix flake update` — mesuré sur juin-juillet 2026, sa dérivation
   # change à chaque bump d'unstable, même à version égale.
@@ -178,10 +183,6 @@
       }
     )
   ];
-
-  # Un seul build à la fois (au lieu de 2 × 6 cœurs, modules/nixos.nix) :
-  # blender CUDA à côté d'un autre gros build ne tient pas dans 16 Go.
-  nix.settings.max-jobs = lib.mkForce 1;
 
   hardware = {
     nvidia = {

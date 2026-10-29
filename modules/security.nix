@@ -51,7 +51,7 @@
   # Interdit le remplacement à chaud de l'image du noyau (kexec_load) : sans ça,
   # root peut démarrer un noyau arbitraire sans repasser par le bootloader, ce
   # qui contourne `systemd-boot.editor = false` ci-dessous.
-  # Contrepartie : désactive aussi l'hibernation. Sans conséquence ici — zola,
+  # Contrepartie : désactive aussi l'hibernation. Sans conséquence ici — bernanos,
   # seul hôte à capot, fait `HandleLidSwitch = "suspend"` et non "hibernate".
   security.protectKernelImage = true;
 

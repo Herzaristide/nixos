@@ -2,20 +2,20 @@
 title: exupery (2-en-1)
 group: Hôtes
 summary: Dell Latitude 7200 2-en-1, Intel seul, profil graphique complet + tablette.
-links: [hosts, zola, hyprland, options]
+links: [hosts, bernanos, hyprland, options]
 ---
 
 # exupery — Dell Latitude 7200 2-en-1
 
 Tablette à clavier détachable, profil graphique complet (`head = true`) comme
-[zola](#zola), avec en plus `tablet = true`.
+[bernanos](#bernanos), avec en plus la rotation, le clavier virtuel et l'émetteur IR déclarés dans `hosts/exupery/configuration.nix`.
 
 ## Matériel
 
 - Intel Core i5-8365U (Whiskey Lake, 4c/8t), 16 Go, Intel UHD 620 seul —
-  pas de NVIDIA, donc aucune des variables Prime/NVIDIA de zola.
+  pas de NVIDIA, donc aucune des variables Prime/NVIDIA de bernanos.
 - Écran tactile 12,3" 1920×1280 (`eDP-1`, écran principal).
-- Même disque que zola : GPT + ESP + LUKS2 + btrfs sur `/dev/nvme0n1`
+- Même disque que bernanos : GPT + ESP + LUKS2 + btrfs sur `/dev/nvme0n1`
   (`hosts/exupery/disko.nix`), impermanence de `/home`.
 
 ## Énergie

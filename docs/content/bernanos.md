@@ -1,11 +1,11 @@
 ---
-title: zola (portable)
+title: bernanos (portable)
 group: Hôtes
 summary: Portable Intel + NVIDIA hybride, Prime offload, profil graphique complet.
 links: [hosts, hyprland, options, quirks]
 ---
 
-# zola — portable Intel + NVIDIA
+# bernanos — portable Intel + NVIDIA
 
 Ordinateur portable en **graphique hybride** Intel + NVIDIA, profil graphique
 complet (`head = true`).

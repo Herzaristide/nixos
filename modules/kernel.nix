@@ -23,6 +23,4 @@
     "usb_storage"
     "usbhid"
   ];
-
-  boot.initrd.systemd.enable = true;
 }

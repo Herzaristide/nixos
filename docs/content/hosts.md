@@ -2,7 +2,7 @@
 title: Les hôtes
 group: Hôtes
 summary: Vue d'ensemble des cinq machines gérées par la configuration.
-links: [zola, exupery, gary, kafka, wsl, options]
+links: [bernanos, exupery, gary, kafka, wsl, options]
 ---
 
 # Les hôtes
@@ -12,7 +12,7 @@ son dossier `hosts/<hostname>/` (`configuration.nix` + `hardware-configuration.n
 
 | Hôte | Type | CPU / GPU | Profil |
 | --- | --- | --- | --- |
-| [zola](#zola) | Portable | Intel + NVIDIA (hybride, Prime offload) | Graphique complet |
+| [bernanos](#bernanos) | Portable | Intel + NVIDIA (hybride, Prime offload) | Graphique complet |
 | [gary](#gary) | Poste fixe | AMD Ryzen 5 7600X + Radeon RX 7600 XT (ROCm) | Graphique complet |
 | [kafka](#kafka) | Serveur | Intel + NVIDIA NVS 310 (nouveau) | Sans écran |
 | [exupery](#exupery) | 2-en-1 | Intel UHD 620 | Graphique complet + tablette |
@@ -22,7 +22,7 @@ son dossier `hosts/<hostname>/` (`configuration.nix` + `hardware-configuration.n
 
 Le gros du comportement tient à l'option [`head`](#options) :
 
-- `head = true` (zola, exupery) → couche graphique complète : [Hyprland](#hyprland),
+- `head = true` (bernanos, exupery) → couche graphique complète : [Hyprland](#hyprland),
   [Quickshell](#quickshell), [thème](#theming), chromium, alacritty…
 - `head = false` (gary, kafka, wsl) → uniquement les modules CLI/serveur.
 

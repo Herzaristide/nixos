@@ -1,6 +1,5 @@
 {
   head ? false,
-  tablet ? false,
   ...
 }:
 
@@ -22,7 +21,6 @@ let
     ./modules/quickshell.nix
     ./modules/teams.nix
     ./modules/vesktop.nix
-    ./modules/obs.nix
     ./modules/onlyoffice.nix
     ./modules/penpot.nix
     ./modules/ajar.nix
@@ -35,10 +33,7 @@ let
   ];
 in
 {
-  imports =
-    headlessModules
-    ++ (if head then headfullModules else [ ])
-    ++ (if head && tablet then [ ./modules/tablet.nix ] else [ ]);
+  imports = headlessModules ++ (if head then headfullModules else [ ]);
 
   # Home Manager settings
   home.username = "aristide";

@@ -27,7 +27,7 @@ duplication de versions.
 
 ## Outputs
 
-- **`nixosConfigurations`** — un système par hôte : `zola`, `exupery`, `gary`, `kafka`,
+- **`nixosConfigurations`** — un système par hôte : `bernanos`, `exupery`, `gary`, `kafka`,
   `wsl`. Chaque hôte reçoit `nixpkgs.hostPlatform = x86_64-linux`, le module
   disko partagé (sauf [kafka](#kafka), qui a son propre `disko.nix`), et sa
   `configuration.nix`.

@@ -95,7 +95,7 @@ in
     # et ses uid-map/gid-map survivent normalement.
     # À réactiver si un jour l'impermanence s'étend à / (cf. « étape 1 »).
     enableWarnings = false;
-    # zola (head) est le poste principal : identité, secrets, apps et données.
+    # bernanos (head) est le poste principal : identité, secrets, apps et données.
     # Les serveurs de dev (gary, kafka), vidés de tout secret personnel le
     # 2026-10-18 et dédiés au dev, ne gardent que l'outillage et ~/code, où
     # sont clonés les dépôts. Les agents ont leur propre liste (modules/agents.nix).
@@ -137,7 +137,7 @@ in
 
         # Caches de shaders : régénérables, mais les reconstruire à chaque boot
         # se paie en saccades dans toute application GPU (Blender, Chromium…).
-        ".cache/mesa_shader_cache" # AMD/Intel (gary, iGPU de zola)
+        ".cache/mesa_shader_cache" # AMD/Intel (gary, iGPU de bernanos)
       ]
       ++ lib.optionals config.head [
         # Secrets
@@ -171,6 +171,7 @@ in
         ".config/anna" # karenine : les serveurs suivis (servers.json)
         ".config/kdeconnect" # KDE Connect : identité de l'ordinateur + téléphones appairés
         ".config/penpot-desktop"
+        ".config/blender" # userpref.blend (add-ons activés dont MCP for Blender), fichiers récents ; scripts/addons/blender_mcp.py reste géré par home-manager
         ".local/share/onlyoffice"
         ".local/state/ajar" # dernier livre ouvert, position du curseur, thème choisi à la main
         ".local/share/nautilus" # Nautilus : scripts du clic droit + étiquettes
@@ -188,7 +189,7 @@ in
         "lens"
         "tune"
 
-        ".cache/nvidia" # GLCache (zola)
+        ".cache/nvidia" # GLCache (bernanos)
       ]
       ++ lib.optionals (!config.head) [
         # Serveurs de dev : les clones de travail, seul endroit de ~ où cloner.

@@ -14,7 +14,7 @@ links: [flake, packages, filesystem]
 sudo nixos-rebuild switch --flake .#$(hostname)
 
 # Hôte spécifique
-sudo nixos-rebuild switch --flake .#zola
+sudo nixos-rebuild switch --flake .#bernanos
 ```
 
 Home-manager étant intégré comme module NixOS, `nixos-rebuild` met à jour le

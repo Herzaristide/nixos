@@ -20,7 +20,7 @@ Ollama, notes et statistiques matérielles. Il remplace Waybar/DMS.
 
 ## Lien avec le reste
 
-- Ne s'active que sur les hôtes [`head = true`](#options) ([zola](#zola),
+- Ne s'active que sur les hôtes [`head = true`](#options) ([bernanos](#bernanos),
   [gary](#gary)).
 - Fonctionne de pair avec [Hyprland](#hyprland) : la barre s'affiche sur le
   moniteur principal, qui reçoit aussi les workspaces 1-5.

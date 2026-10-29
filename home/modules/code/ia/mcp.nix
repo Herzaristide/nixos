@@ -10,7 +10,7 @@
   #
   # Tous les serveurs partout : sur les postes comme pour l'utilisateur `claude`
   # des agents (modules/agents.nix). Ceux liés à un compte s'authentifient par
-  # utilisateur ; ceux qui visent des services de zola (blender, penpot) ou des
+  # utilisateur ; ceux qui visent des services de bernanos (blender, penpot) ou des
   # dossiers d'aristide (filesystem) restent simplement inopérants ailleurs.
   #
   # Les serveurs stdio packagés dans nixpkgs sont lancés depuis le store, pas

@@ -90,7 +90,7 @@
   #     Si ça devient récurrent, la mitigation habituelle est de couper l'ASPM PCIe :
   #     ajouter "pcie_aspm=off" (global, ↑conso) ou "pci=noaspm" aux kernelParams.
   boot.kernelParams = [ "acpi_enforce_resources=lax" ];
-  # `enable` était dans modules/head.nix ; rapatrié ici (zola n'a aucun
+  # `enable` était dans modules/head.nix ; rapatrié ici (bernanos n'a aucun
   # périphérique qu'OpenRGB reconnaisse, cf. le commentaire là-bas).
   services.hardware.openrgb.enable = true;
   services.hardware.openrgb.motherboard = "amd"; # loads the AMD SMBus (i2c-piix4) path

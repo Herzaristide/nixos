@@ -6,7 +6,7 @@ Configuration NixOS basée sur des flakes, gérant cinq machines via un dépôt 
 
 | Host      | Rôle                  | GPU                              | Particularités                                  |
 | --------- | --------------------- | --------------------------------- | ------------------------------------------------ |
-| `zola`    | Laptop                | Intel + NVIDIA (Prime *offload*)  | Interface graphique complète (Hyprland)           |
+| `bernanos`    | Laptop                | Intel + NVIDIA (Prime *offload*)  | Interface graphique complète (Hyprland)           |
 | `gary`    | Desktop                | AMD Ryzen 5 7600X + Radeon 7600 XT (ROCm/HIP) | Interface graphique complète (Hyprland)           |
 | `kafka`   | Serveur headless       | Intel + NVIDIA NVS 310 (nouveau)  | UEFI + systemd-boot, sans interface graphique     |
 | `exupery` | 2-en-1 (Latitude 7200) | Intel UHD 620                      | Interface graphique complète + tablette           |
@@ -19,7 +19,7 @@ Configuration NixOS basée sur des flakes, gérant cinq machines via un dépôt 
 sudo nixos-rebuild switch --flake .#$(hostname)
 
 # Reconstruire une machine spécifique
-sudo nixos-rebuild switch --flake .#zola
+sudo nixos-rebuild switch --flake .#bernanos
 
 # Mettre à jour les inputs du flake
 nix flake update
@@ -53,7 +53,7 @@ secrets/                   # Secrets chiffrés
 
 `head` (booléen, `modules/common.nix`) détermine si un host reçoit la couche graphique complète :
 
-- `head = true` (zola, exupery) → `modules/head.nix` + modules home-manager graphiques (Hyprland, Quickshell, KDE/Qt theming, Chromium, Alacritty...)
+- `head = true` (bernanos, exupery) → `modules/head.nix` + modules home-manager graphiques (Hyprland, Quickshell, KDE/Qt theming, Chromium, Alacritty...)
 - `head = false` (gary, kafka, wsl) → uniquement les modules CLI/serveur
 
 `primaryMonitor` définit le moniteur Hyprland recevant les workspaces 1-5 et la barre Quickshell. `darkMode` pilote le thème (dconf/GTK/Qt + démon d'accent).

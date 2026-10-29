@@ -1,8 +1,8 @@
 [
-  # Les deux écrans du bureau se branchent soit sur gary, soit sur zola : on les
+  # Les deux écrans du bureau se branchent soit sur gary, soit sur bernanos : on les
   # désigne par leur description EDID (`desc:`), identique sur les deux hôtes,
   # et non par le nom du connecteur, qui en dépend (HP = DP-4 sur gary, DP-3 sur
-  # zola ; Samsung = HDMI-A-3 sur gary, HDMI-A-1 sur zola).
+  # bernanos ; Samsung = HDMI-A-3 sur gary, HDMI-A-1 sur bernanos).
   #
   # HP E24q G5, posé au-dessus du Samsung, retourné 180° (transform 2).
   {
@@ -19,7 +19,7 @@
     position = "0x900";
     scale = 1.25;
   }
-  # zola — écran intégré
+  # bernanos — écran intégré
   {
     output = "eDP-1";
     mode = "preferred";
