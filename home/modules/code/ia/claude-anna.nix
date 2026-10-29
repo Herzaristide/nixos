@@ -5,7 +5,7 @@
 }:
 
 # Les modèles de la voix d'anna (karenine, anna/src/claude/) : ce qui écoute
-# (whisper) et ce qui parle (Piper). Liés depuis le store, ils survivent à
+# (Parakeet) et ce qui parle (Piper). Liés depuis le store, ils survivent à
 # l'impermanence sans figurer dans sa liste.
 #
 # Les sessions Claude Code, elles, ne sont plus suivies par anna : plus de
@@ -47,17 +47,41 @@ let
       hash = "sha256-L3+IWtWgqtgC48wk5PVyOf69yxQrSHbeXSOAlGdDYcw=";
     }
   ];
+  parakeetRev = "8f23f0c03c8761650bdb5b40aaf3e40d2c15f1ce";
+  parakeet = [
+    {
+      file = "nemo128.onnx";
+      hash = "sha256-qf3hSG6/zAjzKNda1GEMZ4Nf6ljHO6V+Mgmm9s8Bnp8=";
+    }
+    {
+      file = "encoder-model.int8.onnx";
+      hash = "sha256-YTnS+n4bCGCXsnfHFJcl7bq4nMfHrmSyPHQb5AVa/wk=";
+    }
+    {
+      file = "decoder_joint-model.int8.onnx";
+      hash = "sha256-7qdIPuPRowN12u3I7YPjlgyRsJiBISeg2Z0ciXdmenA=";
+    }
+    {
+      file = "vocab.txt";
+      hash = "sha256-1YVEZ56kvGrFY9H1Ret9R0vWz6Rn8KbiwdwcfTfjw10=";
+    }
+  ];
 in
 {
-  # Le modèle de transcription de la voix (anna/src/claude/voice.rs, Super+V) :
-  # whisper.cpp « small », multilingue — le meilleur compromis précision /
-  # vitesse en français sur processeur (~3,5 s pour une phrase).
-  home.file = {
-    ".local/share/anna/whisper/ggml-small.bin".source = pkgs.fetchurl {
-      url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin";
-      sha256 = "0ywqxbziyp2bv72riyjpw4brk9v46d4cfbjfwqvvjrrq0srakqqv";
-    };
-  }
+  # Le modèle de transcription de la voix (anna/src/claude/parakeet.rs, Super+V) :
+  # Parakeet TDT 0.6B v3 de NVIDIA (CC-BY-4.0), export ONNX int8 d'onnx-asr.
+  # Il tourne sur le processeur (~0,3 s pour une phrase sur bernanos, environ
+  # 6 fois plus vite que whisper « small »), sans carte graphique, et reconnaît
+  # seul la langue parmi 25 langues européennes.
+  home.file = lib.listToAttrs (
+    map (f: {
+      name = ".local/share/anna/parakeet/${f.file}";
+      value.source = pkgs.fetchurl {
+        url = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/${parakeetRev}/${f.file}";
+        inherit (f) hash;
+      };
+    }) parakeet
+  )
   // lib.listToAttrs (
     map (v: {
       name = ".local/share/anna/piper/${v.file}";

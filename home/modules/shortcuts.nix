@@ -223,7 +223,7 @@
 
     # Parler au pilote de karenine : un appui lance l'écoute, la fin de la
     # phrase (ou un second appui) l'arrête ; anna transcrit en local
-    # (whisper.cpp) et transmet la demande au pilote.
+    # (Parakeet) et transmet la demande au pilote.
     {
       keys = "SUPER + V";
       lua = ''hl.dsp.exec_cmd("anna voice")'';
