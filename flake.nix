@@ -28,6 +28,10 @@
       url = "github:Herzaristide/ajar";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Sans `follows` : on garde le nixpkgs du flake.lock de vinteuil, pour que
+    # la dérivation soit exactement celle que sa CI construit et pousse sur
+    # herzaristide.cachix.org (cf. modules/nixos.nix) — rien à compiler ici.
+    vinteuil.url = "github:Herzaristide/vinteuil";
   };
 
   outputs =

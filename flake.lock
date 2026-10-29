@@ -36,6 +36,21 @@
         "type": "github"
       }
     },
+    "crane_2": {
+      "locked": {
+        "lastModified": 1792350552,
+        "narHash": "sha256-292lvpvxTGKryKxh3/3tcIVi85CwYGdl4oOi113Sob8=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "e675a36b7377bebe41d548388a2501cbb16d380d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
     "disko": {
       "inputs": {
         "nixpkgs": [
@@ -139,11 +154,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792682825,
-        "narHash": "sha256-S+NaZZvKqpa+pQS9qeinaTI+N64NBIe9PHUFFm+ITjk=",
+        "lastModified": 1793270786,
+        "narHash": "sha256-/oc6WUzNIr03/5VZURGL+vK2U8IfxjFTJ3wdBQi7VEY=",
         "owner": "Herzaristide",
         "repo": "karenine",
-        "rev": "7c0b536dd5de067c73892594cd6ccab609394c24",
+        "rev": "a71aa628f5d063aed9eee1d2a8f01032a1931da4",
         "type": "github"
       },
       "original": {
@@ -205,6 +220,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1792773339,
+        "narHash": "sha256-rZLrzrC6i+jnTAlvPZHogKDulY7WWDEv9hJeHieO7Zw=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "3ec636362e1816bc2f0888fa0fa2c69f1bc9e504",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "quickshell": {
       "inputs": {
         "nixpkgs": [
@@ -234,7 +265,27 @@
         "karenine": "karenine",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs_2",
-        "quickshell": "quickshell"
+        "quickshell": "quickshell",
+        "vinteuil": "vinteuil"
+      }
+    },
+    "vinteuil": {
+      "inputs": {
+        "crane": "crane_2",
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1793289010,
+        "narHash": "sha256-3qcXYSHTUV/cmg4E7tWNjQo2fmf9Ffkj7XGXUGBufXo=",
+        "owner": "Herzaristide",
+        "repo": "vinteuil",
+        "rev": "f7f75df43d5da96c6f9eb27823fd839236093436",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Herzaristide",
+        "repo": "vinteuil",
+        "type": "github"
       }
     }
   },
