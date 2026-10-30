@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   ...
 }:
@@ -13,6 +14,25 @@
   ];
 
   head = true;
+
+  # Démarrage silencieux : ni messages du noyau, ni statut des unités systemd,
+  # ni sortie d'udev sur la console — seuls les messages d'erreur (niveau ≤ 3)
+  # passent encore. Le journal garde tout (`journalctl -b`).
+  boot.consoleLogLevel = 3;
+  boot.kernelParams = [
+    "quiet"
+    "udev.log_level=3"
+    "rd.udev.log_level=3"
+    "systemd.show_status=auto"
+    "rd.systemd.show_status=auto"
+  ];
+
+  # Animation de chargement à la place du texte (thème bgrt : logo du
+  # constructeur et roue qui tourne), y compris la demande de phrase de passe
+  # LUKS. Pas avec unl0kr (clavier virtuel de l'initrd sur exupery), que
+  # l'amont ne prévoit pas de faire tourner avec Plymouth (avertissement du
+  # module nixpkgs) : là, le démarrage reste juste silencieux.
+  boot.plymouth.enable = !config.boot.initrd.unl0kr.enable;
 
   # Disable the experimental Fontations (Rust/Skrifa) font rendering backend.
   # NixOS 26.05 enables FC_FONTATIONS=1 by default, but this causes white/blank

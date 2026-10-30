@@ -75,6 +75,17 @@ let
     url = "https://www.duolingo.com";
     categories = [ "Education" ];
   };
+
+  whatsapp = mkPwa {
+    id = "whatsapp";
+    name = "WhatsApp";
+    url = "https://web.whatsapp.com";
+    icon = "whatsapp";
+    categories = [
+      "Network"
+      "InstantMessaging"
+    ];
+  };
 in
 {
   programs.chromium = {
@@ -97,6 +108,8 @@ in
     DownloadDirectory = "${config.home.homeDirectory}/drop";
     # 2 = aucun site ne peut afficher de notifications (bloque les pubs push).
     DefaultNotificationsSetting = 2;
+    # Exception : WhatsApp doit pouvoir signaler messages et appels entrants.
+    NotificationsAllowedForUrls = [ "https://web.whatsapp.com" ];
 
     # Retour de connexion de Claude Desktop : claude.ai redirige vers une URL
     # `claude://` à la fin du flow OAuth. Sans cette policy, Chromium ouvre une
@@ -121,7 +134,10 @@ in
       (writeShellScriptBin "bandlab-pwa" "chromium --app=https://www.bandlab.com --user-data-dir=$HOME/.config/chromium")
       (writeShellScriptBin "deezer-pwa" "chromium --app=https://www.deezer.com --user-data-dir=$HOME/.config/chromium")
     ]
-    ++ [ duolingo.package ]
+    ++ [
+      duolingo.package
+      whatsapp.package
+    ]
     ++ map (p: p.package) (lib.attrValues googlePwas);
 
   # Entrées de bureau : les PWA définies à la main + la suite Google générée.
@@ -154,6 +170,7 @@ in
     };
 
     duolingo-chrome = duolingo.desktopEntry;
+    whatsapp-chrome = whatsapp.desktopEntry;
   }
   // lib.mapAttrs' (id: p: lib.nameValuePair "${id}-chrome" p.desktopEntry) googlePwas;
 }

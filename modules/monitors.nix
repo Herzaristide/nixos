@@ -19,13 +19,14 @@
     position = "0x900";
     scale = 1.25;
   }
-  # bernanos — écran intégré
+  # bernanos et exupery — écran intégré
   {
     output = "eDP-1";
     mode = "preferred";
-    # À droite du Samsung, aligné sur son bord haut (Samsung : 1536 px logiques
-    # de large à y = 900). Seul, sans les écrans du bureau, la position est sans effet.
-    position = "1536x900";
+    # Sous le Samsung, aligné sur son bord gauche (Samsung : 1536 × 864 px
+    # logiques à y = 900, donc bord bas à 1764). Seul, sans les écrans du
+    # bureau, la position est sans effet.
+    position = "0x1764";
     scale = 1.25;
   }
   {

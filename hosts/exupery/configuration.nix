@@ -95,14 +95,21 @@ let
   # Claviers physiques qui ne doivent pas masquer le clavier virtuel : des
   # souris qui exposent aussi une interface clavier (touches de macro), par
   # leur nom udev. `journalctl --user -u hypr-osk` liste les claviers vus.
-  ignoredKeyboards = [ ];
+  ignoredKeyboards = [ "KATAR PRO Wireless Keyboard" ];
+
+  # Le clavier détachable du 7200 n'est pas un clavier USB : ses touches
+  # passent par l'EC et sortent sur l'i8042 (« AT Translated Set 2
+  # keyboard »), présent que le clavier soit branché ou non. Seul son pavé
+  # tactile Alps, lui en USB, apparaît et disparaît avec le connecteur pogo :
+  # c'est lui qui signale le clavier (vendor:product USB).
+  keyboardCovers = [ "044e:1218" ];
 
   # squeekboard lit `screen-keyboard-enabled` comme « aucun clavier
   # physique » (server-context-service.c) : à false, il ne s'affiche jamais,
-  # même dans un champ de saisie. Ce service la tient à jour : false dès qu'un
-  # clavier USB (le clavier détachable du 7200, connecteur pogo, en est un) ou
-  # Bluetooth est présent. Les claviers internes (boutons de la tablette,
-  # « Intel HID events », i8042) sont sur d'autres bus et ne comptent pas.
+  # même dans un champ de saisie. Ce service la tient à jour : false dès que
+  # le clavier détachable (keyboardCovers) ou un clavier USB ou Bluetooth est
+  # présent. Les claviers internes (boutons de la tablette, « Intel HID
+  # events », i8042) sont sur d'autres bus et ne comptent pas.
   osk = pkgs.writeShellApplication {
     name = "hypr-osk";
     runtimeInputs = [
@@ -114,16 +121,22 @@ let
     ];
     text = ''
       ignored=(${lib.escapeShellArgs ignoredKeyboards})
+      covers=(${lib.escapeShellArgs keyboardCovers})
 
-      # Un clavier physique : ID_INPUT_KEYBOARD (touches alphabétiques) sur
-      # le bus USB (0003) ou Bluetooth (0005).
+      # Un clavier physique : le clavier détachable (son pavé tactile), ou
+      # ID_INPUT_KEYBOARD (touches alphabétiques) sur le bus USB (0003) ou
+      # Bluetooth (0005).
       keyboards() {
-        local ev dev name bus i
+        local ev dev name bus id i
         for ev in /sys/class/input/event*; do
           dev=$ev/device
           [ -r "$dev/id/bustype" ] || continue
           bus=$(cat "$dev/id/bustype")
           [ "$bus" = 0003 ] || [ "$bus" = 0005 ] || continue
+          id=$(cat "$dev/id/vendor"):$(cat "$dev/id/product")
+          for i in "''${covers[@]}"; do
+            [ "$id" = "$i" ] && echo "clavier détachable" && continue 2
+          done
           udevadm info --query=property --path="$ev" 2>/dev/null \
             | grep -qx 'ID_INPUT_KEYBOARD=1' || continue
           name=$(cat "$dev/name")
@@ -248,6 +261,30 @@ in
   # Rabattre le clavier sur l'écran suspend la machine (modules/power.nix
   # ignore le capot par défaut) ; hypridle verrouille avant la veille.
   services.logind.settings.Login.HandleLidSwitch = lib.mkForce "suspend";
+
+  # Sans clavier, le bouton power est le seul moyen de mettre la tablette en
+  # veille : un appui bref suspend, un appui long (5 s) éteint.
+  services.logind.settings.Login.HandlePowerKey = lib.mkForce "suspend";
+  services.logind.settings.Login.HandlePowerKeyLongPress = "poweroff";
+
+  # Déverrouillage LUKS sans clavier : unl0kr affiche un clavier virtuel dans
+  # l'initrd. L'écran tactile est un Wacom en I2C-HID (WCOM48CC), derrière le
+  # contrôleur Intel LPSS : `allowVendorDrivers` charge wacom + intel_lpss_pci.
+  # La clé USB (modules/security.nix) et le clavier détachable marchent
+  # toujours ; le premier qui répond déverrouille. Backend fbdev par défaut
+  # (framebuffer EFI), qui n'exige pas i915 dans l'initrd.
+  boot.initrd.unl0kr = {
+    enable = true;
+    allowVendorDrivers = true;
+    settings = {
+      keyboard.layout = "fr";
+      "hardware keyboard".layout = "fr";
+      theme = {
+        default = "breezy-dark";
+        alternate = "breezy-light";
+      };
+    };
+  };
 
   # --- GPU : Intel UHD 620 seul ---
   environment.variables.LIBVA_DRIVER_NAME = "iHD";

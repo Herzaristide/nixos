@@ -384,10 +384,17 @@
       keys = "switch:off:Lid Switch";
       # `hyprctl keyword` ne marche plus avec le parseur Lua (« keyword can't work
       # with non-legacy parsers »), et un bind Lua accepte une fonction : on
-      # reconfigure le moniteur directement, sans passer par hyprctl.
+      # reconfigure le moniteur directement, sans passer par hyprctl. La règle
+      # vient de modules/monitors.nix (entrée eDP-1).
       lua = ''
         function()
-          hl.monitor({ output = "eDP-1", mode = "preferred", position = "1536x900", scale = 1.25 })
+          hl.monitor(${
+            pkgs.lib.generators.toLua { multiline = false; } (
+              pkgs.lib.findFirst (m: m.output == "eDP-1") (throw "eDP-1 absent de modules/monitors.nix") (
+                import ../../modules/monitors.nix
+              )
+            )
+          })
         end'';
       opts = {
         locked = true;

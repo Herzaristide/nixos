@@ -46,7 +46,9 @@ let
     # ne voit pas la clé chargée et retombe sur la clé chiffrée, qui échoue
     # en BatchMode.
     export SSH_AUTH_SOCK="''${SSH_AUTH_SOCK:-$XDG_RUNTIME_DIR/ssh-agent}"
-    exec ${config.programs.hyprland.package}/bin/start-hyprland
+    # Sortie vers le journal (`journalctl --user -t hyprland`) et non sur le
+    # TTY de greetd, où elle défilait entre l'écran de login et la session.
+    exec ${pkgs.systemd}/bin/systemd-cat -t hyprland ${config.programs.hyprland.package}/bin/start-hyprland
   '';
 
   # Session déclarée explicitement (plutôt que de dépendre du .desktop

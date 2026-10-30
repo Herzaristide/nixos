@@ -27,6 +27,13 @@ let
   rocm = config.nixpkgs.config.rocmSupport or false;
 in
 {
+  # Clé d'exupery : elle n'ouvre que les serveurs de dev (ce module), pas les
+  # autres hôtes ni GitHub, contrairement aux clés de modules/common.nix.
+  # S'ajoute à la liste commune, donc vaut aussi pour `claude` (ci-dessous).
+  users.users.aristide.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILxa24l5t4C9ZHBE6NDE823vui27oYX2bQuTLtDY3lY/ aristide@exupery"
+  ];
+
   users.users.claude = {
     isNormalUser = true;
     inherit uid;

@@ -36,6 +36,18 @@
     components = [ "secrets" ];
   };
 
+  # Automounter: udisks2 (modules/storage.nix) and gvfs only mount on request,
+  # and nothing under Hyprland requests it on insertion (GNOME Shell would).
+  # udiskie mounts removable media as they appear, through udisks2, so with
+  # its hardened noexec,nosuid,nodev options — and once mounted they show up
+  # in karenine's disk strip, which reads `df`. No tray: karenine has none.
+  services.udiskie = {
+    enable = true;
+    automount = true;
+    notify = true;
+    tray = "never";
+  };
+
   # Cursor theme
   home.pointerCursor = {
     enable = true;
