@@ -8,3 +8,7 @@ result/
 
 # Claude Code — état local (worktrees, réglages de session)
 .claude/
+
+# CA locales (hosts/wsl : /var/lib/extra-ca), jamais dans le dépôt
+*.pem
+*.crt

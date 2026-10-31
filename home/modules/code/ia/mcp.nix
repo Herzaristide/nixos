@@ -4,6 +4,17 @@
   ...
 }:
 
+let
+  # Le tarball upstream embarque son propre `node` (24.16, prébuild), qui
+  # segfaulte dès `--version` sur wsl. On le remplace par celui de nixpkgs :
+  # le seul module natif (codegraph-kernel.node) est N-API, donc indépendant
+  # de la version exacte de node.
+  codegraph = pkgs.codegraph.overrideAttrs (old: {
+    postFixup = (old.postFixup or "") + ''
+      ln -sf ${lib.getExe pkgs.nodejs_24} $out/lib/codegraph/node
+    '';
+  });
+in
 {
   # MCP (Model Context Protocol) servers — writes ~/.config/mcp/mcp.json
   # Consumed by Claude Code (via enableMcpIntegration).
@@ -24,8 +35,10 @@
       # Remote hébergé : un seul serveur distant, partagé par toutes les sessions
       # (fini le process local multiplié). Fonctionne en anonyme ; pour des limites
       # plus hautes, ajouter une clé via header, ex :
-      #   headers.CONTEXT7_API_KEY = "{env:CONTEXT7_API_KEY}";
-      # ({env:…} est résolu au runtime par le client → clé jamais dans le store).
+      #   headers.CONTEXT7_API_KEY = "\${CONTEXT7_API_KEY}";
+      # (`${VAR}` est résolu au runtime par Claude Code → clé jamais dans le
+      # store ; le module ne traduit pas les headers, et la syntaxe opencode
+      # `{env:…}` y serait transmise telle quelle).
       context7 = {
         url = "https://mcp.context7.com/mcp";
         type = "http";
@@ -46,7 +59,7 @@
       # serveur resynchronise l'index à chaque modification de fichier.
       # `alwaysLoad` évite que Claude Code cache l'outil derrière son tool-search.
       codegraph = {
-        command = lib.getExe pkgs.codegraph;
+        command = lib.getExe codegraph;
         args = [
           "serve"
           "--mcp"
@@ -58,10 +71,6 @@
       };
       linear = {
         url = "https://mcp.linear.app/mcp";
-        type = "http";
-      };
-      figma = {
-        url = "https://mcp.figma.com/mcp";
         type = "http";
       };
       # Périmètre limité aux dossiers de travail, et surtout PAS à /home/aristide
@@ -79,13 +88,6 @@
           "/etc/nixos"
         ];
         type = "stdio";
-      };
-      # Remote hébergé Tavily : clé passée en header Authorization, résolue au
-      # runtime depuis l'env TAVILY_API_KEY (jamais écrite dans le store Nix).
-      tavily = {
-        url = "https://mcp.tavily.com/mcp/";
-        type = "http";
-        headers.Authorization = "Bearer {env:TAVILY_API_KEY}";
       };
       # Pilotage de Blender : le serveur parle à l'add-on BlenderMCP (socket
       # 9876, déposé par home/modules/blender.nix) — Blender doit tourner et
@@ -107,6 +109,6 @@
   };
 
   # CLI pour `codegraph init` / `status` / `sync`.
-  home.packages = [ pkgs.codegraph ];
+  home.packages = [ codegraph ];
   home.sessionVariables.CODEGRAPH_TELEMETRY = "0";
 }

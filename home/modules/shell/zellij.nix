@@ -15,10 +15,9 @@ in
 {
   programs.zellij = {
     enable = true;
-    # false = les terminaux s'ouvrent sur fish nu ; zellij se lance à la main
-    # (abbr `z`). À true, home-manager ajoute à fish un auto-start qui ouvre
-    # zellij dans chaque nouveau shell interactif.
-    enableFishIntegration = false;
+    # home-manager ajoute à fish un auto-start qui ouvre zellij dans chaque
+    # nouveau shell interactif (sauf déjà à l'intérieur de zellij).
+    enableFishIntegration = true;
   };
 
   xdg.configFile."zellij/config.kdl".force = true;

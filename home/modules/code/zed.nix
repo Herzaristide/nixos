@@ -59,6 +59,10 @@ in
     enable = true;
     package = pkgs.zed-editor;
 
+    # Réutilise programs.mcp.servers (home/modules/code/ia/mcp.nix) — écrit
+    # dans userSettings.context_servers, comme pour Claude Code et Copilot.
+    enableMcpIntegration = true;
+
     extensions = [
       "nix"
       "toml"

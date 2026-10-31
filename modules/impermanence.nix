@@ -124,6 +124,14 @@ in
           mode = "0700";
         }
 
+        # Session `glab auth login` : hôtes, utilisateur, use_keyring, et le
+        # token lui-même quand il n'y a pas de keyring (serveurs). Dossier
+        # entier : config.yml est écrit par glab, pas par home-manager.
+        {
+          directory = ".config/glab-cli";
+          mode = "0700";
+        }
+
         # État applicatif
         ".claude"
         ".local/share/rtk" # rtk : historique (`rtk gain`) et sorties rappelables (`rtk recall`)

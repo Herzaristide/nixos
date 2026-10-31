@@ -26,7 +26,11 @@
       gs = "git status";
       ga = "git add";
       gaa = "git add --all";
-      gc = "git commit";
+      # Curseur placé entre les guillemets (%) : il ne reste qu'à taper le message
+      gc = {
+        expansion = ''git commit -m "%"'';
+        setCursor = true;
+      };
       gcm = "git commit -m";
       gca = "git commit --amend";
       gco = "git checkout";

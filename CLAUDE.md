@@ -181,7 +181,7 @@ LUKS passphrase is read from `/tmp/disko-luks-passphrase` during install — wri
 
 - Imports `nixos-wsl.nixosModules.default`, `wsl.enable = true`
 - No bootloader, NetworkManager disabled (uses Windows host networking)
-- `SSL_CERT_FILE`/`NIX_SSL_CERT_FILE` point curl/wget/Nix at `/etc/ssl/certs/ca-bundle.crt`. **No TLS verification is disabled** — a prior `GIT_SSL_NO_VERIFY=true` / `NODE_TLS_REJECT_UNAUTHORIZED=0` pair was removed (2026-07-16): it blanket-disabled certificate checking for every git/Node process on the host instead of trusting a specific corporate CA. If a corporate proxy MITMs TLS again, add its root CA to the system trust store instead of disabling verification.
+- `SSL_CERT_FILE`/`NIX_SSL_CERT_FILE`/`NODE_EXTRA_CA_CERTS` and nix's `ssl-cert-file` point at `/var/lib/extra-ca/bundle.crt`, rebuilt at each activation from the nixpkgs bundle plus every `*.pem` dropped in `/var/lib/extra-ca/` — local CAs (e.g. an employer TLS-intercepting proxy) live **outside the repo**, and nothing employer-specific belongs in this config. **No TLS verification is disabled** — a prior `GIT_SSL_NO_VERIFY=true` / `NODE_TLS_REJECT_UNAUTHORIZED=0` pair was removed (2026-07-16): it blanket-disabled certificate checking for every git/Node process on the host. Trust a CA by dropping its root there instead.
 
 ## Hyprland configuration notes
 
