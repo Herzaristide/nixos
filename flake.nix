@@ -60,6 +60,9 @@
         claude-desktop = claude-desktop;
       };
 
+      # `nix fmt` : nixfmt sur tout le dépôt, sans passer par le devShell.
+      formatter.${system} = pkgs.nixfmt-tree;
+
       # Shell de travail sur ce dépôt : `nix develop`.
       devShells.${system}.default = pkgs.mkShell {
         packages = [

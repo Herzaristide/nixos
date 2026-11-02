@@ -28,7 +28,7 @@ nix flake update
 nix flake check --no-build
 
 # Format Nix files
-nixfmt **/*.nix
+nix fmt   # nixfmt-tree (flake formatter), whole repo
 ```
 
 Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both system and user configurations in one pass.
@@ -239,7 +239,7 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 ## Making changes
 
 1. Edit the appropriate module file. Don't touch `hardware-configuration.nix` unless reformatting.
-2. `nixfmt` the changed files.
+2. `nix fmt` (nixfmt over the repo).
 3. `nix flake check --no-build` first to catch eval errors cheaply.
 4. Then `sudo nixos-rebuild switch --flake .#$(hostname)`.
 5. Commit with a descriptive message (see `git log` for style — short imperative subjects).

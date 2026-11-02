@@ -73,22 +73,23 @@ in
   # Il tourne sur le processeur (~0,3 s pour une phrase sur bernanos, environ
   # 6 fois plus vite que whisper « small »), sans carte graphique, et reconnaît
   # seul la langue parmi 25 langues européennes.
-  home.file = lib.listToAttrs (
-    map (f: {
-      name = ".local/share/anna/parakeet/${f.file}";
-      value.source = pkgs.fetchurl {
-        url = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/${parakeetRev}/${f.file}";
-        inherit (f) hash;
-      };
-    }) parakeet
-  )
-  // lib.listToAttrs (
-    map (v: {
-      name = ".local/share/anna/piper/${v.file}";
-      value.source = pkgs.fetchurl {
-        url = "https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/${v.dir}/${v.file}";
-        inherit (v) hash;
-      };
-    }) voices
-  );
+  home.file =
+    lib.listToAttrs (
+      map (f: {
+        name = ".local/share/anna/parakeet/${f.file}";
+        value.source = pkgs.fetchurl {
+          url = "https://huggingface.co/istupakov/parakeet-tdt-0.6b-v3-onnx/resolve/${parakeetRev}/${f.file}";
+          inherit (f) hash;
+        };
+      }) parakeet
+    )
+    // lib.listToAttrs (
+      map (v: {
+        name = ".local/share/anna/piper/${v.file}";
+        value.source = pkgs.fetchurl {
+          url = "https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/${v.dir}/${v.file}";
+          inherit (v) hash;
+        };
+      }) voices
+    );
 }

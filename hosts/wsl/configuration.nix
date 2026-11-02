@@ -2,6 +2,7 @@
   config,
   inputs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -57,6 +58,11 @@
     NIX_SSL_CERT_FILE = "/var/lib/extra-ca/bundle.crt";
     NODE_EXTRA_CA_CERTS = "/var/lib/extra-ca/bundle.crt";
   };
+
+  # Voice mode de Claude Code : il lui faut un enregistreur (`rec` de sox).
+  # WSLg expose le micro Windows via PULSE_SERVER=unix:/mnt/wslg/PulseServer,
+  # que sox utilise directement — pas besoin de PipeWire ici.
+  environment.systemPackages = [ pkgs.sox ];
 
   # Git HTTPS credentials: Git for Windows' GCM, which stores tokens in the
   # Windows Credential Manager. The headless default (home/modules/network/git.nix)
