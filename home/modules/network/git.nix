@@ -1,14 +1,5 @@
-{ pkgs, osConfig, ... }:
+{ lib, pkgs, ... }:
 
-let
-  isHead = osConfig.head or false;
-
-  # Head hosts (bernanos, exupery) have GNOME Keyring as session daemon → secretservice.
-  # Headless hosts (gary, kafka, wsl) fall back to in-memory cache (re-prompt after timeout).
-  # The keyring is started as a systemd user service from home/head.nix, not left
-  # to D-Bus activation — see the comment there.
-  credentialStore = if isHead then "secretservice" else "cache";
-in
 {
   programs.lazygit.enable = true;
 
@@ -19,15 +10,21 @@ in
       user.email = "aristide.pichereau@gmail.com";
       init.defaultBranch = "main";
       pull.rebase = false;
-      # Git Credential Manager (HTTPS); SSH remotes still use ssh config above
-      credential.helper = "${pkgs.git-credential-manager}/bin/git-credential-manager";
-      credential.credentialStore = credentialStore;
-      # Disable GCM's Avalonia GUI (broken on Wayland/Hyprland): use device code flow in terminal.
-      credential.guiPrompt = "false";
+      # Identifiants HTTPS fournis par les CLI : `gh auth login` pour github.com,
+      # `glab auth login --hostname <host>` pour tout autre hôte. Le token va dans
+      # GNOME Keyring quand il y en a un (postes),
+      # sinon dans ~/.config/gh/hosts.yml / ~/.config/glab-cli (persistés dans
+      # modules/impermanence.nix). Les remotes SSH ne passent pas par ici.
+      credential.helper = "!${lib.getExe pkgs.glab} auth git-credential";
+      # "" vide la liste : github.com ne demande qu'à gh.
+      credential."https://github.com".helper = [
+        ""
+        "!${lib.getExe pkgs.gh} auth git-credential"
+      ];
     };
   };
 
-  # gitCredentialHelper désactivé : git-credential-manager reste seul helper HTTPS.
+  # Helper déclaré à la main ci-dessus, avec glab comme repli pour les autres hôtes.
   programs.gh = {
     enable = true;
     settings = {
@@ -38,7 +35,6 @@ in
   };
 
   home.packages = [
-    pkgs.git-credential-manager
     pkgs.glab # pas de module home-manager : supprimé upstream (#8066)
   ];
 }

@@ -73,7 +73,7 @@ Home-manager is integrated as a NixOS module, so `nixos-rebuild` updates both sy
 - `modules/kde.nix` — minimal KDE/Qt theming (for xdg-portal-kde + appearance protocol)
 - `modules/accent/accent.nix` — installs the anna engine (from the karenine flake) + its templates, systemd user service, and seed activation (see "Theming" below)
 - `modules/shell/` — `fish`, `starship`, `fastfetch`, `micro`, `direnv`, `yazi`
-- `modules/network/` — `git` (+ `gh` et `glab` : les CLI GitHub/GitLab vivent dans `git.nix` ; `programs.gh` a `gitCredentialHelper.enable = false` pour laisser git-credential-manager seul helper HTTPS, et `glab` est un simple `home.packages` — le module `programs.glab` a été supprimé upstream, issue #8066. Remplace `ghorg`, supprimé 2026-08-24), `ssh`
+- `modules/network/` — `git` (+ `gh` et `glab` : les CLI GitHub/GitLab vivent dans `git.nix` ; ce sont eux les credential helpers HTTPS (`gh auth git-credential` pour github.com, `glab auth git-credential` pour tout autre hôte ; `programs.gh.gitCredentialHelper` est désactivé, le helper est déclaré à la main). git-credential-manager a été retiré le 2026-11-02, et `glab` est un simple `home.packages` — le module `programs.glab` a été supprimé upstream, issue #8066. Remplace `ghorg`, supprimé 2026-08-24), `ssh`
 - `modules/code/` — Zed (`zed.nix`, headful only) + AI assistants (`ia/claude.nix`, `ia/copilot.nix`, `ia/mcp.nix`) + language runtimes
 
 ### Quickshell (`/quickshell/`)
@@ -218,8 +218,8 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 - `aristide` is in groups: `networkmanager wheel video render audio storage greeter` (plus `kvm` on hosts importing `modules/android.nix`, for the emulator's KVM acceleration)
 - **No `docker` group membership** — Docker runs rootless (`virtualisation.docker.rootless.enable`), so the daemon isn't running as root and group membership wouldn't grant a root-equivalent escape path anyway; deliberately left out
 - Sudo NOPASSWD allowlist: `smartctl`, `dmidecode` (read-only hardware queries)
-- Git commits are **not signed** (signing removed 2026-10-17: `~/.ssh/siddhartha` stays out of the dev VMs, and signing there would attribute Claude's commits to the user); credentials for HTTPS remotes go through `git-credential-manager` backed by GNOME Keyring/secretservice on headful hosts, or an in-memory cache on headless hosts — no plaintext credential store
-- **GNOME Keyring** is the Secret Service store for `git-credential-manager` (HTTPS remotes), Zed, Copilot CLI and Chromium ("Chromium Safe Storage"). It is unlocked by `pam_gnome_keyring` at the greetd login, and started as a systemd user service from `home/head.nix` (`services.gnome-keyring`, `secrets` component only — ssh-agent lives in `home/modules/network/ssh.nix`). Do **not** rely on D-Bus activation alone: an activated daemon comes up locked and prompts for a password mid-session. Note the default keyring is `Default_Keyring`, unlocked by chaining from `login` — PAM only ever unlocks `login` directly
+- Git commits are **not signed** (signing removed 2026-10-17: `~/.ssh/siddhartha` stays out of the dev VMs, and signing there would attribute Claude's commits to the user); credentials for HTTPS remotes come from `gh` (github.com) and `glab` (every other host) via `gh auth login` / `glab auth login --hostname <host>`: the token lives in GNOME Keyring on headful hosts, and in `~/.config/gh/hosts.yml` / `~/.config/glab-cli` (mode 600, persisted) on headless hosts — **plaintext there**, accepted to keep one mechanism everywhere and nothing from Windows on wsl
+- **GNOME Keyring** is the Secret Service store for the `gh` / `glab` tokens (git HTTPS), Zed, Copilot CLI and Chromium ("Chromium Safe Storage"). It is unlocked by `pam_gnome_keyring` at the greetd login, and started as a systemd user service from `home/head.nix` (`services.gnome-keyring`, `secrets` component only — ssh-agent lives in `home/modules/network/ssh.nix`). Do **not** rely on D-Bus activation alone: an activated daemon comes up locked and prompts for a password mid-session. Note the default keyring is `Default_Keyring`, unlocked by chaining from `login` — PAM only ever unlocks `login` directly
 
 ## Custom packages (`packages.x86_64-linux`)
 
@@ -247,5 +247,5 @@ All use `--enable-features=WebUIDarkMode --force-dark-mode`.
 ## Repo metadata
 
 - Git user: `Herzaristide` &lt;aristide.pichereau@gmail.com&gt;
-- Git credential helper: `git-credential-manager` (secretservice/GNOME Keyring on headful hosts, in-memory cache on headless hosts — see `home/modules/network/git.nix`)
+- Git credential helpers: `gh auth git-credential` (github.com) and `glab auth git-credential` (other hosts) — keyring on headful hosts, config file on headless hosts; see `home/modules/network/git.nix`
 - All `system.stateVersion` and `home.stateVersion` pinned to **25.11**

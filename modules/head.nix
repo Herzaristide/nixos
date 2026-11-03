@@ -48,7 +48,7 @@
   # dconf: required for GTK app settings and GNOME applications
   programs.dconf.enable = true;
 
-  # GNOME Keyring (Secret Service daemon) for git-credential-manager `secretservice` store.
+  # GNOME Keyring (Secret Service daemon) for the gh / glab tokens (git HTTPS).
   # PAM hook unlocks the keyring at login with the user's password.
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.login.enableGnomeKeyring = true;
@@ -58,7 +58,7 @@
   # to validate the password and every attempt fails with a PAM start error.
   # The stock NixOS stack (unix auth) is what we want here — same as a console
   # login. `enableGnomeKeyring` mirrors the login service so unlocking the
-  # session also unlocks the keyring git-credential-manager stores into.
+  # session also unlocks the keyring gh and glab store into.
   security.pam.services.quickshell.enableGnomeKeyring = true;
 
   # Reconnaissance faciale (howdy). Enregistrer son visage une fois par
