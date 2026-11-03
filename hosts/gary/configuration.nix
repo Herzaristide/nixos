@@ -19,6 +19,7 @@
     ../../modules/storage.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix
+    ../../modules/luks-usb-key.nix
     ../../modules/impermanence.nix
     ../../modules/hunyuan3d.nix
   ];

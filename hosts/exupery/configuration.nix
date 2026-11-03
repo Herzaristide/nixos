@@ -276,8 +276,8 @@ in
   # Déverrouillage LUKS sans clavier : unl0kr affiche un clavier virtuel dans
   # l'initrd. L'écran tactile est un Wacom en I2C-HID (WCOM48CC), derrière le
   # contrôleur Intel LPSS : `allowVendorDrivers` charge wacom + intel_lpss_pci.
-  # La clé USB (modules/security.nix) et le clavier détachable marchent
-  # toujours ; le premier qui répond déverrouille. Backend fbdev par défaut
+  # Le clavier détachable marche
+  # aussi (plus de clé USB sur les portables). Backend fbdev par défaut
   # (framebuffer EFI), qui n'exige pas i915 dans l'initrd.
   boot.initrd.unl0kr = {
     enable = true;

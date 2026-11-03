@@ -18,6 +18,7 @@
     ../../modules/storage.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix
+    ../../modules/luks-usb-key.nix
     ../../modules/impermanence.nix
     ../../modules/agents.nix
   ];
@@ -49,7 +50,7 @@
   boot.loader.efi.canTouchEfiVariables = false;
 
   # NB : l'auto-déverrouillage LUKS par clé USB (partition GPT "LUKSKEY",
-  # fallback passphrase) est fourni par modules/security.nix.
+  # fallback passphrase) est fourni par modules/luks-usb-key.nix.
 
   # CPU: Intel — KVM virtualization + microcode update
   boot.kernelModules = [ "kvm-intel" ];
