@@ -21,7 +21,7 @@ in
   #
   # Tous les serveurs partout : sur les postes comme pour l'utilisateur `claude`
   # des agents (modules/agents.nix). Ceux liés à un compte s'authentifient par
-  # utilisateur ; ceux qui visent des services de bernanos (blender, penpot) ou des
+  # utilisateur ; ceux qui visent des services de bernanos (blender) ou des
   # dossiers d'aristide (filesystem) restent simplement inopérants ailleurs.
   #
   # Les serveurs stdio packagés dans nixpkgs sont lancés depuis le store, pas
@@ -100,10 +100,6 @@ in
         command = "${pkgs.uv}/bin/uvx";
         args = [ "mcp-for-blender==${(import ../../blender-mcp-release.nix).version}" ];
         type = "stdio";
-      };
-      penpot = {
-        url = "http://localhost:4401/mcp";
-        type = "http";
       };
     };
   };

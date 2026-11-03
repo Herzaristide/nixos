@@ -21,8 +21,6 @@ let
     ./modules/quickshell.nix
     ./modules/teams.nix
     ./modules/vesktop.nix
-    ./modules/onlyoffice.nix
-    ./modules/penpot.nix
     ./modules/ajar.nix
     ./modules/accent/accent.nix
     ./modules/kde

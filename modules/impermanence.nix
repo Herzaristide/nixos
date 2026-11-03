@@ -178,9 +178,7 @@ in
         ".local/state/anna" # karenine : mot d'activation allumé (wake-on), lecture des réponses (speech.json)
         ".config/anna" # karenine : les serveurs suivis (servers.json)
         ".config/kdeconnect" # KDE Connect : identité de l'ordinateur + téléphones appairés
-        ".config/penpot-desktop"
         ".config/blender" # userpref.blend (add-ons activés dont MCP for Blender), fichiers récents ; scripts/addons/blender_mcp.py reste géré par home-manager
-        ".local/share/onlyoffice"
         ".local/state/ajar" # dernier livre ouvert, position du curseur, thème choisi à la main
         ".local/share/nautilus" # Nautilus : scripts du clic droit + étiquettes
         ".local/share/infinite-fusion" # jeu (clone git, plusieurs Go) + préfixe Wine, où vivent les sauvegardes
