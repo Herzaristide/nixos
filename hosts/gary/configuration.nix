@@ -20,13 +20,15 @@
     ../../modules/bluetooth.nix
     ../../modules/security.nix
     ../../modules/impermanence.nix
-    ../../modules/print.nix
     ../../modules/hunyuan3d.nix
     ../../modules/agents.nix
   ];
 
   # Hostname
   networking.hostName = "gary";
+
+  # sshd actif sur les serveurs seulement (désactivé par défaut, modules/network.nix).
+  services.openssh.enable = true;
 
   # Serveur de dev headless : ni greetd, ni Hyprland, ni PipeWire.
   # Accès par SSH / Tailscale uniquement.

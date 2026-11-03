@@ -10,9 +10,11 @@
   networking.networkmanager.wifi.macAddress = "stable";
   networking.networkmanager.ethernet.macAddress = "stable";
 
-  # SSH — key-only authentication.
+  # SSH — key-only authentication. Désactivé par défaut : seuls gary et kafka
+  # (serveurs) l'activent dans leur configuration.nix. Les réglages ci-dessous
+  # ne s'appliquent que là où sshd tourne.
   services.openssh = {
-    enable = true;
+    enable = lib.mkDefault false;
     settings = {
       PasswordAuthentication = false;
       KbdInteractiveAuthentication = false;

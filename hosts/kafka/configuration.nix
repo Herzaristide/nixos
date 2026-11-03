@@ -19,12 +19,14 @@
     ../../modules/bluetooth.nix
     ../../modules/security.nix
     ../../modules/impermanence.nix
-    ../../modules/print.nix
     ../../modules/agents.nix
   ];
 
   # Hostname
   networking.hostName = "kafka";
+
+  # sshd actif sur les serveurs seulement (désactivé par défaut, modules/network.nix).
+  services.openssh.enable = true;
 
   # Headless server (no GUI)
   head = false;
