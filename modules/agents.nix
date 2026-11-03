@@ -126,7 +126,7 @@ in
     {
       # Même shell et même Claude Code (réglages, LSP, rtk, tous les MCP)
       # qu'aristide ; rien d'autre de home/ : le reste embarque des clés et des
-      # accès (ssh, git-credential-manager, coffre).
+      # accès (ssh, gh/glab, coffre).
       imports = [
         ../home/modules/shell
         ../home/modules/code/ia/common.nix

@@ -2,6 +2,7 @@
   config,
   inputs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -58,12 +59,9 @@
     NODE_EXTRA_CA_CERTS = "/var/lib/extra-ca/bundle.crt";
   };
 
-  # Git HTTPS credentials: Git for Windows' GCM, which stores tokens in the
-  # Windows Credential Manager. The headless default (home/modules/network/git.nix)
-  # is GCM's in-memory cache, lost after ~15 min and at every WSL restart —
-  # and the company GitLab has no SSH, so HTTPS is the only way in.
-  home-manager.users.aristide.programs.git.settings.credential = {
-    helper = lib.mkForce "/mnt/c/Program\\ Files/Git/mingw64/bin/git-credential-manager.exe";
-    credentialStore = lib.mkForce "wincredman";
-  };
+  # Voice mode de Claude Code : il lui faut un enregistreur (`rec` de sox).
+  # WSLg expose le micro Windows via PULSE_SERVER=unix:/mnt/wslg/PulseServer,
+  # que sox utilise directement — pas besoin de PipeWire ici.
+  environment.systemPackages = [ pkgs.sox ];
+
 }

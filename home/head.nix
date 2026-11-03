@@ -19,7 +19,7 @@
     };
   };
 
-  # Secret Service daemon (git-credential-manager, Zed, Copilot CLI, Chromium).
+  # Secret Service daemon (gh, glab, Zed, Copilot CLI, Chromium).
   #
   # pam_gnome_keyring starts a daemon at login and unlocks it with the session
   # password, but that daemon is supervised by nothing: once it dies, the D-Bus
