@@ -5,6 +5,26 @@
 }:
 
 let
+  # Chromium seul (navigateur par défaut du MCP). Le paquet embarque sinon aussi
+  # Firefox et WebKit, et ce dernier épingle de vieilles bibliothèques qui
+  # décodent du contenu web (libjxl 0.8.2, libvpx 1.12.0) signalées critiques par
+  # vulnix (.github/workflows/vulnix.yml). Le wrapper bin/playwright de
+  # playwright-test retenait lui aussi tous les navigateurs : le MCP n'utilise que
+  # ses node_modules, on le retire. WebKit reste une entrée de build de cette
+  # dérivation (d'où l'entrée restante dans .github/vulnix/whitelist.toml), mais
+  # sort de ce qui est installé.
+  playwright-mcp = pkgs.playwright-mcp.override {
+    playwright-test = pkgs.playwright-test.overrideAttrs {
+      postInstall = "rm $out/bin/playwright";
+    };
+    playwright-driver = pkgs.playwright-driver // {
+      browsers = pkgs.playwright-driver.browsers.override {
+        withFirefox = false;
+        withWebkit = false;
+      };
+    };
+  };
+
   # Le tarball upstream embarque son propre `node` (24.16, prébuild), qui
   # segfaulte dès `--version` sur wsl. On le remplace par celui de nixpkgs :
   # le seul module natif (codegraph-kernel.node) est N-API, donc indépendant
@@ -45,7 +65,7 @@ in
       };
       # Sert notamment à Claude à tester lui-même l'app qu'il expose.
       playwright = {
-        command = lib.getExe pkgs.playwright-mcp;
+        command = lib.getExe playwright-mcp;
         type = "stdio";
       };
       sequential-thinking = {

@@ -59,7 +59,9 @@ for host in "${hosts[@]}"; do
   fi
 
   jq -r --arg host "$host" '
-    [.[] | {name, score: ([.cvssv3_basescore[]?] | max // 0), cves: .affected_by}] as $p
+    [.[] | select((.affected_by | length) > 0)
+      | . as $e
+      | {name, score: ([.affected_by[] | $e.cvssv3_basescore[.] // 0] | max // 0), cves: .affected_by}] as $p
     | ($p | map(select(.score >= 9))) as $crit
     | ($p | map(select(.score >= 7 and .score < 9))) as $high
     | "## \($host)",
@@ -75,7 +77,7 @@ for host in "${hosts[@]}"; do
       else empty end)
   ' "$out/$host.json" >> "$out/summary.md"
 
-  host_worst=$(jq '[.[] | .cvssv3_basescore[]?] | max // 0' "$out/$host.json")
+  host_worst=$(jq '[.[] | . as $e | .affected_by[] | $e.cvssv3_basescore[.] // 0] | max // 0' "$out/$host.json")
   worst=$(jq -n "[$worst, $host_worst] | max")
 done
 

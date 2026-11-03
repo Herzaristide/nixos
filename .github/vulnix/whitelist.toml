@@ -11,3 +11,121 @@
 # cve = ["CVE-2023-45853"]
 # until = "2027-01-01"
 # comment = "minizip seulement, non compilé dans zlib de nixpkgs"
+
+# --- Vérifié le 2026-11-03 sur les descriptions NVD et les paquets nixpkgs. ---
+# Seules les CVE citées sont ignorées : une nouvelle CVE sur ces paquets alerte.
+
+# --- FAILLE RÉELLE, exception temporaire ---
+
+["brotli-1.2.0"]
+cve = ["CVE-2026-111497"]
+until = "2026-11-17"
+comment = "RÉELLE, non corrigée dans nixos-unstable : le fix (1.2.1) est dans staging-next de nixpkgs, et le forcer ici recompilerait une grande partie du système. Expire volontairement vite : mettre à jour dès que 1.2.1 arrive (l'entrée devient alors sans objet)."
+
+["edk2-202608"]
+cve = ["CVE-2026-111497"]
+until = "2026-12-01"
+comment = "Brotli embarqué dans le firmware OVMF de la VM Cowork (claude-desktop) : il ne décode que les volumes du firmware au démarrage, pas de contenu réseau. À revérifier à la prochaine version d'edk2."
+
+# --- Plus installé : uniquement entrée de build de playwright-test ---
+
+["libjxl-0.8.2"]
+cve = ["CVE-2024-11403"]
+until = "2027-05-01"
+comment = "Tiré par playwright-webkit, retiré de la clôture runtime (home/modules/code/ia/mcp.nix)."
+
+["libvpx-1.12.0"]
+cve = ["CVE-2024-5197"]
+until = "2027-05-01"
+comment = "Tiré par playwright-webkit, retiré de la clôture runtime (home/modules/code/ia/mcp.nix)."
+
+# --- Outils de build, absents de la clôture runtime de bernanos ---
+
+["python-2.7.18.12"]
+cve = ["CVE-2022-48565"]
+until = "2027-05-01"
+comment = "XXE de plistlib. Python 2 n'est qu'une dépendance de build (hooks setuptools), absent du système installé."
+
+["go-1.24.13-linux-amd64-bootstrap"]
+cve = ["CVE-2026-27143"]
+until = "2027-05-01"
+comment = "Compilateur de bootstrap : ne sert qu'à construire le vrai Go."
+
+["go-1.24.13-linux-386-bootstrap"]
+cve = ["CVE-2026-27143"]
+until = "2027-05-01"
+comment = "Compilateur de bootstrap : ne sert qu'à construire le vrai Go."
+
+# --- Déjà corrigé dans la version installée ---
+
+["perl"]
+cve = ["CVE-2026-13221", "CVE-2026-8376"]
+until = "2027-11-03"
+comment = "NVD : corrigées dans 5.42.3-RC1 ; nixpkgs a 5.42.3, vulnix ne sait pas comparer le suffixe RC."
+
+["lapack-3"]
+cve = ["CVE-2021-4048"]
+until = "2027-11-03"
+comment = "« 3 » est la version de l'interface : nixpkgs fournit lapack par OpenBLAS 0.3.33, la faille est corrigée depuis 0.3.18."
+
+# --- Homonymes : la CVE vise un autre logiciel ---
+
+["thrift"]
+cve = ["CVE-2021-24028"]
+until = "2027-11-03"
+comment = "Facebook fbthrift, pas Apache Thrift."
+
+["ShellCheck"]
+cve = ["CVE-2021-28794"]
+until = "2027-11-03"
+comment = "Extension VS Code non officielle, pas ShellCheck."
+
+["network"]
+cve = ["CVE-2021-35047", "CVE-2021-35048", "CVE-2021-35049"]
+until = "2027-11-03"
+comment = "Fidelis Network, pas la bibliothèque Haskell network."
+
+["curl-0.4.49"]
+cve = ["CVE-2022-32221"]
+until = "2027-11-03"
+comment = "Bibliothèque de liaison 0.4.x, pas libcurl (faille corrigée en 7.86). Version exacte seulement : le vrai curl reste surveillé."
+
+["zlib-0.7.1.1"]
+cve = ["CVE-2022-37434", "CVE-2023-45853", "CVE-2026-27820"]
+until = "2027-11-03"
+comment = "Bibliothèque Haskell zlib, pas la zlib C. Version exacte seulement : la vraie zlib reste surveillée."
+
+["zlib-1.3.2"]
+cve = ["CVE-2026-27820"]
+until = "2027-11-03"
+comment = "Vise la gem Ruby zlib (Zlib::GzipReader), pas la zlib C."
+
+["snappy"]
+cve = ["CVE-2023-28115", "CVE-2023-41330"]
+until = "2027-11-03"
+comment = "Bibliothèque PHP KnpLabs Snappy, pas la compression Google."
+
+["Diff"]
+cve = ["CVE-2024-13278"]
+until = "2027-11-03"
+comment = "Module Drupal Diff."
+
+["diff"]
+cve = ["CVE-2024-13278"]
+until = "2027-11-03"
+comment = "Module Drupal Diff."
+
+["cargo"]
+cve = ["CVE-2026-14363", "CVE-2026-58521"]
+until = "2027-11-03"
+comment = "Extension MediaWiki Cargo, pas le cargo de Rust."
+
+["ruby"]
+cve = ["CVE-2026-97229"]
+until = "2027-11-03"
+comment = "Description NVD : GitLab CE/EE, pas l'interpréteur Ruby."
+
+["orc"]
+cve = ["CVE-2025-47436"]
+until = "2027-11-03"
+comment = "Apache ORC, pas l'Oil Runtime Compiler de GStreamer."

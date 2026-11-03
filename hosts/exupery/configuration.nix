@@ -77,12 +77,18 @@ let
   # d'Hyprland — un plugin compilé contre une autre version refuse de charger.
   hyprgrass =
     let
-      src = pkgs.fetchFromGitHub {
-        owner = "horriblename";
-        repo = "hyprgrass";
-        rev = "8e605468cbf429791d61ddbfaeb14ff5e08fec3e"; # Hyprland v0.56.2
-        hash = "sha256-0nXTqzvZQSoTbpKcDmc4kciHmlIXfMZfLk5E1Ax9CP0=";
-      };
+      # fetchTree (à l'évaluation) et pas fetchFromGitHub : on importe un .nix
+      # de cette source juste en dessous, ce qui avec une dérivation serait de
+      # l'import-from-derivation — `nix flake check --no-build` échoue alors en
+      # CI (« path …source.drv is not valid »), le store du runner étant vide.
+      src =
+        (builtins.fetchTree {
+          type = "github";
+          owner = "horriblename";
+          repo = "hyprgrass";
+          rev = "8e605468cbf429791d61ddbfaeb14ff5e08fec3e"; # Hyprland v0.56.2
+          narHash = "sha256-0nXTqzvZQSoTbpKcDmc4kciHmlIXfMZfLk5E1Ax9CP0=";
+        }).outPath;
     in
     (pkgs.hyprlandPlugins.hyprgrass.override {
       wf-touch = pkgs.callPackage "${src}/nix/wf-touch.nix" { };
