@@ -101,10 +101,6 @@
   # blender CUDA à côté d'un autre gros build ne tient pas dans 16 Go.
   nix.settings.max-jobs = lib.mkForce 1;
 
-  # howdy (modules/head.nix) : pas de caméra IR sur bernanos, seulement la webcam
-  # RGB (SunplusIT HD Webcam) ; /dev/video3 est son nœud de métadonnées.
-  services.howdy.settings.video.device_path = "/dev/video2";
-
   # --- GPU (NVIDIA, Bernanos: Prime Intel+Nvidia, Wayland) ---
   boot.kernelParams = [
     "nvidia-drm.modeset=1" # Enable mode setting for Wayland

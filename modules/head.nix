@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -61,23 +62,10 @@
   # session also unlocks the keyring gh and glab store into.
   security.pam.services.quickshell.enableGnomeKeyring = true;
 
-  # Reconnaissance faciale (howdy). Enregistrer son visage une fois par
-  # machine avec `sudo howdy add` (état sous /etc et /var/lib, racine non
-  # effacée par l'impermanence). La caméra (`settings.video.device_path`) est
-  # du matériel : chaque hôte la fixe dans sa configuration.
-  services.howdy = {
-    enable = true;
-    # « sufficient » : le visage suffit, le mot de passe reste possible en
-    # repli. Le défaut « required » en ferait un second facteur obligatoire.
-    control = "sufficient";
-  };
-  # howdy se trompe avec une bonne photo : il ne déverrouille que l'écran de
-  # verrouillage (Quickshell) et les invites polkit. Ni greetd/login — le mot
-  # de passe y déverrouille aussi GNOME Keyring (pam_gnome_keyring), qu'un
-  # login par visage laisserait verrouillé —, ni sudo, qui reste au mot de passe.
-  security.pam.howdy.enable = false;
-  security.pam.services.quickshell.howdy.enable = true;
-  security.pam.services.polkit-1.howdy.enable = true;
+  # Pas de reconnaissance faciale (howdy retiré le 2026-11-03) : avec la
+  # webcam RGB de bernanos, une photo suffisait à ouvrir l'écran de
+  # verrouillage et, via polkit, à obtenir root par `pkexec`. Tout passe
+  # par le mot de passe.
 
   # XDG Portal (for file picker, screen sharing in Hyprland)
   # xdg-desktop-portal-kde exposes color-scheme (dark mode) to Chrome/Gemini, etc.
@@ -154,12 +142,36 @@
   };
 
   # KDE Connect : le téléphone (notifications, presse-papier, fichiers, le
-  # faire sonner). Ouvre 1714-1764 TCP/UDP au pare-feu, pour le trouver sur
-  # le Wi-Fi. `kdeconnectd` est lancé avec la session Hyprland
+  # faire sonner). `kdeconnectd` est lancé avec la session Hyprland
   # (home/modules/hyprland/hyprland.nix) ; l'onglet « Téléphone » de karenine
   # le lit par D-Bus (anna/src/phone.rs). Les clés d'appairage vivent dans
   # ~/.config/kdeconnect, persisté (modules/impermanence.nix).
   programs.kdeconnect.enable = true;
+
+  # Joignable seulement par Tailscale (depuis le 2026-11-03) : le module ouvre
+  # 1714-1764 TCP/UDP sur *toutes* les interfaces, donc sur chaque Wi-Fi
+  # public, où n'importe qui voit le PC et peut demander un appairage. Le
+  # téléphone doit avoir Tailscale actif ; pas de découverte automatique
+  # (diffusion UDP, absente du tailnet) : l'ajouter une fois par son IP
+  # Tailscale dans l'app (« Configurer les appareils par IP »).
+  # mkForce [] : KDE Connect est le seul à déclarer des plages globales sur ces
+  # hôtes — un futur service qui en ouvrirait une serait aussi écrasé ici.
+  networking.firewall.allowedTCPPortRanges = lib.mkForce [ ];
+  networking.firewall.allowedUDPPortRanges = lib.mkForce [ ];
+  networking.firewall.interfaces.tailscale0 = {
+    allowedTCPPortRanges = [
+      {
+        from = 1714;
+        to = 1764;
+      }
+    ];
+    allowedUDPPortRanges = [
+      {
+        from = 1714;
+        to = 1764;
+      }
+    ];
+  };
 
   # Enregistrer l'écran (bouton de la barre du haut de karenine, Ctrl+Impr) :
   # anna lance gpu-screen-recorder, qui encode sur la carte graphique. Le

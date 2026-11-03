@@ -2,9 +2,9 @@
 # l'add-on « MCP for Blender » des autres machines en mode « local api »
 # (POST /generate → GLB), via Tailscale : http://gary:8081.
 #
-# Rien n'est ouvert sur le LAN : le service écoute sur 0.0.0.0 mais seul
-# tailscale0 est une interface de confiance (modules/tailscale.nix), et le
-# port n'est pas ajouté à allowedTCPPorts.
+# Rien n'est ouvert sur le LAN : le service écoute sur 0.0.0.0 mais le port
+# n'est ouvert que sur tailscale0 (pare-feu, plus bas), pas dans
+# allowedTCPPorts.
 #
 # Tout est figé, sans venir de nixpkgs (torch ROCm n'y est pas en cache) :
 #   - le code amont par `rev` (fetchFromGitHub) ;
@@ -18,7 +18,7 @@
 # suivre avec `journalctl -fu hunyuan3d`.
 #
 # Pas de démarrage au boot : le serveur occupe ~18 Gio de RAM (poids chargés
-# côté CPU en plus du GPU) et ~12 Gio de VRAM, de quoi gêner les agents de
+# côté CPU en plus du GPU) et ~12 Gio de VRAM, de quoi gêner le travail sur
 # gary. On le lance à la main : `sudo systemctl start hunyuan3d`, puis `stop`
 # après usage.
 #
@@ -198,6 +198,8 @@ in
       TimeoutStartSec = "infinity";
     };
   };
+
+  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ port ];
 
   users.users.hunyuan3d = {
     isSystemUser = true;

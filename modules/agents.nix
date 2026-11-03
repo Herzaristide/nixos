@@ -113,6 +113,15 @@ in
       ip6tables -w -t mangle -A agents-out -d "$net" -j DROP
     done
   '';
+  # Préprod (8000-8009) et apps des agents (8010-8099), joignables depuis le
+  # tailnet seulement (modules/tailscale.nix n'ouvre rien d'autre).
+  networking.firewall.interfaces.tailscale0.allowedTCPPortRanges = [
+    {
+      from = 8000;
+      to = 8099;
+    }
+  ];
+
   networking.firewall.extraStopCommands = ''
     for ipt in iptables ip6tables; do
       $ipt -w -t mangle -D OUTPUT -m owner --uid-owner ${toString uid} -j agents-out 2>/dev/null || true

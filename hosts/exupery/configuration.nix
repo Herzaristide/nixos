@@ -312,17 +312,6 @@ in
   # lit le service de rotation plus bas.
   hardware.sensor.iio.enable = true;
 
-  # Caméra IR pour howdy (modules/head.nix). L'émetteur IR des webcams Dell
-  # est éteint par défaut sous Linux : à configurer une fois avec
-  # `sudo linux-enable-ir-emitter configure`, avant `sudo howdy add`. La caméra
-  # IR est en général le troisième nœud, /dev/video2 — à vérifier avec
-  # `v4l2-ctl --list-devices`.
-  services.linux-enable-ir-emitter = {
-    enable = true;
-    device = "video2";
-  };
-  services.howdy.settings.video.device_path = "/dev/video2";
-
   # Rotation automatique d'eDP-1 et clavier virtuel, dans la session de
   # l'utilisateur (complète home/home.nix, branché par modules/common.nix).
   home-manager.users.aristide = { lib, ... }: {

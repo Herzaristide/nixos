@@ -21,7 +21,6 @@
     ../../modules/security.nix
     ../../modules/impermanence.nix
     ../../modules/hunyuan3d.nix
-    ../../modules/agents.nix
   ];
 
   # Hostname
@@ -29,6 +28,12 @@
 
   # sshd actif sur les serveurs seulement (désactivé par défaut, modules/network.nix).
   services.openssh.enable = true;
+
+  # Clé d'exupery : n'ouvre que les serveurs de dev (ici et kafka, via
+  # modules/agents.nix), pas les autres hôtes ni GitHub.
+  users.users.aristide.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILxa24l5t4C9ZHBE6NDE823vui27oYX2bQuTLtDY3lY/ aristide@exupery"
+  ];
 
   # Serveur de dev headless : ni greetd, ni Hyprland, ni PipeWire.
   # Accès par SSH / Tailscale uniquement.

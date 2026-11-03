@@ -1,0 +1,63 @@
+name: vulnix
+
+# Scan des CVE connues de chaque hôte (.github/vulnix/scan.sh), sans build.
+# Chaque jour (nouvelles CVE publiées) et à chaque changement de la config.
+# Le run échoue (et GitHub prévient par e-mail) si un paquet non whitelisté
+# atteint CVSS 9 ; le détail est dans le résumé du run et l'artefact JSON.
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "flake.lock"
+      - "**.nix"
+      - ".github/vulnix/**"
+      - ".github/workflows/vulnix.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: vulnix
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Scan CVE
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v30
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      # Base NVD (~400 Mo) : restaurée du run précédent, puis mise à jour
+      # incrémentale par vulnix. Clé unique par run pour que le cache avance.
+      - name: Cache NVD
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/vulnix
+          key: vulnix-nvd-${{ github.run_id }}
+          restore-keys: vulnix-nvd-
+
+      - name: Scan
+        run: bash .github/vulnix/scan.sh
+        env:
+          OUT: ${{ runner.temp }}/vulnix
+
+      - name: Résumé
+        if: always()
+        run: cat "$RUNNER_TEMP/vulnix/summary.md" >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Rapports JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vulnix-reports
+          path: ${{ runner.temp }}/vulnix/
+          retention-days: 30

@@ -1,0 +1,13 @@
+# Alertes vulnix vérifiées et ignorées (.github/vulnix/scan.sh, workflow .github/workflows/vulnix.yml).
+#
+# N'y ajouter une entrée qu'après avoir vérifié que la faille est corrigée dans
+# nixpkgs (patch sans changement de version) ou ne s'applique pas (paquet
+# homonyme, fonctionnalité non compilée). Toujours avec un commentaire et une
+# date d'expiration : l'alerte revient d'elle-même après `until`.
+#
+# Exemple :
+#
+# ["zlib-1.3.2"]
+# cve = ["CVE-2023-45853"]
+# until = "2027-01-01"
+# comment = "minizip seulement, non compilé dans zlib de nixpkgs"
