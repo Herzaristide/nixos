@@ -27,7 +27,6 @@ let
     ./modules/chromium.nix
     ./modules/blender.nix
     ./modules/music
-    ./modules/infinite-fusion.nix
   ];
 in
 {

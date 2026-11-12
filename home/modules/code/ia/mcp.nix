@@ -121,6 +121,16 @@ in
         args = [ "mcp-for-blender==${(import ../../blender-mcp-release.nix).version}" ];
         type = "stdio";
       };
+      # Pilotage de REAPER (bonfire-systems/reaper-mcp, MIT, absent de
+      # nixpkgs) : pistes, MIDI, effets, mixage, rendu, analyse. Il passe par
+      # python-reapy : REAPER doit tourner, configuré une fois avec
+      # `reaper-setup-reapy` (home/modules/music/daw.nix). Comme blender,
+      # résolu par `uvx` mais épinglé sur une release.
+      reaper = {
+        command = "${pkgs.uv}/bin/uvx";
+        args = [ "reaper-mcp-server==0.4.0" ];
+        type = "stdio";
+      };
     };
   };
 

@@ -131,53 +131,25 @@
   };
 
   # NVIDIA proprietary drivers.
-  # CUDA à la carte, pas de `cudaSupport` global : seul blender en profite
-  # vraiment (Cycles sur la RTX 3070 Mobile via CUDA/OptiX). Le global
-  # recompilait aussi openusd, suitesparse, ceres-solver (dépendances de
-  # blender seulement), sans gain notable. Aucun cache ne sert
-  # les variantes CUDA (unfree, pas sur Hydra) : blender recompile en local à
-  # chaque `nix flake update` — mesuré sur juin-juillet 2026, sa dérivation
-  # change à chaque bump d'unstable, même à version égale.
-  # `cudaCapabilities` limite la compilation à la seule arch sm_86 au lieu de
-  # toutes celles par défaut ; sans `cudaSupport` il ne touche rien d'autre.
-  #
-  # Pas de nixpkgs figé pour blender (l'ancien input `nixpkgs-cuda`, retiré
-  # le 2026-10-17) : une appli graphique charge à chaud le Mesa du système
-  # (/run/opengl-driver), et un Mesa compilé contre une glibc plus récente
-  # que celle du processus ne se charge pas — Blender pris dans le nixpkgs
-  # figé quittait au démarrage (« EGL Error »).
+  # CUDA à la carte, pas de `cudaSupport` global. `cudaCapabilities` limite
+  # toute compilation CUDA à la seule arch sm_86 (RTX 3070 Mobile) ; sans
+  # paquet CUDA dans la closure il ne change rien (ollama-cuda, plus bas).
   nixpkgs.config = {
     nvidia.acceptLicense = true;
     cudaCapabilities = [ "8.6" ];
   };
-  #
-  # Blender démarre toujours sur la RTX (viewport, EEVEE, Cycles) : le binaire
-  # est enveloppé avec les variables de PRIME offload, les mêmes que le wrapper
-  # `nvidia-offload` (voir ollama plus bas). L'enveloppe est un symlinkJoin
-  # autour du blender CUDA, donc le changer ne recompile pas blender. Le
-  # .desktop lance `blender` via le PATH : il passe aussi par le wrapper.
+
+  # Blender : binaires officiels de blender.org (pkgs/blender-bin), qui
+  # embarquent Cycles CUDA/OptiX déjà compilé — sm_86 compris. Remplace le
+  # `blender.override { cudaSupport = true; }` de nixpkgs, qu'aucun cache ne
+  # sert et qui recompilait des heures à chaque `nix flake update`.
+  # `nvidiaOffload` : le wrapper lance toujours Blender sur la RTX (viewport,
+  # EEVEE, Cycles), avec les variables de PRIME offload de `nvidia-offload`.
+  # L'overlay remplace `pkgs.blender`, que home/modules/blender.nix installe.
   nixpkgs.overlays = [
-    (
-      final: prev:
-      let
-        blenderCuda = prev.blender.override { cudaSupport = true; };
-      in
-      {
-        blender = prev.symlinkJoin {
-          name = "blender-nvidia-${blenderCuda.version}";
-          inherit (blenderCuda) pname version meta;
-          paths = [ blenderCuda ];
-          nativeBuildInputs = [ prev.makeWrapper ];
-          postBuild = ''
-            wrapProgram $out/bin/blender \
-              --set __NV_PRIME_RENDER_OFFLOAD 1 \
-              --set __NV_PRIME_RENDER_OFFLOAD_PROVIDER NVIDIA-G0 \
-              --set __GLX_VENDOR_LIBRARY_NAME nvidia \
-              --set __VK_LAYER_NV_optimus NVIDIA_only
-          '';
-        };
-      }
-    )
+    (final: prev: {
+      blender = final.callPackage ../../pkgs/blender-bin { nvidiaOffload = true; };
+    })
   ];
 
   hardware = {

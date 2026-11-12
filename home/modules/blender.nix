@@ -30,9 +30,11 @@ let
   blenderVersion = lib.versions.majorMinor pkgs.blender.version;
 in
 {
-  # Module headful seulement (bernanos, exupery). Backend Cycles compilé dans
-  # le paquet : CUDA/OptiX sur bernanos (overlay blender dans son
-  # configuration.nix), CPU/iGPU Intel sur exupery.
+  # Module headful seulement (bernanos, exupery). Sur bernanos, `pkgs.blender`
+  # est le binaire officiel blender.org avec CUDA/OptiX (overlay dans son
+  # configuration.nix, pkgs/blender-bin) ; sur exupery, le blender de nixpkgs
+  # (Cycles CPU/iGPU Intel, servi par le cache). `blenderVersion` suit le
+  # paquet effectivement installé, donc l'add-on tombe toujours au bon endroit.
   home.packages = [ pkgs.blender ];
 
   # Nom de fichier = nom de module de l'add-on ; `blender_mcp.py` est celui

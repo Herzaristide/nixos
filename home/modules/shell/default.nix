@@ -8,6 +8,5 @@
     ./micro.nix
     ./yazi.nix
     ./direnv.nix
-    ./zellij.nix
   ];
 }

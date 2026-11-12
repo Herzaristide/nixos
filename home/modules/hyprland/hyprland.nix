@@ -193,7 +193,7 @@ in
       ];
 
       # Raccourcis définis dans home/modules/shortcuts.nix (source de vérité
-      # partagée avec Alacritty/zellij/Zed/micro).
+      # partagée avec Alacritty/Zed/micro).
       bind = map (b: {
         _args = [
           b.keys

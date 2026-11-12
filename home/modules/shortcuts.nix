@@ -1,7 +1,7 @@
-# Source de vérité unique pour tous les raccourcis clavier : Hyprland, zellij,
+# Source de vérité unique pour tous les raccourcis clavier : Hyprland,
 # Zed, Alacritty, micro. Chaque module consommateur importe ce fichier et
 # transforme les entrées vers le format natif de son outil — voir
-# home/modules/{alacritty,hyprland/hyprland,shell/{zellij,micro},code/zed}.nix.
+# home/modules/{alacritty,hyprland/hyprland,shell/micro,code/zed}.nix.
 {
   pkgs,
   # Chemin du script hypr-closed-lid-layout (dérivation construite dans
@@ -390,9 +390,14 @@
         function()
           hl.monitor(${
             pkgs.lib.generators.toLua { multiline = false; } (
-              pkgs.lib.findFirst (m: m.output == "eDP-1") (throw "eDP-1 absent de modules/monitors.nix") (
+              (pkgs.lib.findFirst (m: m.output == "eDP-1") (throw "eDP-1 absent de modules/monitors.nix") (
                 import ../../modules/monitors.nix
-              )
+              ))
+              # La fermeture a posé `disabled = true` (hypr-closed-lid-layout) :
+              # sans ce `false` explicite, la règle de ré-ouverture ne le lève pas.
+              // {
+                disabled = false;
+              }
             )
           })
         end'';
@@ -650,24 +655,6 @@
       key = "alt-e";
       action = "pane::ActivatePreviousItem";
       desc = "Retour au code";
-    }
-  ];
-
-  # ── zellij (multiplexeur terminal) ───────────────────────────────────────
-  # `keys` = combo au format KDL zellij ("Alt Enter"), `actions` = liste
-  # d'actions KDL brutes rendues telles quelles dans le bloc
-  # `keybinds { shared_except "locked" { ... } }` de shell/zellij.nix — donc
-  # actives dans tous les modes sauf locked (pas seulement en mode normal).
-  zellij = [
-    {
-      keys = "Alt Enter";
-      actions = [ "NewPane" ];
-      desc = "Nouveau panneau (terminal)";
-    }
-    {
-      keys = "Alt q";
-      actions = [ "CloseFocus" ];
-      desc = "Fermer le panneau (terminal)";
     }
   ];
 

@@ -177,14 +177,16 @@ in
         ".local/share/anna/notes"
         ".local/state/anna" # karenine : mot d'activation allumé (wake-on), lecture des réponses (speech.json)
         ".config/anna" # karenine : les serveurs suivis (servers.json)
-        ".config/kdeconnect" # KDE Connect : identité de l'ordinateur + téléphones appairés
-        ".config/blender" # userpref.blend (add-ons activés dont MCP for Blender), fichiers récents ; scripts/addons/blender_mcp.py reste géré par home-manager
-        ".local/state/ajar" # dernier livre ouvert, position du curseur, thème choisi à la main
+        ".config/kdeconnect"
+        ".config/blender"
+        # REAPER : reaper.ini (dont la config reapy), raccourcis, scripts,
+        # modèles de projet et de piste, presets d'effets.
+        ".config/REAPER"
+        # Banques d'instruments virtuels (SFZ, Decent Sampler) : données posées
+        # à la main, plusieurs Go (home/modules/music/instruments.nix).
+        ".local/share/sfz"
+        ".local/state/ajar"
         ".local/share/nautilus" # Nautilus : scripts du clic droit + étiquettes
-        ".local/share/infinite-fusion" # jeu (clone git, plusieurs Go) + préfixe Wine, où vivent les sauvegardes
-
-        # Gros téléchargements — régénérables mais lents (SDK Android 4,6 Go,
-        # modèles whisper).
         ".local/share/android"
         ".local/share/whisper"
 
