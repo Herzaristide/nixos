@@ -126,7 +126,6 @@
       envsubst # env variable substitution
 
       cmatrix
-      glances
       mdadm
     ];
 

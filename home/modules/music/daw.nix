@@ -9,13 +9,16 @@ let
   # Le Python embarqué de REAPER charge la libpython de nixpkgs, sans les
   # site-packages de l'environnement : on les lui donne par PYTHONPATH pour
   # que le serveur reapy (lancé dans REAPER) puisse importer reapy.
+  # LD_LIBRARY_PATH : la libjack de PipeWire, comme `pw-jack` (le mode JACK de
+  # REAPER passe par PipeWire ; modules/audio.nix n'active plus `jack.enable`).
   reaper = pkgs.symlinkJoin {
     name = "reaper-${pkgs.reaper.version}";
     paths = [ pkgs.reaper ];
     nativeBuildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
       wrapProgram $out/bin/reaper \
-        --prefix PYTHONPATH : ${pyEnv}/${pkgs.python3.sitePackages}
+        --prefix PYTHONPATH : ${pyEnv}/${pkgs.python3.sitePackages} \
+        --prefix LD_LIBRARY_PATH : ${pkgs.pipewire.jack}/lib
     '';
   };
 

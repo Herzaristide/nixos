@@ -22,6 +22,7 @@
     ../../modules/luks-usb-key.nix
     ../../modules/impermanence.nix
     ../../modules/hunyuan3d.nix
+    ../../modules/comfyui.nix
   ];
 
   # Hostname

@@ -74,7 +74,11 @@ in
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-    jack.enable = true;
+    # Pas de `jack.enable` (déprécié) : il mettait la libjack de PipeWire dans
+    # le LD_LIBRARY_PATH de toute la session. PipeWire sert quand même les
+    # clients JACK ; ils prennent sa libjack au cas par cas : REAPER par son
+    # wrapper (home/modules/music/daw.nix), le reste avec `pw-jack <commande>`
+    # (ex. `pw-jack sfizz_jack`).
     # Annulation d'écho pour l'assistant vocal d'anna : `echo-cancel-source`
     # est le micro par défaut moins ce que jouent les haut-parleurs, pour que
     # « Karénine » soit entendu par-dessus la musique ou une vidéo (et qu'une
@@ -174,6 +178,7 @@ in
   # Backends d'enregistrement micro pour la dictée vocale de Claude Code
   # (rec/arecord), appelés au runtime par le binaire claude.
   environment.systemPackages = with pkgs; [
+    pipewire.jack # `pw-jack` : lance un client JACK sur PipeWire
     sox
     alsa-utils
   ];
