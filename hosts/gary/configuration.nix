@@ -23,6 +23,7 @@
     ../../modules/impermanence.nix
     ../../modules/hunyuan3d.nix
     ../../modules/comfyui.nix
+    ../../modules/trellis2.nix
   ];
 
   # Hostname
@@ -72,6 +73,7 @@
     rocmPackages.rocm-runtime
     rocmPackages.hipcc
     zenmonitor
+    stable-diffusion-cpp-rocm # sd-cli : génération d'images en C++/HIP, sans Python
   ];
 
   # Vérité matérielle de la machine, pas une préférence de projet : la RX 7600 XT

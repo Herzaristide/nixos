@@ -24,7 +24,6 @@
     # ../../modules/android.nix  # test : déplacement vers un devShell par projet
     ../../modules/impermanence.nix
     ../../modules/print.nix
-    ../../modules/krita.nix
   ];
 
   # Hostname
