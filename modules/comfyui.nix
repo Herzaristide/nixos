@@ -97,11 +97,10 @@ in
       # explicitement la garde si l'override HSA saute un jour (gfx1102 n'est
       # pas dans sa liste et retomberait sur la split attention, plus lente).
       "--use-pytorch-cross-attention"
-      # Accumulation fp16 dans les matmuls (WMMA RDNA3 : débit doublé contre
-      # une précision moindre). Marquée « peut dégrader la qualité » en amont ;
-      # la retirer si des images sortent bruitées ou noires.
-      "--fast"
-      "fp16_accumulation"
+      # Pas de `--fast fp16_accumulation` : avec, l'encodeur de texte de
+      # Qwen-Image (Qwen3-VL 8B, en fp16 sur GPU) sortait un conditionnement
+      # faux — images sans rapport avec le prompt, même backend HIP de
+      # comfy-kitchen coupé ; correct avec l'encodeur sur CPU (gary, 2026-11-16).
       # Aperçu latent léger pendant l'échantillonnage (interface web).
       "--preview-method"
       "latent2rgb"

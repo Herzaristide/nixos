@@ -23,10 +23,10 @@
   {
     output = "eDP-1";
     mode = "preferred";
-    # Sous le Samsung, aligné sur son bord gauche (Samsung : 1536 × 864 px
-    # logiques à y = 900, donc bord bas à 1764). Seul, sans les écrans du
-    # bureau, la position est sans effet.
-    position = "0x1764";
+    # À droite du Samsung, aligné sur son bord haut (Samsung : 1536 × 864 px
+    # logiques à y = 900, donc bord droit à x = 1536). Seul, sans les écrans
+    # du bureau, la position est sans effet.
+    position = "1536x900";
     scale = 1.25;
   }
   {
