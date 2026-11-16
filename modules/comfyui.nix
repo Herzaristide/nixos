@@ -33,7 +33,8 @@ let
   catalogue = import ./comfyui-models.nix;
 
   # Seuls Qwen-Image 2.1, YuE 2 et TRELLIS.2 sont installés pour l'instant
-  # (≈ 48 Go), choisis d'après les classements de nov. 2026 (détail dans le
+  # (≈ 67 Go avec les annexes Pixal3D / BiRefNet / MoGe et la réécriture de
+  # prompt Qwen3.5), choisis d'après les classements de nov. 2026 (détail dans le
   # catalogue) :
   # décommenter une ligne pour ajouter sa famille au prochain rebuild.
   modelGroups = [
@@ -138,9 +139,16 @@ in
       # TunableOp : PyTorch mesure plusieurs noyaux hipBLASLt/rocBLAS pour
       # chaque forme de GEMM rencontrée et garde le plus rapide. Les premières
       # générations d'un nouveau modèle/résolution sont plus lentes (tuning),
-      # les suivantes relisent le CSV. %d = index du GPU.
+      # les suivantes relisent le CSV. %d = index du GPU, doublé en %%d :
+      # systemd développe ses spécificateurs dans Environment= et %d y est le
+      # dossier des credentials (le CSV visait /run/credentials/…, illisible).
       PYTORCH_TUNABLEOP_ENABLED = "1";
-      PYTORCH_TUNABLEOP_FILENAME = "${stateDir}/tunableop/results%d.csv";
+      PYTORCH_TUNABLEOP_FILENAME = "${stateDir}/tunableop/results%%d.csv";
+      # Tuning coupé : sans CSV préexistant, le premier chargement du LoRA
+      # Turbo de Qwen-Image a passé 10 min à mesurer des centaines de formes
+      # de GEMM (gary, 2026-11-16). Les résultats déjà présents dans le CSV
+      # restent lus ; remettre "1" pour une séance de tuning volontaire.
+      PYTORCH_TUNABLEOP_TUNING = "0";
       # Segments extensibles : moins de fragmentation du tas HIP, donc moins
       # d'OOM quand ComfyUI charge et décharge des modèles de tailles variées.
       PYTORCH_HIP_ALLOC_CONF = "expandable_segments:True";

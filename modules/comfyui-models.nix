@@ -116,6 +116,14 @@
       url = "https://huggingface.co/Comfy-Org/Qwen-Image-2.1/resolve/aacf31a6d48e707f352ecba714cee0680da3479b/text_encoders/qwen3vl_8b_int8_convrot.safetensors";
       hash = "sha256-i/0PbhKr8tLWl+zIiOXpCw1nQdZwjwV5n1OvpWBFLo8=";
     }
+    # Réécriture de prompt (« thinking ») des templates officiels Qwen-Image 2.1 :
+    # Qwen3.5 9B transforme une demande courte en description détaillée (~9.5 Go).
+    {
+      name = "qwen3.5_9b_qwen_image_2.1_pe_t2i.int8_convrot.safetensors";
+      installPaths = "text_encoders";
+      url = "https://huggingface.co/Comfy-Org/Qwen-Image-2.1/resolve/aacf31a6d48e707f352ecba714cee0680da3479b/text_encoders/qwen3.5_9b_qwen_image_2.1_pe_t2i.int8_convrot.safetensors";
+      hash = "sha256-kYKrrlb+BUWYQKhtIqvSH5cgYckvzgMmMK9oDIxReNM=";
+    }
     {
       name = "qwen_image_2.1_vae_bf16.safetensors";
       installPaths = "vae";
@@ -404,7 +412,8 @@
     }
   ];
 
-  # TRELLIS.2 natif ComfyUI (bf16) — image → mesh 3D texturé (~13.6 Go)
+  # TRELLIS.2 natif ComfyUI (bf16) — image → mesh 3D texturé (~13.6 Go),
+  # + annexes du template Pixal3D (~8 Go)
   trellis2 = [
     {
       name = "trellis_2_bf16.safetensors";
@@ -429,6 +438,37 @@
       installPaths = "vae";
       url = "https://huggingface.co/Comfy-Org/TRELLIS.2/resolve/430a9d09b2416687018c8fe8edced2ad4858a439/vae/trellis_2_texture_vae_bf16.safetensors";
       hash = "sha256-cU5evwlKYQ4SqOO1F1wYpi839upCGKy2BzZERWtzqw4=";
+    }
+    # Annexes du template officiel « Pixal3D & TRELLIS.2: Image to Model ».
+    # BiRefNet (détourage de l'image d'entrée) : même entrée que le groupe
+    # `vision`, dédupliquée par comfyui.nix si les deux groupes sont actifs.
+    {
+      name = "birefnet.safetensors";
+      installPaths = "background_removal";
+      url = "https://huggingface.co/Comfy-Org/BiRefNet/resolve/884af709e9b795d89dafbf97f29c8d6a2386f5c6/background_removal/birefnet.safetensors";
+      hash = "sha256-mrN0Jr9N4FZ69rXSGxYVE1cUkTk2Lm6JkgIbjONWoVQ=";
+    }
+    # MoGe 2 : géométrie/FOV de la photo, pour le conditionnement Pixal3D (~0.7 Go)
+    {
+      name = "moge_2_vitl_normal_fp16.safetensors";
+      installPaths = "geometry_estimation";
+      url = "https://huggingface.co/Comfy-Org/MoGe/resolve/1484985258ba7ef45c314144fcf0e90924ffbf44/geometry_estimation/moge_2_vitl_normal_fp16.safetensors";
+      hash = "sha256-yxppLQMjVnHpWegTYNe02fRK762x+FLWymqhd5nV4x8=";
+    }
+    # Pixal3D : variante de structure alignée sur les pixels de la photo (~5.6 Go)
+    {
+      name = "pixal3d_int8_convrot.safetensors";
+      installPaths = "diffusion_models";
+      url = "https://huggingface.co/Comfy-Org/Pixal3D/resolve/f37641be376725d324c56626007cc477f1249a69/diffusion_models/pixal3d_int8_convrot.safetensors";
+      hash = "sha256-RiHqw7cVSE95MDxxUq9kH+CysU9NDj05T9aSLQD5Vew=";
+    }
+    # DINOv3 L « NAF » : encodeur d'image que le template branche sur Pixal3D
+    # et TRELLIS.2 (~1.2 Go)
+    {
+      name = "dino_v3_L_naf_fp32.safetensors";
+      installPaths = "clip_vision";
+      url = "https://huggingface.co/Comfy-Org/Pixal3D/resolve/f37641be376725d324c56626007cc477f1249a69/clip_vision/dino_v3_L_naf_fp32.safetensors";
+      hash = "sha256-StLsTgh5pbWwTNlzJcw32pVKe27cpRcLhlEPF/KyKQ8=";
     }
   ];
 
