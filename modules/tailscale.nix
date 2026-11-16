@@ -15,7 +15,7 @@
 
   # Plus de `trustedInterfaces = [ "tailscale0" ]` : seuls les ports déclarés
   # entrent par le tailnet. Chaque service l'ouvre lui-même là où il est défini
-  # (hunyuan3d : 8081 sur gary ; agents : 8000-8099 sur kafka). Les postes
+  # (comfyui : 8188 sur gary ; agents : 8000-8099 sur kafka). Les postes
   # (bernanos, exupery), sans sshd, n'exposent rien au tailnet.
   networking.firewall.interfaces.tailscale0.allowedTCPPorts =
     lib.optional config.services.openssh.enable 22;
