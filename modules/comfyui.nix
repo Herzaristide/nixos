@@ -12,7 +12,7 @@
 # famille ; `modelGroups` ci-dessous choisit lesquels sont installés. Le
 # module les télécharge dans le store Nix (fetchurl, hash vérifié) et les lie
 # dans /var/lib/comfyui/models/<type>/. Tout activé ≈ 240 Go (aujourd'hui : FLUX 3
-# Image Klein, Qwen-Image 2.1, YuE 2 et TRELLIS.2 seulement) : le premier
+# Image Klein, Qwen-Image 2.1, Wan 2.2 I2V 14B, YuE 2 et TRELLIS.2 seulement) : le premier
 # `nixos-rebuild` les télécharge tous, retirer un groupe libère sa place au
 # prochain `nix-collect-garbage`. Les fichiers déposés à la main dans
 # models/ ne sont pas touchés.
@@ -32,8 +32,8 @@ let
 
   catalogue = import ./comfyui-models.nix;
 
-  # Seuls FLUX 3 Image Klein, Qwen-Image 2.1, YuE 2 et TRELLIS.2 sont installés
-  # pour l'instant (≈ 83 Go avec les annexes Pixal3D / BiRefNet / MoGe et la
+  # Seuls FLUX 3 Image Klein, Qwen-Image 2.1, Wan 2.2 I2V 14B, YuE 2 et
+  # TRELLIS.2 sont installés pour l'instant (≈ 121 Go avec les annexes Pixal3D / BiRefNet / MoGe et la
   # réécriture de prompt Qwen3.5), choisis d'après les classements de nov. 2026
   # (détail dans le catalogue). FLUX 3 Klein est le seul des modèles d'image
   # installés dont la licence permet un usage commercial (sous 5 M$ de CA) :
@@ -50,7 +50,7 @@ let
     # "krea2"
     # Vidéo
     # "wan5b"
-    # "wan14b"
+    "wan14b"
     # "hunyuanvideo"
     # Audio
     # "acestep"
