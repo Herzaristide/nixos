@@ -98,7 +98,7 @@
   services.logind.settings.Login.HandleLidSwitch = lib.mkForce "suspend";
 
   # Un seul build à la fois (au lieu de 2 × 6 cœurs, modules/nixos.nix) :
-  # blender CUDA à côté d'un autre gros build ne tient pas dans 16 Go.
+  # un build CUDA à côté d'un autre gros build ne tient pas dans 16 Go.
   nix.settings.max-jobs = lib.mkForce 1;
 
   # --- GPU (NVIDIA, Bernanos: Prime Intel+Nvidia, Wayland) ---
@@ -138,19 +138,6 @@
     nvidia.acceptLicense = true;
     cudaCapabilities = [ "8.6" ];
   };
-
-  # Blender : binaires officiels de blender.org (pkgs/blender-bin), qui
-  # embarquent Cycles CUDA/OptiX déjà compilé — sm_86 compris. Remplace le
-  # `blender.override { cudaSupport = true; }` de nixpkgs, qu'aucun cache ne
-  # sert et qui recompilait des heures à chaque `nix flake update`.
-  # `nvidiaOffload` : le wrapper lance toujours Blender sur la RTX (viewport,
-  # EEVEE, Cycles), avec les variables de PRIME offload de `nvidia-offload`.
-  # L'overlay remplace `pkgs.blender`, que home/modules/blender.nix installe.
-  nixpkgs.overlays = [
-    (final: prev: {
-      blender = final.callPackage ../../pkgs/blender-bin { nvidiaOffload = true; };
-    })
-  ];
 
   hardware = {
     nvidia = {
@@ -213,7 +200,7 @@
   # par le driver.
   #
   # ollama CUDA : `pkgs.ollama-cuda` (pas de `cudaSupport` global), ciblé sur
-  # sm_86 par `cudaCapabilities` — compile en local, comme blender.
+  # sm_86 par `cudaCapabilities` — compile en local (aucun cache CUDA).
   #
   # ollama désactivé pour le moment (voir modules/common.nix).
   # services.ollama.package = pkgs.ollama-cuda;

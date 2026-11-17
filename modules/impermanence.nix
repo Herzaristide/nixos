@@ -144,7 +144,7 @@ in
         ".docker"
 
         # Caches de shaders : régénérables, mais les reconstruire à chaque boot
-        # se paie en saccades dans toute application GPU (Blender, Chromium…).
+        # se paie en saccades dans toute application GPU (Chromium, Zed…).
         ".cache/mesa_shader_cache" # AMD/Intel (gary, iGPU de bernanos)
       ]
       ++ lib.optionals config.head [
@@ -178,7 +178,6 @@ in
         ".local/state/anna" # karenine : mot d'activation allumé (wake-on), lecture des réponses (speech.json)
         ".config/anna" # karenine : les serveurs suivis (servers.json)
         ".config/kdeconnect"
-        ".config/blender"
         # REAPER : reaper.ini (dont la config reapy), raccourcis, scripts,
         # modèles de projet et de piste, presets d'effets.
         ".config/REAPER"

@@ -41,7 +41,7 @@ in
   #
   # Tous les serveurs partout : sur les postes comme pour l'utilisateur `claude`
   # des agents (modules/agents.nix). Ceux liés à un compte s'authentifient par
-  # utilisateur ; ceux qui visent des services de bernanos (blender) ou des
+  # utilisateur ; ceux qui visent des services de bernanos (reaper) ou des
   # dossiers d'aristide (filesystem) restent simplement inopérants ailleurs.
   #
   # Les serveurs stdio packagés dans nixpkgs sont lancés depuis le store, pas
@@ -109,23 +109,11 @@ in
         ];
         type = "stdio";
       };
-      # Pilotage de Blender : le serveur parle à l'add-on BlenderMCP (socket
-      # 9876, déposé par home/modules/blender.nix) — Blender doit tourner et
-      # l'add-on être connecté pour que les outils répondent.
-      # Seul serveur stdio encore lancé par un résolveur externe :
-      # mcp-for-blender (ex-blender-mcp, renommé en 2.x) n'est pas packagé
-      # dans nixpkgs. `uvx` le résout, mais épinglé sur la release de
-      # home/modules/blender-mcp-release.nix — la même que l'add-on.
-      blender = {
-        command = "${pkgs.uv}/bin/uvx";
-        args = [ "mcp-for-blender==${(import ../../blender-mcp-release.nix).version}" ];
-        type = "stdio";
-      };
       # Pilotage de REAPER (bonfire-systems/reaper-mcp, MIT, absent de
       # nixpkgs) : pistes, MIDI, effets, mixage, rendu, analyse. Il passe par
       # python-reapy : REAPER doit tourner, configuré une fois avec
-      # `reaper-setup-reapy` (home/modules/music/daw.nix). Comme blender,
-      # résolu par `uvx` mais épinglé sur une release.
+      # `reaper-setup-reapy` (home/modules/music/daw.nix). Résolu par `uvx`
+      # (seul serveur stdio dans ce cas), mais épinglé sur une release.
       reaper = {
         command = "${pkgs.uv}/bin/uvx";
         args = [ "reaper-mcp-server==0.4.0" ];

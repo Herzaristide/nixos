@@ -25,7 +25,7 @@ let
     ./modules/accent/accent.nix
     ./modules/kde
     ./modules/chromium.nix
-    ./modules/blender.nix
+    ./modules/f3d.nix
     ./modules/music
   ];
 in

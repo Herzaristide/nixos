@@ -53,16 +53,11 @@
 
       # Claude Desktop : repackaging du .deb officiel (absent de nixpkgs).
       claude-desktop = pkgs.callPackage ./pkgs/claude-desktop { };
-
-      # Blender officiel de blender.org (CUDA/OptiX inclus, rien à compiler) :
-      # pris par bernanos via son overlay, exposé ici pour `nix build .#blender-bin`.
-      blender-bin = pkgs.callPackage ./pkgs/blender-bin { };
     in
     {
       packages.${system} = {
         anna = anna;
         claude-desktop = claude-desktop;
-        blender-bin = blender-bin;
       };
 
       # `nix fmt` : nixfmt sur tout le dépôt, sans passer par le devShell.
