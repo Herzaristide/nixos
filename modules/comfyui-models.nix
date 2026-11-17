@@ -88,6 +88,50 @@
     }
   ];
 
+  # FLUX 3 Image Klein 5.6B distillé (bf16, oct. 2026) — génération + édition
+  # jusqu'à 10 images de référence, au niveau de Qwen-Image 2.1 sur Artificial
+  # Analysis. Licence FLUX Kommunity : usage commercial gratuit sous 5 M$ de
+  # chiffre d'affaires annuel (contrairement à Qwen-Image 2.1).
+  # Le dépôt officiel black-forest-labs/flux-3-image-klein-comfy est soumis à
+  # acceptation (401 sans jeton, et fetchurl n'en passe pas) : diffusion et
+  # encodeur viennent du miroir public ml-resources/flux-3-image-klein-comfy,
+  # fichiers de même taille à l'octet que l'officiel. Le VAE est celui de
+  # FLUX.2 (même sha256), pris chez Comfy-Org et dédupliqué avec `flux2klein`.
+  # Encodeur Qwen3-VL 4B en int8_convrot, comme celui de Qwen-Image.
+  # Réécriture de prompt Qwen3.5 9B du dépôt (~9.7 Go) non retenue. (~16.3 Go)
+  flux3klein = [
+    {
+      name = "flux3-image-klein-bf16.safetensors";
+      installPaths = "diffusion_models";
+      url = "https://huggingface.co/ml-resources/flux-3-image-klein-comfy/resolve/3ba0f7064cbb1666a71e2820d3cc5c2273bb6cd0/diffusion_models/flux3-image-klein-bf16.safetensors";
+      hash = "sha256-w+mBPN0EnIMcg2sunbYRUOSak/waTGOyVklGQv7gvXw=";
+    }
+    {
+      name = "qwen3vl_4b_int8_convrot.safetensors";
+      installPaths = "text_encoders";
+      url = "https://huggingface.co/ml-resources/flux-3-image-klein-comfy/resolve/3ba0f7064cbb1666a71e2820d3cc5c2273bb6cd0/text_encoders/qwen3vl_4b_int8_convrot.safetensors";
+      hash = "sha256-Mt4RPL+CgrAsv/B5S2N7nWZ22gkxSh21owvOqb9O4Bw=";
+    }
+    {
+      name = "flux2-vae.safetensors";
+      installPaths = "vae";
+      url = "https://huggingface.co/Comfy-Org/Flux-2-Klein-4B/resolve/5b3abca5c0dc1ecd4eaf3340868d09063fc1c965/split_files/vae/flux2-vae.safetensors";
+      hash = "sha256-ho/ns0PMjzoZ28/K+8PV+IiAK+P4m9gbZbNiGgZs6PM=";
+    }
+  ];
+
+  # FLUX 3 Image Klein Base (bf16, 50 pas) — la variante non distillée, faite
+  # pour entraîner des LoRA (style maison). Même miroir et même licence que
+  # `flux3klein`, à activer avec lui. (~11.1 Go)
+  flux3kleinbase = [
+    {
+      name = "flux3-image-klein-base-bf16.safetensors";
+      installPaths = "diffusion_models";
+      url = "https://huggingface.co/ml-resources/flux-3-image-klein-comfy/resolve/3ba0f7064cbb1666a71e2820d3cc5c2273bb6cd0/diffusion_models/flux3-image-klein-base-bf16.safetensors";
+      hash = "sha256-XJIXWdwDZj27Z98R2OPTF9LVuJOzG5acldx36/hhsZw=";
+    }
+  ];
+
   # Qwen-Image 2.1 (bf16) + LoRA Turbo — 2e des poids ouverts sur Artificial
   # Analysis (Elo 1047, nov. 2026, à égalité statistique avec le 1er), le mieux
   # classé qui tienne sur gary et se télécharge sans compte. Texte dans
