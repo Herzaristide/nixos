@@ -465,6 +465,15 @@
       url = "https://huggingface.co/Comfy-Org/TRELLIS.2/resolve/430a9d09b2416687018c8fe8edced2ad4858a439/diffusion_models/trellis_2_bf16.safetensors";
       hash = "sha256-v46+KfLXNyLKihe3qmXvB2UOsm0EeZrmAEggWPlpIbU=";
     }
+    # Variante que référence le template officiel (nœud UNETLoader 40) : sans
+    # elle, la validation du prompt échoue (« Value not in list ») même quand
+    # l'interrupteur choisit Pixal3D. ~5.3 Go, ops int8 natives de comfy-kitchen HIP.
+    {
+      name = "trellis_2_int8_convrot.safetensors";
+      installPaths = "diffusion_models";
+      url = "https://huggingface.co/Comfy-Org/TRELLIS.2/resolve/430a9d09b2416687018c8fe8edced2ad4858a439/diffusion_models/trellis_2_int8_convrot.safetensors";
+      hash = "sha256-0BlSrRNyE/aoaPhra4dwJidvhK9e7CMGkhdHWgutOjE=";
+    }
     {
       name = "dino_v3_vit_l.safetensors";
       installPaths = "clip_vision";

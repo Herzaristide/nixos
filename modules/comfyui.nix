@@ -73,7 +73,21 @@ in
     (final: prev: {
       pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
         (import ../pkgs/comfy-kitchen-hip.nix { inherit (final) lib rocmPackages symlinkJoin; })
+        (import ../pkgs/torchvision-rocm.nix { inherit (final) lib rocmPackages symlinkJoin; })
       ];
+      # UnwrapMesh (dépliage UV du template TRELLIS.2 / Pixal3D) résout ses
+      # cartes LSCM par un torch.linalg.solve fp64 batché sur le GPU ; sur la
+      # gfx1102 maquillée, rocSOLVER (getrf batched) y plante — processus tué
+      # dès 16 matrices 2048×2048, HIPBLAS_STATUS_ALLOC_FAILED dans ComfyUI
+      # (gary, 2026-11-17). Ce solveur passe sur CPU (sa branche numpy existe
+      # déjà) ; le reste du dépliage reste sur GPU.
+      comfyui = prev.comfyui.overrideAttrs (old: {
+        postPatch = (old.postPatch or "") + ''
+          substituteInPlace comfy_extras/mesh3d/uv_unwrap/parameterize.py \
+            --replace-fail 'use_gpu = device is not None and device.type == "cuda"' \
+                           'use_gpu = device is not None and device.type == "cuda" and torch.version.hip is None'
+        '';
+      });
     })
   ];
 
@@ -95,11 +109,29 @@ in
     );
 
     extraArgs = [
-      # Attention SDPA de PyTorch (flash / mem-efficient via AOTriton).
-      # ComfyUI l'active déjà seul pour une carte vue comme gfx1100 ; le dire
-      # explicitement la garde si l'override HSA saute un jour (gfx1102 n'est
-      # pas dans sa liste et retomberait sur la split attention, plus lente).
-      "--use-pytorch-cross-attention"
+      # Attention « sub-quadratic » de ComfyUI (PyTorch pur), PAS la SDPA :
+      # sur la gfx1102 maquillée en gfx1100, les noyaux AOTriton sont faux
+      # (gary, 2026-11-17, mesuré contre une référence exacte) :
+      #  - flash : sorties à zéro au-delà de ~64k tokens (49 % de lignes
+      #    nulles à 65 536, 80 % à 98 304 ; correct jusqu'à 49 152) ;
+      #  - mem-efficient en fp32 : erreur relative ~1e20 à toute longueur.
+      # TRELLIS.2 / Pixal3D dépasse largement 64k tokens à l'étape 1024/1536 :
+      # latent corrompu → décodage de forme vide (« max(): Expected
+      # reduction dim 0 ») ou faute GPU (HSA_STATUS_ERROR_EXCEPTION 0x1016).
+      # Avec quad : correct, et plus rapide (étape 1024 : 29 s contre 88 s).
+      # Revenir à --use-pytorch-cross-attention seulement après avoir revérifié
+      # flash > 64k tokens sur une nouvelle version de torch/aotriton.
+      "--use-quad-cross-attention"
+      # Pas d'offload asynchrone des poids (activé d'office sur AMD, 2 streams) :
+      # avec, Qwen-Image 2.1 bf16 — offloadé à ~88 %, poids streamés vers le
+      # GPU à chaque pas — sortait des images corrompues au hasard (bruit,
+      # image noire, bandes violettes), le même run tantôt parfait tantôt
+      # cassé : course entre streams sous ROCm (gary, 2026-11-17). Sans,
+      # 3/3 runs corrects.
+      "--disable-async-offload"
+      # PAS de --cache-none : il corrigeait le second run Qwen-Image au même
+      # prompt, mais cassait TRELLIS.2 au hasard (RemeshMesh → maillage vide
+      # ou partiel, 3/3 runs ; 2/2 corrects sans) — gary, 2026-11-17.
       # Pas de `--fast fp16_accumulation` : avec, l'encodeur de texte de
       # Qwen-Image (Qwen3-VL 8B, en fp16 sur GPU) sortait un conditionnement
       # faux — images sans rapport avec le prompt, même backend HIP de
