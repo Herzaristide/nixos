@@ -129,6 +129,9 @@ in
       # cassé : course entre streams sous ROCm (gary, 2026-11-17). Sans,
       # 3/3 runs corrects.
       "--disable-async-offload"
+      # PAS de --disable-pinned-memory : testé contre FLUX 3 Klein en édition
+      # (gris / bruit / noir dès le 2e prompt d'un même processus) — 1/5 runs
+      # corrects avec, aucun gain (gary, 2026-11-17).
       # PAS de --cache-none : il corrigeait le second run Qwen-Image au même
       # prompt, mais cassait TRELLIS.2 au hasard (RemeshMesh → maillage vide
       # ou partiel, 3/3 runs ; 2/2 corrects sans) — gary, 2026-11-17.
@@ -142,6 +145,15 @@ in
       # Ni nœuds d'API payants (Comfy-Org partner nodes) ni pubs en console.
       "--disable-partner-nodes"
       "--disable-product-tips"
+      # Cache « pression RAM » (le défaut) : les modèles déjà chargés restent en
+      # RAM et ne sont libérés que quand la RAM disponible passe sous ce seuil.
+      # Défaut = 10 % de la RAM (~3 Go sur gary), et le seuil n'est vérifié
+      # qu'entre deux nœuds : recharger Qwen-Image bf16 (14 Go) avec TRELLIS.2,
+      # Pixal3D, YuE et l'encodeur Qwen encore en cache a dépassé les 32 Go en
+      # plein chargement → OOM killer (gary, 2026-11-17). 16 Go de marge
+      # couvrent le plus gros modèle chargé d'un bloc.
+      "--cache-ram"
+      "16"
     ];
   };
 
@@ -184,9 +196,15 @@ in
       # de GEMM (gary, 2026-11-16). Les résultats déjà présents dans le CSV
       # restent lus ; remettre "1" pour une séance de tuning volontaire.
       PYTORCH_TUNABLEOP_TUNING = "0";
-      # Segments extensibles : moins de fragmentation du tas HIP, donc moins
-      # d'OOM quand ComfyUI charge et décharge des modèles de tailles variées.
-      PYTORCH_HIP_ALLOC_CONF = "expandable_segments:True";
+      # PAS de PYTORCH_HIP_ALLOC_CONF=expandable_segments:True : sous torch
+      # 2.14.1+rocm7.2, l'allocateur à segments extensibles écrase des tenseurs
+      # vivants après quelques chargements/déchargements (pytorch#204212).
+      # Symptômes sur gary (2026-11-17) : dès le 2e prompt d'un même processus,
+      # VAE.encode → 100 % NaN, encodeur de texte → zéros, d'où FLUX 3 Klein en
+      # édition gris / bruit / noir, et crashs « Memory access fault … Page not
+      # present ». Avec : 2e à 4e prompt corrompus ou crash ; sans : 5/5 puis
+      # 8/8 corrects (édition + texte vers image alternés, TunableOp actif).
+      # Ne le remettre qu'après avoir revérifié sur une version corrigée.
       # Arguments de noyau en mémoire GPU plutôt qu'hôte : latence de
       # lancement réduite (recommandation AMD pour l'inférence sur RDNA).
       HIP_FORCE_DEV_KERNARG = "1";
@@ -209,6 +227,13 @@ in
       # (pinned) pour des copies asynchrones ; pas de plafond memlock qui
       # pourrait la limiter.
       LimitMEMLOCK = "infinity";
+      # Filet de sécurité RAM (gary : 32 Go). Au-delà de MemoryHigh le noyau
+      # ralentit le service et lui reprend de la mémoire ; à MemoryMax, l'OOM
+      # killer vise ComfyUI seul — sans plafond, un dépassement a tué
+      # nix-daemon (2026-11-17). Le swap reste permis au-delà (MemorySwapMax
+      # non borné). --cache-ram ci-dessus doit garder le service en dessous.
+      MemoryHigh = "24G";
+      MemoryMax = "28G";
     };
   };
 
