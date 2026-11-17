@@ -42,7 +42,7 @@ let
     # Images
     # "sd15"
     # "sdxl"
-    # "zimage"
+    "zimage"
     # "flux2klein"
     "flux3klein"
     # "flux3kleinbase"
@@ -59,9 +59,9 @@ let
     # "minimaxmusic"
     # "tts"
     # Outils
-    # "upscale"
+    "upscale"
     # "interpolation"
-    # "vision"
+    "vision"
     # 3D
     "trellis2"
   ];
@@ -146,8 +146,9 @@ in
   };
 
   systemd.services.comfyui = {
-    # Le module démarre le service au boot ; ici, à la main seulement.
-    wantedBy = lib.mkForce [ ];
+    # Démarré au boot (le défaut du module) : les modèles restent chargés entre
+    # deux générations, seule la première après un démarrage paie le
+    # chargement (~25 s pour FLUX 3 Klein). Au repos : ~800 Mo de RAM, 0 VRAM.
 
     environment = {
       # Même mapping gfx1102 → gfx1100 que la variable système de gary, que

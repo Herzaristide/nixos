@@ -44,19 +44,23 @@
     }
   ];
 
-  # Z-Image Turbo (bf16, 8 pas) — photoréalisme, très bon rapport qualité/vitesse (~20.7 Go)
+  # Z-Image Turbo (8 pas) — photoréalisme, très bon rapport qualité/vitesse,
+  # licence Apache 2.0 (commerciale). Brouillons rapides avant un rendu FLUX 3
+  # Klein / Qwen-Image. Diffusion int8_convrot (6.2 Go) + encodeur fp8_mixed
+  # (5.6 Go) : ~11.8 Go, tient sur la carte ; en bf16 (12.3 + 8 Go) une partie
+  # serait relue depuis la RAM à chaque pas. (~12.2 Go)
   zimage = [
     {
-      name = "z_image_turbo_bf16.safetensors";
+      name = "z_image_turbo_int8_convrot.safetensors";
       installPaths = "diffusion_models";
-      url = "https://huggingface.co/Comfy-Org/Z-Image-Turbo/resolve/6fc90a3b1b653e935a0d175e260736de25b84df5/split_files/diffusion_models/z_image_turbo_bf16.safetensors";
-      hash = "sha256-JAdhMFC4Cf/f8YpKyZr4Pqa5VEPs69+A4GSnnIJVdKY=";
+      url = "https://huggingface.co/Comfy-Org/Z-Image-Turbo/resolve/6fc90a3b1b653e935a0d175e260736de25b84df5/split_files/diffusion_models/z_image_turbo_int8_convrot.safetensors";
+      hash = "sha256-vlF+vUfJEqVialiOGu6kPmvkpDwM3NK0iip4DZ81hjU=";
     }
     {
-      name = "qwen_3_4b.safetensors";
+      name = "qwen_3_4b_fp8_mixed.safetensors";
       installPaths = "text_encoders";
-      url = "https://huggingface.co/Comfy-Org/Z-Image-Turbo/resolve/6fc90a3b1b653e935a0d175e260736de25b84df5/split_files/text_encoders/qwen_3_4b.safetensors";
-      hash = "sha256-bGcUmFc6wvelUBUCzM6NKwjqbKL2YcRY5wjzazbt/Fo=";
+      url = "https://huggingface.co/Comfy-Org/Z-Image-Turbo/resolve/6fc90a3b1b653e935a0d175e260736de25b84df5/split_files/text_encoders/qwen_3_4b_fp8_mixed.safetensors";
+      hash = "sha256-ckULGXWBcsWnJzz33nKdHBfn9DShBKABZ2JMupT2jxU=";
     }
     {
       name = "ae.safetensors";
@@ -98,8 +102,18 @@
   # fichiers de même taille à l'octet que l'officiel. Le VAE est celui de
   # FLUX.2 (même sha256), pris chez Comfy-Org et dédupliqué avec `flux2klein`.
   # Encodeur Qwen3-VL 4B en int8_convrot, comme celui de Qwen-Image.
-  # Réécriture de prompt Qwen3.5 9B du dépôt (~9.7 Go) non retenue. (~16.3 Go)
+  # Réécriture de prompt Qwen3.5 9B du dépôt (~9.7 Go) non retenue.
+  # La variante int8_convrot (5.8 Go, celle du template officiel) tient sur la
+  # carte avec l'encodeur (~10.4 Go) : le bf16 (11 Go) n'y tient pas, 6.2 Go
+  # sont relus depuis la RAM à chaque pas (2.8 s/pas mesurés). Le bf16 reste
+  # pour comparer la qualité. (~22.1 Go)
   flux3klein = [
+    {
+      name = "flux3-image-klein-int8-convrot.safetensors";
+      installPaths = "diffusion_models";
+      url = "https://huggingface.co/ml-resources/flux-3-image-klein-comfy/resolve/3ba0f7064cbb1666a71e2820d3cc5c2273bb6cd0/diffusion_models/flux3-image-klein-int8-convrot.safetensors";
+      hash = "sha256-hH2JM1SK/ZPfSvLKwkmOcIkb8o2drgbWlfU2mS4Wj+I=";
+    }
     {
       name = "flux3-image-klein-bf16.safetensors";
       installPaths = "diffusion_models";
@@ -514,6 +528,16 @@
       installPaths = "diffusion_models";
       url = "https://huggingface.co/Comfy-Org/Pixal3D/resolve/f37641be376725d324c56626007cc477f1249a69/diffusion_models/pixal3d_int8_convrot.safetensors";
       hash = "sha256-RiHqw7cVSE95MDxxUq9kH+CysU9NDj05T9aSLQD5Vew=";
+    }
+    # Pixal3D multi-vues : reconstruit à partir de plusieurs vues du même
+    # objet (face, profil, dos — générables par FLUX 3 Klein en édition) au
+    # lieu d'inventer les faces cachées. Template `3d_pixal3d_multi_views`,
+    # qui ne demande que ce fichier en plus. (~5.6 Go)
+    {
+      name = "pixal3d_multiview_int8_convrot.safetensors";
+      installPaths = "diffusion_models";
+      url = "https://huggingface.co/Comfy-Org/Pixal3D/resolve/f37641be376725d324c56626007cc477f1249a69/diffusion_models/pixal3d_multiview_int8_convrot.safetensors";
+      hash = "sha256-ax6zMokw2SHTtXUI2cRszuwcF03O3uvBTxdqtn1J9Hc=";
     }
     # DINOv3 L « NAF » : encodeur d'image que le template branche sur Pixal3D
     # et TRELLIS.2 (~1.2 Go)
