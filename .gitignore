@@ -12,3 +12,4 @@ result/
 # CA locales (hosts/wsl : /var/lib/extra-ca), jamais dans le dépôt
 *.pem
 *.crt
+.playwright-mcp/
