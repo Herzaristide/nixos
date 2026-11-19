@@ -205,6 +205,16 @@
   #
   # Le service lui-même : modules/ollama.nix.
   services.ollama.package = pkgs.ollama-cuda;
+  # 8 Gio de VRAM (RTX 3070 Mobile) et ~5 Go de RAM libre en session : rien
+  # au-delà de ~7 Go. Tailles relevées le 2026-11-19, ~16 Go au total. Les
+  # gros modèles se demandent à gary (OLLAMA_HOST=gary:11434).
+  services.ollama.loadModels = [
+    "qwen3.5:9b" # 6,6 Go — polyvalent, code
+    "gemma4:e4b" # 6,6 Go — léger, lit les images, bon en français
+    "qwen3.5:4b" # 3,3 Go — rapide, laisse de la VRAM libre
+    # "qwen3:8b" # 5,2 Go
+    # "llama3.1:8b" # 4,9 Go
+  ];
   services.ollama.environmentVariables = {
     __NV_PRIME_RENDER_OFFLOAD = "1";
     __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";

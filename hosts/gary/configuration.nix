@@ -106,6 +106,20 @@
     config.services.ollama.port
   ];
 
+  # Modèles ollama, tirés du registre au démarrage (modules/ollama.nix).
+  # 16 Gio de VRAM, partagés avec ComfyUI ; au-delà de ~14 Go le modèle
+  # déborde sur la RAM, ce qui ne reste rapide que pour les MoE (peu de
+  # paramètres actifs). Tailles relevées le 2026-11-19, ~47 Go au total.
+  services.ollama.loadModels = [
+    "gpt-oss:20b" # 13,8 Go — raisonnement, effort réglable ; MoE, tient en VRAM
+    "qwen3.5:9b" # 6,6 Go — polyvalent rapide, long contexte
+    "gemma4:12b" # 8,0 Go — polyvalent, lit les images, bon en français
+    "qwen3-coder:30b" # 18,6 Go — code ; MoE 3B actifs, déborde ~4 Go en RAM
+    # "qwen3.6:35b-a3b" # 22,6 Go — MoE plus récent, déborde ~8 Go
+    # "gemma4:26b" # 18,7 Go
+    # "qwen3.6:27b" # 17,8 Go — dense : lent dès qu'il déborde
+  ];
+
   # Wifi MediaTek MT7922 (mt7921e, PCI 09:00.0) — bug matériel/firmware connu et
   # intermittent : après un reboot à chaud, le chip reste parfois bloqué dans un
   # état d'où l'hôte ne peut pas reprendre la « propriété » du firmware. Le boot
