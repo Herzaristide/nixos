@@ -119,16 +119,31 @@ in
           no_hardware_cursors = 1;
         };
 
+        # Les fenêtres sont posées sur la surface de karenine (panels/Surface.qml :
+        # la même encre sous les fenêtres, dans la barre du bas et le panneau de
+        # droite). Elles suivent sa grille : 18 px au bord de l'écran — là où
+        # karenine pose les boutons de la barre (à gauche) et le haut du panneau
+        # (SidePanel.qml, `edge`) —, 18 px entre deux fenêtres (2 × gaps_in),
+        # et l'arrondi de ses cartes (Theme.radius = 14).
         general = {
-          gaps_in = 8;
-          gaps_out = 12;
-          "col.inactive_border" = "rgba(44444433)";
+          gaps_in = 9;
+          gaps_out = 18;
+          border_size = 1;
+          # Un filet à peine visible sur l'encre, comme les séparateurs de
+          # karenine ; gris neutre, lisible en thème sombre comme clair.
+          "col.inactive_border" = "rgba(8080802e)";
           # col.active_border is set by the anna fragment
           # (~/.config/accent/fragments/hyprland-colors.lua) loaded below.
         };
 
         decoration = {
-          rounding = 2;
+          rounding = 14;
+          rounding_power = 2; # un arc de cercle, comme les Rectangle de Qt
+          # Une surface plate, sans relief : ni la barre ni le panneau n'ont
+          # d'ombre, les fenêtres non plus.
+          shadow = {
+            enabled = false;
+          };
         };
 
         misc = {

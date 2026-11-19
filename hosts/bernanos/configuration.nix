@@ -216,6 +216,12 @@
     # "llama3.1:8b" # 4,9 Go
   ];
   services.ollama.environmentVariables = {
+    # Le pilote de karenine (anna) envoie ~5 300 tokens avant le premier mot
+    # (prompt + 32 outils) : avec le contexte par défaut (4096), ollama en
+    # jetait la moitié sans rien dire (mesuré le 2026-11-20). À 16k,
+    # qwen3.5:9b tient entièrement dans les 8 Gio (5,6 Gio) ; à 32k il
+    # déborde sur le CPU (85 % en VRAM).
+    OLLAMA_CONTEXT_LENGTH = "16384";
     __NV_PRIME_RENDER_OFFLOAD = "1";
     __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
