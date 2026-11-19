@@ -172,8 +172,7 @@ in
         ".local/share/zed" # extensions + historique de l'éditeur
         ".local/share/quickshell" # karenine : écran de l'interface (display.json)
         # karenine : les notes d'anna (notes.json + images), dans
-        # $XDG_DATA_HOME/anna/notes (anna/src/notes.rs::dir). Pas tout
-        # .local/share/anna : parakeet/ et piper/ y sont des liens gérés par home-manager.
+        # $XDG_DATA_HOME/anna/notes (anna/src/notes.rs::dir).
         ".local/share/anna/notes"
         ".local/state/anna" # karenine : mot d'activation allumé (wake-on), lecture des réponses (speech.json)
         ".config/anna" # karenine : les serveurs suivis (servers.json)
