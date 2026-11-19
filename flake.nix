@@ -16,7 +16,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     karenine = {
-      url = "github:Herzaristide/karenine";
+      url = "github:Herzaristide/karenine/main";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     disko = {
