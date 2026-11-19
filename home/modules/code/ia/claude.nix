@@ -32,7 +32,7 @@
     settings = {
       theme = "dark-ansi";
       language = "French";
-      model = "sonnet";
+      model = "claude-opus-5-5";
       spinnerTipsEnabled = false;
       voiceEnabled = true;
       voice = {
