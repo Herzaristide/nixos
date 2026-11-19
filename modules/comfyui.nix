@@ -58,6 +58,7 @@ let
     "yue"
     # "minimaxmusic"
     # "tts"
+    "transcription" # MuScriptor, Beat This!, Mel-Band RoFormer, RMVPE
     # Outils
     "upscale"
     # "interpolation"

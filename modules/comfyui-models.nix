@@ -372,6 +372,80 @@
     }
   ];
 
+  # Transcription audio → partition (vidéos YouTube → violon, nov. 2026).
+  # Aucun nœud natif dans ComfyUI 0.44 : ces poids servent aux nœuds tiers
+  # (ComfyUI-MuScriptor, ComfyUI-MelBandRoFormer…) ou au CLI `muscriptor`.
+  #  - MuScriptor (Kyutai × Mirelo, juil. 2026) : audio → MIDI multi-instrument,
+  #    Multi F1 48,2 contre 21,9 pour YourMT3+ (chiffres des auteurs). Poids
+  #    CC BY-NC 4.0 : non commercial. Les dépôts officiels MuScriptor/* sont
+  #    soumis à acceptation (fetchurl ne passe pas de jeton) : miroir public
+  #    AEmotionStudio/muscriptor-models, sha256 identiques aux miroirs
+  #    cocktailpeanut / sonic-coder, tailles à l'octet de l'officiel. Une
+  #    variante par dossier, model.safetensors + config.json comme sur HF ;
+  #    large (1,3B) tient sans peine sur la carte.
+  #  - Beat This! : tempo et temps forts, utilisé par MuScriptor pour
+  #    quantifier la partition.
+  #  - Mel-Band RoFormer (voix / instrumental, version Kijai fp16) : isole la
+  #    voix avant transcription.
+  #  - RMVPE : hauteur d'une mélodie seule (voix, violon), robuste à
+  #    l'accompagnement. (~7.8 Go)
+  transcription = [
+    {
+      name = "model.safetensors";
+      installPaths = "muscriptor-large";
+      url = "https://huggingface.co/AEmotionStudio/muscriptor-models/resolve/f864b9916e54ab70a6dfae0f7fbe8e37cd7fa68a/large/model.safetensors";
+      hash = "sha256-rE626offwmtsprlUxrlnq4etTH0I4HiyUhTxPtBR85c=";
+    }
+    {
+      name = "config.json";
+      installPaths = "muscriptor-large";
+      url = "https://huggingface.co/AEmotionStudio/muscriptor-models/resolve/f864b9916e54ab70a6dfae0f7fbe8e37cd7fa68a/large/config.json";
+      hash = "sha256-Fr7dArGHcOQ3QEGbDVd38jEEfpbomH9JjooRI8OcmFI=";
+    }
+    {
+      name = "model.safetensors";
+      installPaths = "muscriptor-medium";
+      url = "https://huggingface.co/AEmotionStudio/muscriptor-models/resolve/f864b9916e54ab70a6dfae0f7fbe8e37cd7fa68a/medium/model.safetensors";
+      hash = "sha256-rICtvfhdhyMXNf2UivcBNEHAr87TFsTpBn/V2Kf7l+w=";
+    }
+    {
+      name = "config.json";
+      installPaths = "muscriptor-medium";
+      url = "https://huggingface.co/AEmotionStudio/muscriptor-models/resolve/f864b9916e54ab70a6dfae0f7fbe8e37cd7fa68a/medium/config.json";
+      hash = "sha256-Q+E6cPya4K82t0R8BvPqwigtrradecH/hA7ef9qiajs=";
+    }
+    {
+      name = "model.safetensors";
+      installPaths = "muscriptor-small";
+      url = "https://huggingface.co/AEmotionStudio/muscriptor-models/resolve/f864b9916e54ab70a6dfae0f7fbe8e37cd7fa68a/small/model.safetensors";
+      hash = "sha256-u9SCx4a4lc99j0QYUHPZUa2uLruKZvgsqEzR+EVpVJw=";
+    }
+    {
+      name = "config.json";
+      installPaths = "muscriptor-small";
+      url = "https://huggingface.co/AEmotionStudio/muscriptor-models/resolve/f864b9916e54ab70a6dfae0f7fbe8e37cd7fa68a/small/config.json";
+      hash = "sha256-MAj8SB5KHNl44zfrN1kmDCcIkiBNtQOSNayTnh9CrrI=";
+    }
+    {
+      name = "beat_this_final0.ckpt";
+      installPaths = "beat_this";
+      url = "https://huggingface.co/AEmotionStudio/muscriptor-models/resolve/f864b9916e54ab70a6dfae0f7fbe8e37cd7fa68a/shared/beat_this_final0.ckpt";
+      hash = "sha256-jDKLRfWdjdPf8hklP/ao1kgr5X0BM6KRQOL+u/jrgzE=";
+    }
+    {
+      name = "MelBandRoformer_fp16.safetensors";
+      installPaths = "diffusion_models";
+      url = "https://huggingface.co/Kijai/MelBandRoFormer_comfy/resolve/7dc5fa7824f1f3089a5c4b130d767004ccc1ed12/MelBandRoformer_fp16.safetensors";
+      hash = "sha256-YRmu83mmxyZOCzfbZa4eZIi4ykoAuvVtbSRHN7hIgiY=";
+    }
+    {
+      name = "rmvpe.pt";
+      installPaths = "rmvpe";
+      url = "https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/e6d0c1a17da07c33557852f9dfa2bd44cc75737d/rmvpe.pt";
+      hash = "sha256-bWIhX0MG48ongkYYhgcgnwmvPcd+1CMu/dBpeYxOwZM=";
+    }
+  ];
+
   # MiniMax Music 3 (DiT fp16, encodeur int8) — musique avec voix (~14.3 Go)
   minimaxmusic = [
     {
