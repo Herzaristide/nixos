@@ -26,31 +26,6 @@
     };
   };
 
-  networking.hosts = {
-    "0.0.0.0" = [
-      "youtube.com"
-      "www.youtube.com"
-      "m.youtube.com"
-      "studio.youtube.com"
-      "tv.youtube.com"
-      "kids.youtube.com"
-      "gaming.youtube.com"
-      "youtu.be"
-      "youtubekids.com"
-      "www.youtubekids.com"
-      # "twitch.tv"
-      # "www.twitch.tv"
-      # "m.twitch.tv"
-      # "player.twitch.tv"
-      # "clips.twitch.tv"
-      # "dashboard.twitch.tv"
-      # "gql.twitch.tv"
-      # "static.twitchcdn.net"
-      # "static-cdn.jtvnw.net"
-      # "usher.ttvnw.net"
-    ];
-  };
-
   # Wake-on-LAN désactivé explicitement sur toutes les interfaces filaires.
   # Un magic packet n'est pas authentifié : n'importe qui sur le segment réseau
   # peut rallumer la machine. Ne pas se contenter de retirer l'activation —
