@@ -151,8 +151,7 @@
       };
     };
 
-    # Sandbox (bubblewrap) des commandes Bash de Claude, sur tous les hôtes
-    # (y compris le compte `claude` des agents de kafka) :
+    # Sandbox (bubblewrap) des commandes Bash de Claude, sur tous les hôtes :
     #   - écriture limitée au dossier du projet ;
     #   - lecture interdite sur les secrets (denyRead, + les règles Read() en
     #     deny ci-dessus, fusionnées par Claude Code) ;

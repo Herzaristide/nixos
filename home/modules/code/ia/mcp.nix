@@ -39,9 +39,8 @@ in
   # MCP (Model Context Protocol) servers — writes ~/.config/mcp/mcp.json
   # Consumed by Claude Code (via enableMcpIntegration).
   #
-  # Tous les serveurs partout : sur les postes comme pour l'utilisateur `claude`
-  # des agents (modules/agents.nix). Ceux liés à un compte s'authentifient par
-  # utilisateur ; ceux qui visent des services de bernanos (reaper) ou des
+  # Tous les serveurs sur tous les hôtes. Ceux liés à un compte s'authentifient
+  # par utilisateur ; ceux qui visent des services de bernanos (reaper) ou des
   # dossiers d'aristide (filesystem) restent simplement inopérants ailleurs.
   #
   # Les serveurs stdio packagés dans nixpkgs sont lancés depuis le store, pas

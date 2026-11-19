@@ -98,7 +98,7 @@ in
     # bernanos (head) est le poste principal : identité, secrets, apps et données.
     # Les serveurs de dev (gary, kafka), vidés de tout secret personnel le
     # 2026-10-18 et dédiés au dev, ne gardent que l'outillage et ~/code, où
-    # sont clonés les dépôts. Les agents ont leur propre liste (modules/agents.nix).
+    # sont clonés les dépôts.
     users.aristide = {
       files = [
         ".claude.json"

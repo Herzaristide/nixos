@@ -22,6 +22,7 @@
     ../../modules/luks-usb-key.nix
     ../../modules/impermanence.nix
     ../../modules/comfyui.nix
+    ../../modules/ollama.nix
   ];
 
   # Hostname
@@ -30,8 +31,7 @@
   # sshd actif sur les serveurs seulement (désactivé par défaut, modules/network.nix).
   services.openssh.enable = true;
 
-  # Clé d'exupery : n'ouvre que les serveurs de dev (ici et kafka, via
-  # modules/agents.nix), pas les autres hôtes ni GitHub.
+  # Clé d'exupery : n'ouvre que les serveurs de dev (ici et kafka), pas les autres hôtes ni GitHub.
   users.users.aristide.openssh.authorizedKeys.keys = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILxa24l5t4C9ZHBE6NDE823vui27oYX2bQuTLtDY3lY/ aristide@exupery"
   ];
@@ -80,12 +80,31 @@
   # projets pip/Docker de déclarer où ils trouvent ROCm.
   environment.variables.HSA_OVERRIDE_GFX_VERSION = "11.0.0";
 
-  # ollama désactivé pour le moment (voir modules/common.nix).
-  # services.ollama.environmentVariables = {
-  #   OLLAMA_FLASH_ATTENTION = "1";
-  #   OLLAMA_KV_CACHE_TYPE = "q8_0";
-  #   OLLAMA_KEEP_ALIVE = "0";
-  # };
+  # ollama (service : modules/ollama.nix) sur la RX 7600 XT. La variable
+  # globale ci-dessus ne s'applique pas aux services systemd : rocmOverrideGfx
+  # pose HSA_OVERRIDE_GFX_VERSION pour lui, et HIP_VISIBLE_DEVICES écarte
+  # l'iGPU Raphael (gfx1036), qui sous l'override serait pris pour un gfx1100.
+  # KEEP_ALIVE = 0 : le modèle quitte la VRAM aussitôt la réponse donnée, pour
+  # la laisser à ComfyUI, qui partage la carte.
+  #
+  # Exposé au tailnet comme ComfyUI (modules/comfyui.nix) : le service écoute
+  # sur 0.0.0.0, mais le port 11434 n'est ouvert que sur tailscale0 — rien sur
+  # le LAN. ollama n'a aucune authentification : tout appareil du tailnet peut
+  # l'interroger, télécharger ou supprimer des modèles.
+  services.ollama = {
+    host = "0.0.0.0";
+    package = pkgs.ollama-rocm;
+    rocmOverrideGfx = "11.0.0";
+    environmentVariables = {
+      HIP_VISIBLE_DEVICES = "0";
+      OLLAMA_FLASH_ATTENTION = "1";
+      OLLAMA_KV_CACHE_TYPE = "q8_0";
+      OLLAMA_KEEP_ALIVE = "0";
+    };
+  };
+  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [
+    config.services.ollama.port
+  ];
 
   # Wifi MediaTek MT7922 (mt7921e, PCI 09:00.0) — bug matériel/firmware connu et
   # intermittent : après un reboot à chaud, le chip reste parfois bloqué dans un

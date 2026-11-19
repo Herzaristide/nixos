@@ -23,6 +23,7 @@
     ../../modules/security.nix
     # ../../modules/android.nix  # test : déplacement vers un devShell par projet
     ../../modules/impermanence.nix
+    ../../modules/ollama.nix
     ../../modules/print.nix
   ];
 
@@ -202,12 +203,12 @@
   # ollama CUDA : `pkgs.ollama-cuda` (pas de `cudaSupport` global), ciblé sur
   # sm_86 par `cudaCapabilities` — compile en local (aucun cache CUDA).
   #
-  # ollama désactivé pour le moment (voir modules/common.nix).
-  # services.ollama.package = pkgs.ollama-cuda;
-  # services.ollama.environmentVariables = {
-  #   __NV_PRIME_RENDER_OFFLOAD = "1";
-  #   __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";
-  #   __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-  #   __VK_LAYER_NV_optimus = "NVIDIA_only";
-  # };
+  # Le service lui-même : modules/ollama.nix.
+  services.ollama.package = pkgs.ollama-cuda;
+  services.ollama.environmentVariables = {
+    __NV_PRIME_RENDER_OFFLOAD = "1";
+    __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    __VK_LAYER_NV_optimus = "NVIDIA_only";
+  };
 }

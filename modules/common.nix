@@ -165,13 +165,6 @@
       setSocketVariable = true;
     };
 
-    # ollama désactivé pour le moment (voir aussi hosts/{gary,bernanos}/configuration.nix).
-    # services.ollama = {
-    #   enable = true;
-    #   host = "127.0.0.1";
-    #   package = lib.mkDefault pkgs.ollama; # bernanos surcharge par ollama-cuda
-    # };
-
     # Périphériques Logitech sans fil (clavier MX Keys Mini via récepteur Logi Bolt) :
     # installe Solaar + les règles udev qui donnent l'accès aux /dev/hidraw du récepteur
     # (sinon 0600 root → « No supported device found ». La batterie remonte alors sans sudo.
