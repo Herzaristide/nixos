@@ -202,10 +202,13 @@ in
     ../../modules/kernel.nix
     ../../modules/network.nix
     ../../modules/tailscale.nix
+    ../../modules/node-exporter.nix
     ../../modules/power.nix
     ../../modules/zram.nix
     ../../modules/storage.nix
     ../../modules/head.nix
+    ../../modules/greetd.nix
+    ../../modules/nautilus.nix
     ../../modules/audio.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix

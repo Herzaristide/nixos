@@ -9,11 +9,6 @@
 # matériel (CPU, GPU, alimentation, caméra et écrans restent dans
 # hosts/<hôte>/configuration.nix). L'importer suffit : il pose `head = true`.
 {
-  imports = [
-    ./greetd.nix
-    ./nautilus.nix
-  ];
-
   head = true;
 
   # Démarrage silencieux : ni messages du noyau, ni statut des unités systemd,
@@ -76,12 +71,18 @@
   # a second store path and user-units fails on the duplicate .service.
   xdg.portal = {
     enable = true;
+    # Sélecteur de fichiers : Nautilus. Depuis GNOME 47, xdg-desktop-portal-gnome
+    # n'a plus de dialogue à lui, il délègue FileChooser à org.gnome.Nautilus
+    # (D-Bus) — donc à l'enveloppe de modules/nautilus.nix, thémée par anna. Seul
+    # FileChooser lui est routé : ses captures/partage d'écran parlent à Mutter.
     extraPortals = [
       pkgs.kdePackages.xdg-desktop-portal-kde
+      pkgs.xdg-desktop-portal-gnome
     ];
     config.common = {
       default = "hyprland;kde";
       "org.freedesktop.impl.portal.Settings" = "kde";
+      "org.freedesktop.impl.portal.FileChooser" = "gnome";
     };
   };
 
@@ -192,4 +193,15 @@
     scrcpy
     android-tools
   ];
+
+  # Chromium (Linux) ne lit ses policies que dans /etc/chromium/policies/managed.
+  # Celles de l'utilisateur (home/modules/chromium.nix : preferences.json) et
+  # l'accent.json qu'anna réécrit à chaque changement de palette ou de mode
+  # vivent dans ~/.config/chromium/policies/managed (persisté par
+  # impermanence.nix). Le lien porte sur le dossier entier : Chromium surveille
+  # le dossier, pas la cible d'un lien de fichier, et voit ainsi les
+  # réécritures d'anna en direct. Pas de programs.chromium système : ses
+  # extraOpts écriraient dans ce même dossier.
+  environment.etc."chromium/policies/managed".source =
+    "${config.home-manager.users.aristide.xdg.configHome}/chromium/policies/managed";
 }

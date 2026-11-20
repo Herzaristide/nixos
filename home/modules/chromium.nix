@@ -100,7 +100,9 @@ in
   };
 
   # Policies : home-manager n'expose pas `extraOpts`, donc on écrit
-  # directement le fichier de policy par-utilisateur.
+  # directement le fichier de policy par-utilisateur. Chromium ne le lit que
+  # parce que modules/head.nix fait de /etc/chromium/policies/managed un lien
+  # vers ce dossier.
   xdg.configFile."chromium/policies/managed/preferences.json".text = builtins.toJSON {
     TranslateEnabled = false;
     # Le profil Chromium est persisté : il a mémorisé ~/Downloads et ignore

@@ -15,8 +15,8 @@
 
   # Plus de `trustedInterfaces = [ "tailscale0" ]` : seuls les ports déclarés
   # entrent par le tailnet. Chaque service l'ouvre lui-même là où il est défini
-  # (comfyui : 8188 sur gary ; agents : 8000-8099 sur kafka). Les postes
-  # (bernanos, exupery), sans sshd, n'exposent rien au tailnet.
+  # (comfyui : 8188 sur gary, node_exporter : 9100 partout via node-exporter.nix).
+  # Les postes (bernanos, exupery) n'ont pas sshd ; KDE Connect y ouvre les siens.
   networking.firewall.interfaces.tailscale0.allowedTCPPorts =
     lib.optional config.services.openssh.enable 22;
 

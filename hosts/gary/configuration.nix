@@ -14,6 +14,7 @@
     ../../modules/kernel.nix
     ../../modules/network.nix
     ../../modules/tailscale.nix
+    ../../modules/node-exporter.nix
     ../../modules/power.nix
     ../../modules/zram.nix
     ../../modules/storage.nix
@@ -137,4 +138,58 @@
   services.hardware.openrgb.enable = true;
   services.hardware.openrgb.motherboard = "amd"; # loads the AMD SMBus (i2c-piix4) path
 
+  # GPU pour node_exporter (gpu.prom, à côté de l'extras.prom de
+  # modules/node-exporter.nix), lu par anna. Tout vient de sysfs ; une carte
+  # suspendue n'est pas lue (une lecture réarme son autosuspend).
+  systemd.services.gpu-metrics = {
+    description = "GPU AMD pour node_exporter (anna)";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${
+        lib.getExe (
+          pkgs.writeShellApplication {
+            name = "gpu-metrics";
+            runtimeInputs = [ pkgs.coreutils ];
+            text = ''
+              # La RX 7600 XT (Navi 33, 0x7480), pas l'iGPU. Une carte endormie n'est pas lue : seul son état l'est.
+              dir=$1
+              {
+                for d in /sys/bus/pci/drivers/amdgpu/0000:*; do
+                  [ "$(cat "$d/device" 2>/dev/null)" = 0x7480 ] || continue
+                  pci=''${d##*/}
+                  state=$(cat "$d/power/runtime_status" 2>/dev/null || echo active)
+                  echo "gpu_info{pci=\"$pci\",vendor=\"amd\",name=\"Radeon RX 7600 XT\",state=\"$state\"} 1"
+                  echo "gpu_vram_total_bytes{pci=\"$pci\"} $(cat "$d/mem_info_vram_total")"
+                  if [ "$state" = active ]; then
+                    echo "gpu_busy_percent{pci=\"$pci\"} $(cat "$d/gpu_busy_percent")"
+                    echo "gpu_vram_used_bytes{pci=\"$pci\"} $(cat "$d/mem_info_vram_used")"
+                    for t in "$d"/hwmon/hwmon*/temp1_input; do
+                      echo "gpu_temp_celsius{pci=\"$pci\"} $(($(cat "$t") / 1000))"
+                      break
+                    done
+                  fi
+                done
+              } > "$dir/gpu.prom.tmp"
+              chmod 644 "$dir/gpu.prom.tmp"
+              mv "$dir/gpu.prom.tmp" "$dir/gpu.prom"
+            '';
+          }
+        )
+      } /run/node-exporter";
+      ReadWritePaths = [ "/run/node-exporter" ];
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      PrivateTmp = true;
+      NoNewPrivileges = true;
+    };
+  };
+
+  systemd.timers.gpu-metrics = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "5s";
+      OnUnitActiveSec = "15s";
+      AccuracySec = "1s";
+    };
+  };
 }

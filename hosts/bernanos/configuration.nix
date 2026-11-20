@@ -14,10 +14,13 @@
     ../../modules/kernel.nix
     ../../modules/network.nix
     ../../modules/tailscale.nix
+    ../../modules/node-exporter.nix
     ../../modules/power.nix
     ../../modules/zram.nix
     ../../modules/storage.nix
     ../../modules/head.nix
+    ../../modules/greetd.nix
+    ../../modules/nautilus.nix
     ../../modules/audio.nix
     ../../modules/bluetooth.nix
     ../../modules/security.nix
@@ -226,5 +229,63 @@
     __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
     __VK_LAYER_NV_optimus = "NVIDIA_only";
+  };
+
+  # GPU pour node_exporter (gpu.prom, à côté de l'extras.prom de
+  # modules/node-exporter.nix), lu par anna. nvidia-smi réveille toujours la
+  # carte : on ne l'appelle que si sysfs la dit déjà éveillée.
+  systemd.services.gpu-metrics = {
+    description = "GPU NVIDIA pour node_exporter (anna)";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${
+        lib.getExe (
+          pkgs.writeShellApplication {
+            name = "gpu-metrics";
+            # nvidia-smi du pilote installé.
+            runtimeInputs = [
+              pkgs.coreutils
+              config.hardware.nvidia.package.bin
+            ];
+            text = ''
+              # L'état vient de sysfs, qui ne réveille pas la carte ; nvidia-smi seulement si elle est déjà éveillée.
+              dir=$1
+              pci=0000:01:00.0
+              state=$(cat "/sys/bus/pci/devices/$pci/power/runtime_status" 2>/dev/null || echo active)
+              {
+                echo "gpu_info{pci=\"$pci\",vendor=\"nvidia\",name=\"GeForce RTX 3070 Mobile\",state=\"$state\"} 1"
+                if [ "$state" = active ]; then
+                  nvidia-smi --id="$pci" --query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu \
+                    --format=csv,noheader,nounits 2>/dev/null \
+                    | while IFS=', ' read -r busy used total temp; do
+                        case "$busy$used$total$temp" in *[!0-9]*) continue ;; esac
+                        echo "gpu_busy_percent{pci=\"$pci\"} $busy"
+                        echo "gpu_vram_used_bytes{pci=\"$pci\"} $((used * 1048576))"
+                        echo "gpu_vram_total_bytes{pci=\"$pci\"} $((total * 1048576))"
+                        echo "gpu_temp_celsius{pci=\"$pci\"} $temp"
+                      done
+                fi
+              } > "$dir/gpu.prom.tmp"
+              chmod 644 "$dir/gpu.prom.tmp"
+              mv "$dir/gpu.prom.tmp" "$dir/gpu.prom"
+            '';
+          }
+        )
+      } /run/node-exporter";
+      ReadWritePaths = [ "/run/node-exporter" ];
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      PrivateTmp = true;
+      NoNewPrivileges = true;
+    };
+  };
+
+  systemd.timers.gpu-metrics = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "5s";
+      OnUnitActiveSec = "15s";
+      AccuracySec = "1s";
+    };
   };
 }
