@@ -3,6 +3,7 @@
   pkgs,
   lib,
   primaryMonitor ? "HDMI-A-1",
+  anna ? null,
   ...
 }:
 
@@ -45,6 +46,17 @@ let
   };
 in
 {
+  # Le choix de ce qu'on partage de l'écran (Meet, Discord, OBS) : une carte
+  # de karenine, aperçus en direct (anna/src/sharepick.rs), au lieu de
+  # hyprland-share-picker, qui reprend la main si karenine ne répond pas.
+  xdg.configFile."hypr/xdph.conf" = lib.mkIf (anna != null) {
+    text = ''
+      screencopy {
+          custom_picker_binary = ${anna}/bin/anna-share-picker
+      }
+    '';
+  };
+
   wayland.windowManager.hyprland = {
     enable = true;
     configType = "lua";
@@ -149,6 +161,11 @@ in
         misc = {
           disable_hyprland_logo = true;
           disable_splash_rendering = true;
+          # Une application qui demande le focus (xdg-activation) le reçoit :
+          # un lien cliqué dans kitty ouvre Chromium/Zed déjà lancé et passe
+          # directement sur sa fenêtre (et son workspace) au lieu de la
+          # marquer seulement « urgente ».
+          focus_on_activate = true;
         };
 
         # XWayland apps (e.g. Reaper) apparaissent pixelisés avec le fractional scaling
@@ -208,7 +225,7 @@ in
       ];
 
       # Raccourcis définis dans home/modules/shortcuts.nix (source de vérité
-      # partagée avec Alacritty/Zed/micro).
+      # partagée avec kitty/Zed/micro).
       bind = map (b: {
         _args = [
           b.keys

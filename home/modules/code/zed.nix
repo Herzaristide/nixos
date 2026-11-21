@@ -339,7 +339,7 @@ in
     };
 
     # Raccourcis définis dans home/modules/shortcuts.nix (source de vérité
-    # partagée avec Alacritty/Hyprland/micro). Regroupés par context,
+    # partagée avec kitty/Hyprland/micro). Regroupés par context,
     # dans l'ordre d'apparition de shortcuts.zed (Editor, Workspace,
     # ProjectPanel, Terminal, MarkdownPreview).
     userKeymaps =

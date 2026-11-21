@@ -86,7 +86,7 @@
     ];
   };
 
-  # Opens file:// links (Ctrl+click in Alacritty, Claude Code references, …) in
+  # Opens file:// links (Ctrl+click in kitty, Claude Code references, …) in
   # Zed instead of Chromium. Without an explicit x-scheme-handler/file below,
   # xdg-open falls back to x-scheme-handler/unknown → Chromium, which can only
   # "download" a local file:// rather than edit it. zeditor expects a path, not
@@ -101,6 +101,14 @@
   };
 
   # Default applications (force overwrites existing mimeapps.list files)
+  # Le terminal par défaut au sens XDG (spec default-terminal :
+  # ~/.config/xdg-terminals.list, lu par xdg-terminal-exec). C'est par lui
+  # que GLib/GIO lance les .desktop en `Terminal=true` (yazi, micro…).
+  xdg.terminal-exec = {
+    enable = true;
+    settings.default = [ "kitty.desktop" ];
+  };
+
   xdg.configFile."mimeapps.list".force = true;
   xdg.dataFile."applications/mimeapps.list".force = true;
   xdg.mimeApps = {
@@ -116,7 +124,7 @@
       # Déclaré ici car l'app tente sinon d'écrire elle-même dans
       # mimeapps.list, qui est en lecture seule (géré par home-manager).
       "x-scheme-handler/claude" = [ "com.anthropic.Claude.desktop" ];
-      "x-terminal-emulator" = [ "Alacritty.desktop" ];
+      "x-terminal-emulator" = [ "kitty.desktop" ];
       "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
       "application/pdf" = [ "org.kde.okular.desktop" ];
       "audio/midi" = [ "fluidsynth.desktop" ];

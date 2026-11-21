@@ -91,7 +91,7 @@
       # partagé entre tous les shells et synchronisé en temps réel. Au démarrage
       # d'un shell interactif on se repositionne dans le dernier dossier visité,
       # MAIS uniquement si on démarre dans $HOME — ainsi un shell lancé dans un
-      # dossier précis (ex: `alacritty --working-directory /tmp`) n'est pas écrasé.
+      # dossier précis (ex: `kitty --directory /tmp`) n'est pas écrasé.
       function __remember_pwd --on-variable PWD
           set -U last_pwd $PWD
       end

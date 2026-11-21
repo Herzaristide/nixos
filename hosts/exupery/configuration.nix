@@ -56,7 +56,7 @@ let
 
   # Clavier virtuel : squeekboard, qui parle input-method-v2 et ne s'affiche
   # que lorsqu'une application active un champ de saisie (text-input-v3 :
-  # GTK, Qt, Alacritty ; Chromium avec les flags plus bas). wvkbd, l'ancien
+  # GTK, Qt, kitty ; Chromium avec les flags plus bas). wvkbd, l'ancien
   # clavier, n'a aucune notion de champ de saisie : il était affiché ou non,
   # point. squeekboard a en plus une disposition AZERTY (input-sources).
   #

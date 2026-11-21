@@ -95,10 +95,11 @@ in
     # et ses uid-map/gid-map survivent normalement.
     # À réactiver si un jour l'impermanence s'étend à / (cf. « étape 1 »).
     enableWarnings = false;
-    # bernanos (head) est le poste principal : identité, secrets, apps et données.
+    # bernanos (head) est le poste principal : identité, secrets et apps.
     # Les serveurs de dev (gary, kafka), vidés de tout secret personnel le
-    # 2026-10-18 et dédiés au dev, ne gardent que l'outillage et ~/code, où
-    # sont clonés les dépôts.
+    # 2026-10-18 et dédiés au dev, gardent l'outillage. Les données (le
+    # home de home/xdg.nix, et la corbeille) sont les mêmes partout : un
+    # fichier posé dans ~/drop de gary y est encore après un reboot.
     users.aristide = {
       files = [
         ".claude.json"
@@ -146,6 +147,17 @@ in
         # Caches de shaders : régénérables, mais les reconstruire à chaque boot
         # se paie en saccades dans toute application GPU (Chromium, Zed…).
         ".cache/mesa_shader_cache" # AMD/Intel (gary, iGPU de bernanos)
+
+        # Données : l'arborescence du home (home/xdg.nix, la même sur tous
+        # les hôtes) et la corbeille (freedesktop : l'Explorer de karenine y
+        # met ce qu'on supprime, Nautilus aussi). Sans elles, vidées à chaque
+        # boot.
+        "code"
+        "docs"
+        "drop"
+        "lens"
+        "tune"
+        ".local/share/Trash"
       ]
       ++ lib.optionals config.head [
         # Secrets
@@ -188,18 +200,7 @@ in
         ".local/share/android"
         ".local/share/whisper"
 
-        # Données
-        "code"
-        "docs"
-        "drop"
-        "lens"
-        "tune"
-
         ".cache/nvidia" # GLCache (bernanos)
-      ]
-      ++ lib.optionals (!config.head) [
-        # Serveurs de dev : les clones de travail, seul endroit de ~ où cloner.
-        "code"
       ];
     };
   };

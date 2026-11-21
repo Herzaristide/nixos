@@ -37,9 +37,9 @@ in
   # Corbeille, montages amovibles, MTP, partages réseau (sidebar « Network »).
   services.gvfs.enable = true;
 
-  # Clic droit → « Ouvrir dans un terminal » (Alacritty).
+  # Clic droit → « Ouvrir dans un terminal » (kitty).
   programs.nautilus-open-any-terminal = {
     enable = true;
-    terminal = "alacritty";
+    terminal = "kitty";
   };
 }

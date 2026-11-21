@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -48,6 +49,18 @@
   # PAM hook unlocks the keyring at login with the user's password.
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.login.enableGnomeKeyring = true;
+
+  # L'askpass de ssh, git et sudo : les passphrases et mots de passe demandés
+  # hors terminal (Zed, sshfs de l'Explorer, Claude Desktop, `sudo -A`)
+  # s'affichent dans une carte de karenine (anna/src/askpass.rs) au lieu de
+  # x11-ssh-askpass, que services.xserver activait (XWayland, pixelisé). git
+  # retombe sur SSH_ASKPASS sans GIT_ASKPASS. Sans anna ni shell pour
+  # répondre, la question part à ksshaskpass.
+  programs.ssh.askPassword = "${
+    inputs.karenine.packages.${pkgs.stdenv.hostPlatform.system}.anna
+  }/bin/anna-askpass";
+  environment.variables.SUDO_ASKPASS = config.programs.ssh.askPassword;
+  environment.variables.ANNA_ASKPASS_FALLBACK = "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass";
 
   # PAM service for the Quickshell lockscreen (karenine's lock.qml, via
   # PamContext { config: "quickshell" }). Without this file the lock has no way

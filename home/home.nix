@@ -17,7 +17,7 @@ let
     ./modules/hyprland/lock.nix
     ./modules/code/zed.nix
     ./modules/code/ia/claude-desktop.nix
-    ./modules/alacritty.nix
+    ./modules/kitty.nix
     ./modules/quickshell.nix
     ./modules/teams.nix
     ./modules/vesktop.nix
@@ -43,7 +43,12 @@ in
     PAGER = "less";
     MANPAGER = "less";
     BROWSER = "chromium";
-    TERMINAL = "alacritty";
+    TERMINAL = "kitty";
+    # Claude Code ne marque ses liens (OSC 8) que dans les terminaux qu'il
+    # reconnaît (TERM_PROGRAM, TERM=xterm-kitty…) : kitty oui, pas forcément
+    # le terminal de Zed. Forcé partout ; les terminaux qui ne savent pas
+    # les afficher les ignorent.
+    FORCE_HYPERLINK = "1";
   };
 
 }

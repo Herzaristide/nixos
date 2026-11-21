@@ -1,7 +1,7 @@
 # Source de vérité unique pour tous les raccourcis clavier : Hyprland,
-# Zed, Alacritty, micro. Chaque module consommateur importe ce fichier et
+# Zed, kitty, micro. Chaque module consommateur importe ce fichier et
 # transforme les entrées vers le format natif de son outil — voir
-# home/modules/{alacritty,hyprland/hyprland,shell/micro,code/zed}.nix.
+# home/modules/{kitty,hyprland/hyprland,shell/micro,code/zed}.nix.
 {
   pkgs,
   # Chemin du script hypr-closed-lid-layout (dérivation construite dans
@@ -18,8 +18,8 @@
   hyprland = [
     {
       keys = "SUPER + Return";
-      lua = ''hl.dsp.exec_cmd("alacritty")'';
-      desc = "Ouvrir Alacritty";
+      lua = ''hl.dsp.exec_cmd("kitty")'';
+      desc = "Ouvrir kitty";
     }
     {
       keys = "SUPER + Z";
@@ -616,8 +616,8 @@
     }
 
     # Alt+E / Alt+Entrée depuis le terminal → retour éditeur / fermer (symétrie).
-    # Alt+Haut/Bas et Alt+F alignés sur les bindings Alacritty
-    # (home/modules/alacritty.nix) : scroll ligne par ligne + recherche.
+    # Alt+Haut/Bas et Alt+F alignés sur les bindings kitty
+    # (home/modules/kitty.nix) : scroll ligne par ligne + recherche.
     {
       context = "Terminal";
       key = "alt-e";
@@ -658,49 +658,51 @@
     }
   ];
 
-  # ── Alacritty (terminal) ─────────────────────────────────────────────────
-  alacritty = [
+  # ── kitty (terminal) ─────────────────────────────────────────────────────
+  # `keys` au format de kitty.conf
+  # (`map <keys> <action>`), consommés par home/modules/kitty.nix. Les
+  # raccourcis natifs de kitty restent actifs (ctrl+shift+p>f : insérer un
+  # chemin vu à l'écran, ctrl+shift+e : ouvrir une URL…).
+  kitty = [
     {
-      key = "E";
-      mods = "Alt";
-      action = "CreateNewWindow";
+      keys = "alt+e";
+      action = "new_os_window_with_cwd";
       desc = "Nouvelle fenêtre";
     }
     {
-      key = "T";
-      mods = "Control|Shift";
-      action = "SpawnNewInstance";
-      desc = "Nouvelle instance";
+      keys = "ctrl+shift+t";
+      action = "new_os_window_with_cwd";
+      desc = "Nouvelle instance (kitty : une fenêtre de plus du même processus)";
     }
     {
-      key = "PageUp";
-      mods = "None";
-      action = "ScrollPageUp";
+      keys = "page_up";
+      action = "scroll_page_up";
       desc = "Scroll page haut (natif, sans Shift)";
     }
     {
-      key = "PageDown";
-      mods = "None";
-      action = "ScrollPageDown";
+      keys = "page_down";
+      action = "scroll_page_down";
       desc = "Scroll page bas (natif, sans Shift)";
     }
     {
-      key = "Up";
-      mods = "Alt";
-      action = "ScrollLineUp";
+      keys = "alt+up";
+      action = "scroll_line_up";
       desc = "Scroll ligne haut";
     }
     {
-      key = "Down";
-      mods = "Alt";
-      action = "ScrollLineDown";
+      keys = "alt+down";
+      action = "scroll_line_down";
       desc = "Scroll ligne bas";
     }
     {
-      key = "F";
-      mods = "Alt";
-      action = "SearchForward";
-      desc = "Recherche dans le scrollback";
+      keys = "alt+f";
+      action = "show_scrollback";
+      desc = "Recherche dans le scrollback (ouvert dans le pager, / pour chercher)";
+    }
+    {
+      keys = "ctrl+shift+p>n";
+      action = "kitten hints --type=linenum --linenum-action=background zeditor {path}:{line}";
+      desc = "Ouvrir un fichier:ligne vu à l'écran dans Zed";
     }
   ];
 

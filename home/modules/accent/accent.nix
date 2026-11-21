@@ -37,8 +37,8 @@ in
   #
   # Starship, micro, fastfetch are NOT listed: their configs are static
   # ANSI-only, declared in home/modules/shell/{starship,micro,fastfetch}.nix.
-  xdg.configFile."accent/templates/alacritty-colors.toml.tmpl".source =
-    "${templates}/alacritty-colors.toml.tmpl";
+  xdg.configFile."accent/templates/kitty-colors.conf.tmpl".source =
+    "${templates}/kitty-colors.conf.tmpl";
   xdg.configFile."accent/templates/hyprland-colors.lua.tmpl".source =
     "${templates}/hyprland-colors.lua.tmpl";
   xdg.configFile."accent/templates/gtk4-colors.css.tmpl".source = "${templates}/gtk4-colors.css.tmpl";
