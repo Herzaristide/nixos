@@ -84,18 +84,19 @@
   # a second store path and user-units fails on the duplicate .service.
   xdg.portal = {
     enable = true;
-    # Sélecteur de fichiers : Nautilus. Depuis GNOME 47, xdg-desktop-portal-gnome
-    # n'a plus de dialogue à lui, il délègue FileChooser à org.gnome.Nautilus
-    # (D-Bus) — donc à l'enveloppe de modules/nautilus.nix, thémée par anna. Seul
-    # FileChooser lui est routé : ses captures/partage d'écran parlent à Mutter.
+    # Sélecteur de fichiers : l'Explorer de karenine. termfilechooser
+    # implémente FileChooser en lançant un script (karenine-pick, configuré
+    # dans home/modules/karenine-explorer.nix), qui passe l'Explorer en mode
+    # choix. Pour revenir à Nautilus : xdg-desktop-portal-gnome dans
+    # extraPortals et FileChooser = "gnome" (il délègue à org.gnome.Nautilus).
     extraPortals = [
       pkgs.kdePackages.xdg-desktop-portal-kde
-      pkgs.xdg-desktop-portal-gnome
+      pkgs.xdg-desktop-portal-termfilechooser
     ];
     config.common = {
       default = "hyprland;kde";
       "org.freedesktop.impl.portal.Settings" = "kde";
-      "org.freedesktop.impl.portal.FileChooser" = "gnome";
+      "org.freedesktop.impl.portal.FileChooser" = "termfilechooser";
     };
   };
 

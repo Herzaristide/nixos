@@ -125,7 +125,12 @@
       # mimeapps.list, qui est en lecture seule (géré par home-manager).
       "x-scheme-handler/claude" = [ "com.anthropic.Claude.desktop" ];
       "x-terminal-emulator" = [ "kitty.desktop" ];
-      "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
+      # L'Explorer de karenine (home/modules/quickshell.nix) ; Nautilus en
+      # second, pour « Ouvrir avec ».
+      "inode/directory" = [
+        "karenine-explorer.desktop"
+        "org.gnome.Nautilus.desktop"
+      ];
       "application/pdf" = [ "org.kde.okular.desktop" ];
       "audio/midi" = [ "fluidsynth.desktop" ];
       "audio/x-midi" = [ "fluidsynth.desktop" ];

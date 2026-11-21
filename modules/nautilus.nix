@@ -22,6 +22,11 @@ let
       rm $out/bin/nautilus
       makeWrapper ${pkgs.nautilus}/bin/nautilus $out/bin/nautilus --unset GTK_THEME
 
+      # « Afficher dans le dossier » va à l'Explorer de karenine
+      # (home/modules/karenine-explorer.nix) : Nautilus ne réclame plus
+      # org.freedesktop.FileManager1 par activation D-Bus.
+      rm $out/share/dbus-1/services/org.freedesktop.FileManager1.service
+
       for f in $out/share/dbus-1/services/*.service; do
         src=$(readlink -f "$f")
         rm "$f"
