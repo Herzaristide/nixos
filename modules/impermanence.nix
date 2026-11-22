@@ -156,6 +156,8 @@ in
         "docs"
         "drop"
         "lens"
+        "mesh"
+        "opus"
         "tune"
         ".local/share/Trash"
       ]

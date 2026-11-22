@@ -17,8 +17,11 @@
 # prochain `nix-collect-garbage`. Les fichiers déposés à la main dans
 # models/ ne sont pas touchés.
 #
-# État dans /var/lib/comfyui (images, base sqlite, caches de tuning), que
-# l'impermanence ne touche pas.
+# État dans /var/lib/comfyui (base sqlite, caches de tuning), que
+# l'impermanence ne touche pas. Les sorties (images, vidéos, audio, 3D) vont
+# dans /var/lib/comfyui-output, lisible et vidable par aristide (groupe
+# comfyui) : /var/lib/comfyui est en 0700, ses sorties étaient inaccessibles
+# sans sudo.
 #
 # Pas de démarrage au boot : chargé, un modèle occupe l'essentiel des 16 Gio
 # de la RX 7600 XT. On le lance à la main : `sudo systemctl start
@@ -29,6 +32,9 @@
 let
   port = 8188;
   stateDir = "/var/lib/comfyui";
+  # Hors de stateDir (0700, imposé par le module) pour que le groupe comfyui
+  # puisse y lire.
+  outputDir = "/var/lib/comfyui-output";
 
   catalogue = import ./comfyui-models.nix;
 
@@ -155,6 +161,8 @@ in
       # couvrent le plus gros modèle chargé d'un bloc.
       "--cache-ram"
       "16"
+      "--output-directory"
+      outputDir
     ];
   };
 
@@ -235,8 +243,18 @@ in
       # non borné). --cache-ram ci-dessus doit garder le service en dessous.
       MemoryHigh = "24G";
       MemoryMax = "28G";
+      # ProtectSystem = strict : seul stateDir est inscriptible par défaut.
+      ReadWritePaths = [ outputDir ];
+      # Fichiers en 664, sous-dossiers (output/3d…) en 775 : avec le setgid du
+      # dossier, tout reste au groupe comfyui, donc lisible et supprimable par
+      # aristide (sinon le 0022 par défaut bloquerait la suppression dans les
+      # sous-dossiers).
+      UMask = "0002";
     };
   };
+
+  # setgid (2) : ce qui est créé dedans hérite du groupe comfyui.
+  systemd.tmpfiles.rules = [ "d ${outputDir} 2775 comfyui comfyui -" ];
 
   networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ port ];
 
@@ -244,4 +262,6 @@ in
     "video"
     "render"
   ];
+  # Lecture et nettoyage de outputDir sans sudo.
+  users.users.aristide.extraGroups = [ "comfyui" ];
 }

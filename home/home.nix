@@ -27,6 +27,7 @@ let
     ./modules/kde
     ./modules/chromium.nix
     ./modules/f3d.nix
+    ./modules/viewers.nix
     ./modules/music
   ];
 in

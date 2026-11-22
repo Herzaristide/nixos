@@ -6,6 +6,37 @@
     package = pkgs.claude-code;
     enableMcpIntegration = true;
 
+    # ~/.claude/CLAUDE.md, mémoire globale lue au début de chaque session.
+    # Sans cette règle, Claude rangeait rendus et modèles générés dans le
+    # scratchpad de session (/tmp/claude-<uid>/…), perdu au nettoyage de /tmp
+    # (tri à la main du 2026-11-22 : ~2 200 fichiers sur bernanos et gary).
+    context = ''
+      # Fichiers générés
+
+      Tout fichier généré destiné à être regardé ou réutilisé (y compris les
+      tests et essais) est enregistré dans le dossier de données du home,
+      **jamais dans le scratchpad de session** (`/tmp/claude-*/…`), qui est
+      effacé :
+
+      - Images, rendus, captures, vidéos, GIF : `~/lens/<projet>/`
+      - Modèles 3D (`.glb`, `.gltf`, `.ply`, `.obj`, `.stl`, `.fbx`, `.usdz`,
+        `.blend`, splats…) : `~/mesh/<projet>/`
+      - Audio (musique, voix, sons, stems : `.wav`, `.flac`, `.mp3`, `.ogg`…) :
+        `~/tune/<projet>/`
+
+      `<projet>` est le nom du dépôt ou du sujet en cours ; un sous-dossier par
+      série d'essais si elle produit beaucoup de fichiers. Ces dossiers existent
+      et sont persistés sur tous les hôtes (bernanos, gary…) : on enregistre sur
+      la machine où l'on travaille, y compris sur gary.
+
+      Les sorties de ComfyUI (gary, API HTTP sur le port 8188) se récupèrent
+      par `GET /view` directement dans ces dossiers. Sur gary, ComfyUI écrit
+      aussi dans `/var/lib/comfyui-output`, lisible par aristide.
+
+      Le scratchpad ne sert qu'aux fichiers vraiment jetables : scripts
+      ponctuels, logs, fichiers intermédiaires qu'on ne regardera plus.
+    '';
+
     lspServers = {
       rust = {
         command = "${pkgs.rust-analyzer}/bin/rust-analyzer";

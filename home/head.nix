@@ -132,8 +132,7 @@
         "org.gnome.Nautilus.desktop"
       ];
       "application/pdf" = [ "org.kde.okular.desktop" ];
-      "audio/midi" = [ "fluidsynth.desktop" ];
-      "audio/x-midi" = [ "fluidsynth.desktop" ];
+      # MIDI, MusicXML, LilyPond, ABC : Vinteuil (home/modules/music/notation.nix).
     };
   };
 }

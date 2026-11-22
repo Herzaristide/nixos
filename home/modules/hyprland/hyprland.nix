@@ -244,6 +244,55 @@ in
           size = "1000 650";
           center = true;
         }
+        # Les visionneuses (home/modules/viewers.nix, f3d.nix) : de petites
+        # fenêtres flottantes et centrées, qu'on ferme une fois regardé.
+        # Images : imv.
+        {
+          match = {
+            class = "^(imv)$";
+          };
+          float = true;
+          size = "900 620";
+          center = true;
+        }
+        # Audio : mpv lancé par mpv-audio.desktop (--wayland-app-id).
+        {
+          match = {
+            class = "^(mpv-audio)$";
+          };
+          float = true;
+          size = "560 320";
+          center = true;
+        }
+        # Modèles 3D : f3d. Il passe par XWayland (VTK), dont la fenêtre a
+        # pour classe « Vtk » ; son titre, « fichier - F3D » (ou « F3D - A
+        # fast and minimalist 3D viewer » sans fichier), en filet de sécurité.
+        # Pas de `size` : f3d impose la sienne (--resolution, 1000×600 px
+        # physiques, soit 800×480 ici) juste après s'être ouvert. Il est lancé
+        # avec --no-cache (f3d.nix), sinon il restaure sa dernière position.
+        {
+          match = {
+            class = "^([Vv]tk|f3d)$";
+          };
+          float = true;
+          center = true;
+        }
+        {
+          match = {
+            title = "(^| - )F3D( - .*)?$";
+          };
+          float = true;
+          center = true;
+        }
+        # Vidéo : mpv (mpv.desktop, app_id « mpv »), plus grand.
+        {
+          match = {
+            class = "^(mpv)$";
+          };
+          float = true;
+          size = "1024 576";
+          center = true;
+        }
         # Émulateur Android : flottant et centré — sinon la fenêtre s'ouvre
         # hors écran (position X négative, au-delà des moniteurs).
         {

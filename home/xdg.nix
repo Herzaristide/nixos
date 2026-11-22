@@ -14,9 +14,11 @@ let
   # l'activation ci-dessous est alors la seule chose qui les crée.
   tree = [
     "code" # dépôts et projets
-    "docs" # documents, livres Ajar, partitions
+    "docs" # documents, livres Ajar
     "drop" # téléchargements
     "lens" # images et vidéos
+    "mesh" # modèles 3D
+    "opus" # partitions
     "tune" # audio
   ];
 in
@@ -34,6 +36,13 @@ in
     pictures = "${home}/lens";
     videos = "${home}/lens";
     music = "${home}/tune";
+
+    # Hors des clés standard : karenine lit toutes les XDG_<NOM>_DIR de
+    # user-dirs.dirs et en fait des favoris de l'Explorer.
+    extraConfig = {
+      MESH = "${home}/mesh";
+      OPUS = "${home}/opus";
+    };
 
     # Pas d'équivalent dans cette arborescence. On pointe sur $HOME plutôt que
     # de mettre `null` : `null` retire l'entrée de user-dirs.dirs, et GLib

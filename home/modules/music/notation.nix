@@ -1,4 +1,9 @@
-{ inputs, pkgs, ... }:
+{
+  inputs,
+  lib,
+  pkgs,
+  ...
+}:
 
 # Partitions : LilyPond seul (pas de MuseScore). music21 (./composition.nix)
 # exporte directement en LilyPond ; conducteur et parties séparées se gravent
@@ -12,4 +17,26 @@
   programs.vinteuil.enable = true;
 
   home.packages = [ pkgs.lilypond ];
+
+  # Vinteuil par défaut pour tout ce qu'il sait ouvrir. Son .desktop les
+  # déclare, mais sans épinglage le choix ne tient qu'à l'absence d'une autre
+  # appli candidate. Le MIDI garde FluidSynth (home/head.nix) en second, pour
+  # « Ouvrir avec ».
+  xdg.mimeApps.defaultApplications =
+    lib.genAttrs [
+      "text/x-lilypond"
+      "application/vnd.recordare.musicxml+xml"
+      "application/vnd.recordare.musicxml"
+      "text/vnd.abc"
+    ] (_: [ "vinteuil.desktop" ])
+    //
+      lib.genAttrs
+        [
+          "audio/midi"
+          "audio/x-midi"
+        ]
+        (_: [
+          "vinteuil.desktop"
+          "fluidsynth.desktop"
+        ]);
 }
