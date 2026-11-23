@@ -1,15 +1,13 @@
 { pkgs, ... }:
 
 let
-  # La session exporte GTK_THEME=Breeze-Dark (home/modules/hyprland/hyprland.nix).
-  # libadwaita ne le supporte pas : avec lui, Nautilus retombe sur un gris
-  # générique et ignore les couleurs qu'anna réécrit dans
-  # ~/.config/accent/fragments/gtk4-colors.css (importé par gtk-4.0/gtk.css,
-  # cf. home/modules/kde/theming.nix). Vérifié en lançant les deux variantes
-  # côte à côte : sans GTK_THEME, fond et barres suivent la palette.
+  # Thème : le fragment libadwaita d'anna (~/.config/accent/fragments/
+  # gtk4-colors.css, importé par gtk-4.0/gtk.css, cf.
+  # home/modules/kde/theming.nix). La session n'exporte plus GTK_THEME depuis
+  # le 2026-11-22, donc plus besoin de `--unset GTK_THEME` ici.
   #
-  # On enveloppe le binaire plutôt que de surcharger le paquet (qui serait alors
-  # recompilé à chaque mise à jour de nixpkgs). Nautilus est aussi démarré par
+  # On copie le paquet plutôt que de le surcharger (il serait alors recompilé
+  # à chaque mise à jour de nixpkgs). Nautilus est démarré par
   # D-Bus (org.gnome.Nautilus, org.freedesktop.FileManager1 — « Afficher dans le
   # dossier » de Chromium) : ces deux .service pointent sur le chemin absolu du
   # binaire d'origine, on les réécrit vers l'enveloppe. Les .desktop appellent
@@ -20,7 +18,7 @@ let
     nativeBuildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
       rm $out/bin/nautilus
-      makeWrapper ${pkgs.nautilus}/bin/nautilus $out/bin/nautilus --unset GTK_THEME
+      makeWrapper ${pkgs.nautilus}/bin/nautilus $out/bin/nautilus
 
       # « Afficher dans le dossier » va à l'Explorer de karenine
       # (home/modules/karenine-explorer.nix) : Nautilus ne réclame plus

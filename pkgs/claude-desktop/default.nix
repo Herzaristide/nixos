@@ -37,6 +37,7 @@
   nspr,
   nss,
   pango,
+  pipewire,
   systemd,
   util-linux,
   libX11,
@@ -57,7 +58,7 @@
 }:
 
 let
-  version = "2.9939.4";
+  version = "6.28899.6";
 
   runtimeDeps = [
     xdg-utils # xdg-open pour les liens externes
@@ -74,7 +75,7 @@ stdenv.mkDerivation {
 
   src = fetchurl {
     url = "https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_${version}_amd64.deb";
-    hash = "sha256-PP3bI78pEeBeJ7TtOFa455XflGQ7LDW1nesxfPmVvKA=";
+    hash = "sha256-fjgWAdhlcBSWQ9Uum4nCZXWrEvp4iqQf/dTMpbBjjPg=";
   };
 
   nativeBuildInputs = [
@@ -105,6 +106,7 @@ stdenv.mkDerivation {
     nspr
     nss
     pango
+    pipewire # module natif @ant/claude-native (6.x)
     systemd # libudev
     util-linux # libuuid
     libX11
@@ -118,7 +120,9 @@ stdenv.mkDerivation {
     stdenv.cc.cc.lib
   ];
 
-  unpackCmd = "dpkg-deb -x $curSrc .";
+  # Sans les permissions : le bit setuid de chrome-sandbox est refusé dans le
+  # bac à sable de build (et le binaire est supprimé à l'installation).
+  unpackCmd = "dpkg-deb --fsys-tarfile $curSrc | tar -x --no-same-owner --no-same-permissions";
   sourceRoot = ".";
 
   # Le wrapper est posé à la main en preFixup pour fusionner les arguments
@@ -151,6 +155,11 @@ stdenv.mkDerivation {
     # conditionnelle du shell y arriverait littéralement, et Chromium prendrait
     # cet argument, non préfixé par `-`, pour l'URL à ouvrir — ce qui avalait le
     # deep link `claude://` du retour de connexion.
+    #
+    # Clair/sombre : Electron ≥ 45 (6.x) lit le color-scheme du portail et suit
+    # anna en direct. La 2.x (Electron 44) ne regardait que le thème GTK, que
+    # GTK_THEME=Breeze-Dark (absent, retiré de la session le 2026-11-22)
+    # faisait retomber sur Adwaita clair.
     makeWrapper $out/lib/claude-desktop/claude-desktop $out/bin/claude-desktop \
       "''${gappsWrapperArgs[@]}" \
       --prefix PATH : "${lib.makeBinPath runtimeDeps}" \

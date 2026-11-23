@@ -86,16 +86,8 @@ in
     };
   };
 
-  # Commande de verrouillage manuelle, et filet de secours : `lock-session` est
-  # sur le PATH pour pouvoir tester le lockscreen à la main (garder un TTY
-  # ouvert — voir l'avertissement en tête de karenine/lock.qml).
-  home.packages = [
-    lockSession
-
-    # Filet de secours pendant la transition depuis hyprlock : le binaire reste
-    # disponible (plus aucune config ni branchement sur hypridle) pour pouvoir
-    # verrouiller à la main si le lockscreen Quickshell pose problème.
-    # À retirer une fois le nouveau lock validé.
-    pkgs.hyprlock
-  ];
+  # Commande de verrouillage manuelle : `lock-session` est sur le PATH pour
+  # pouvoir tester le lockscreen à la main (garder un TTY ouvert — voir
+  # l'avertissement en tête de karenine/lock.qml).
+  home.packages = [ lockSession ];
 }

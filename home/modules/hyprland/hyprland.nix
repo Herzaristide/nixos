@@ -71,12 +71,6 @@ in
         }
         {
           _args = [
-            "GTK_THEME"
-            "Breeze-Dark"
-          ];
-        }
-        {
-          _args = [
             "QT_QPA_PLATFORMTHEME"
             "kde"
           ];
@@ -461,8 +455,6 @@ in
 
       -- Autostart au démarrage de Hyprland (remplace exec-once).
       hl.on("hyprland.start", function()
-        hl.exec_cmd("gsettings set org.gnome.desktop.interface gtk-theme Breeze-Dark")
-        hl.exec_cmd("gsettings set org.gnome.desktop.interface color-scheme prefer-dark")
         hl.exec_cmd("${hyprClosedLidLayout}")
         hl.exec_cmd("quickshell")
         hl.exec_cmd("kdeconnectd")

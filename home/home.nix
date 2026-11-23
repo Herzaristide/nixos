@@ -20,6 +20,7 @@ let
     ./modules/kitty.nix
     ./modules/quickshell.nix
     ./modules/karenine-explorer.nix
+    ./modules/karenine-world.nix
     ./modules/teams.nix
     ./modules/vesktop.nix
     ./modules/ajar.nix
