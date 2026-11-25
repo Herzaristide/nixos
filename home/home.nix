@@ -28,6 +28,7 @@ let
     ./modules/kde
     ./modules/chromium.nix
     ./modules/f3d.nix
+    ./modules/kubernetes.nix
     ./modules/viewers.nix
     ./modules/music
   ];

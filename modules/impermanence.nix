@@ -137,6 +137,7 @@ in
         ".claude"
         ".local/share/rtk" # rtk : historique (`rtk gain`) et sorties rappelables (`rtk recall`)
         ".local/share/direnv" # allow-list ; sans elle, tout devDir redemande `direnv allow`
+        ".local/share/zoxide" # dossiers récents (z, et les propositions de karenine)
         # Le cache d'uv, seul runtime dont l'état pèse.
         ".local/share/uv"
 
@@ -169,6 +170,10 @@ in
         }
         {
           directory = ".aws";
+          mode = "0700";
+        }
+        {
+          directory = ".kube"; # kubeconfig admin du k3s de gary
           mode = "0700";
         }
         ".pki"

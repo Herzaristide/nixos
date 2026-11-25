@@ -65,6 +65,7 @@
       language = "French";
       model = "claude-opus-5-5";
       spinnerTipsEnabled = false;
+      remoteControlAtStartup = true;
       voiceEnabled = true;
       voice = {
         enabled = true;
@@ -154,6 +155,7 @@
           "Read(~/.config/chromium/**)"
           "Read(~/.netrc)"
           "Read(~/.docker/config.json)"
+          "Read(~/.kube/**)"
           "Read(//etc/passwd-aristide)"
           "Read(**/.env)"
           "Read(**/.env.*)"
@@ -236,6 +238,7 @@
         "~/.config/chromium"
         "~/.netrc"
         "~/.docker/config.json"
+        "~/.kube"
         "/etc/passwd-aristide"
         "/run/user"
       ];

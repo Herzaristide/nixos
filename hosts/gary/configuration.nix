@@ -24,6 +24,7 @@
     ../../modules/impermanence.nix
     ../../modules/comfyui.nix
     ../../modules/ollama.nix
+    ../../modules/k3s.nix
   ];
 
   # Hostname
