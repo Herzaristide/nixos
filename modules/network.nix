@@ -55,6 +55,48 @@
     '';
   };
 
+  # Blocage définitif de YouTube et Twitch sur tous les hôtes (remis le
+  # 2026-11-25). /etc/hosts n'a pas de joker : chaque sous-domaine est listé.
+  # `::` en plus de 0.0.0.0, sinon une résolution IPv6 seule passe par le DNS.
+  # Chromium a aussi sa URLBlocklist (home/modules/chromium.nix), qui couvre
+  # tous les sous-domaines. YouTube Music (music.youtube.com) reste permis.
+  networking.hosts =
+    let
+      blocked = [
+        "youtube.com"
+        "www.youtube.com"
+        "m.youtube.com"
+        "studio.youtube.com"
+        "tv.youtube.com"
+        "kids.youtube.com"
+        "gaming.youtube.com"
+        "youtu.be"
+        "www.youtu.be"
+        "youtube-nocookie.com"
+        "www.youtube-nocookie.com"
+        "youtubekids.com"
+        "www.youtubekids.com"
+        "twitch.tv"
+        "www.twitch.tv"
+        "m.twitch.tv"
+        "go.twitch.tv"
+        "player.twitch.tv"
+        "embed.twitch.tv"
+        "clips.twitch.tv"
+        "dashboard.twitch.tv"
+        "id.twitch.tv"
+        "passport.twitch.tv"
+        "api.twitch.tv"
+        "gql.twitch.tv"
+        "usher.ttvnw.net"
+        "static.twitchcdn.net"
+      ];
+    in
+    {
+      "0.0.0.0" = blocked;
+      "::" = blocked;
+    };
+
   networking.firewall = {
     enable = lib.mkDefault true;
     trustedInterfaces = [ "lo" ];

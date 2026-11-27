@@ -111,6 +111,18 @@
           specialArgs = { inherit inputs; };
         };
 
+        # Copie de bernanos, cloisonnée : SSH entrant depuis bernanos seul,
+        # aucun SSH sortant, endpoints HTTP de gary seulement sur le tailnet.
+        nabokov = nixpkgs.lib.nixosSystem {
+          modules = [
+            { nixpkgs.hostPlatform = system; }
+            inputs.disko.nixosModules.disko
+            ./hosts/nabokov/disko.nix
+            ./hosts/nabokov/configuration.nix
+          ];
+          specialArgs = { inherit inputs; };
+        };
+
         gary = nixpkgs.lib.nixosSystem {
           modules = [
             { nixpkgs.hostPlatform = system; }

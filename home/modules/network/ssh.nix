@@ -48,6 +48,15 @@
         IdentityFile = "~/.ssh/siddhartha";
         IdentitiesOnly = true;
       };
+      # nabokov (copie cloisonnée de bernanos), via Tailscale/MagicDNS. Son
+      # sshd n'accepte que l'IP tailnet de bernanos.
+      "nabokov" = {
+        AddKeysToAgent = "12h";
+        HostName = "nabokov";
+        User = "aristide";
+        IdentityFile = "~/.ssh/siddhartha";
+        IdentitiesOnly = true;
+      };
       # Serveur kafka (NixOS headless, voir hosts/kafka/configuration.nix)
       "kafka" = {
         AddKeysToAgent = "12h";

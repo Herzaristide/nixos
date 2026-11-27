@@ -206,6 +206,55 @@
     # groupe ; la clé adbkey est dans ~/.android, persisté.
     scrcpy
     android-tools
+    # Débogage sans fil sans taper d'adresse. `adb-wifi pair` affiche un QR
+    # (« Associer l'appareil avec un code QR » sur le téléphone) ; `adb-wifi`
+    # se reconnecte à un téléphone déjà associé, dont le port change à chaque
+    # réactivation. Le adb de nixpkgs n'a pas de mDNS : avahi (print.nix,
+    # 5353/udp ouvert) trouve les services _adb-tls-pairing / _adb-tls-connect.
+    (writeShellApplication {
+      name = "adb-wifi";
+      runtimeInputs = [
+        android-tools
+        avahi
+        gawk
+        qrencode
+      ];
+      text = ''
+        # Premier service IPv4 du type $1 (nommé $2 si donné) → ip:port.
+        find_service() {
+          avahi-browse -rpt "$1" 2>/dev/null |
+            awk -F';' -v n="''${2:-}" '$1 == "=" && $3 == "IPv4" && (n == "" || $4 == n) { print $8 ":" $9; exit }'
+        }
+        wait_service() {
+          for _ in $(seq "$3"); do
+            addr=$(find_service "$1" "$2")
+            if [ -n "$addr" ]; then echo "$addr"; return 0; fi
+            sleep 1
+          done
+          return 1
+        }
+
+        if [ "''${1:-}" = pair ]; then
+          name="adb-$(tr -dc a-z0-9 </dev/urandom | head -c 8)"
+          pass=$(tr -dc 0-9 </dev/urandom | head -c 8)
+          qrencode -t ANSIUTF8 -m 2 "WIFI:T:ADB;S:$name;P:$pass;;"
+          echo "Téléphone : Options pour les développeurs → Débogage sans fil"
+          echo "            → Associer l'appareil avec un code QR, puis scanne."
+          addr=$(wait_service _adb-tls-pairing._tcp "$name" 120) || {
+            echo "Téléphone introuvable (même réseau Wi-Fi ?)" >&2
+            exit 1
+          }
+          adb pair "$addr" "$pass"
+        fi
+
+        addr=$(wait_service _adb-tls-connect._tcp "" 20) || {
+          echo "Aucun téléphone en débogage sans fil sur le réseau." >&2
+          echo "Active-le sur le téléphone, ou associe-le : adb-wifi pair" >&2
+          exit 1
+        }
+        adb connect "$addr"
+      '';
+    })
   ];
 
   # Chromium (Linux) ne lit ses policies que dans /etc/chromium/policies/managed.

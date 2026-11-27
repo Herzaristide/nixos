@@ -113,6 +113,21 @@ in
     # Exception : WhatsApp doit pouvoir signaler messages et appels entrants.
     NotificationsAllowedForUrls = [ "https://web.whatsapp.com" ];
 
+    # Blocage définitif de YouTube et Twitch, sous-domaines compris (en plus de
+    # networking.hosts, modules/network.nix).
+    URLBlocklist = [
+      "youtube.com"
+      "youtu.be"
+      "youtube-nocookie.com"
+      "youtubekids.com"
+      "twitch.tv"
+    ];
+    # YouTube Music, et l'étape de connexion Google (Gmail, Drive…).
+    URLAllowlist = [
+      "music.youtube.com"
+      "accounts.youtube.com"
+    ];
+
     # Retour de connexion de Claude Desktop : claude.ai redirige vers une URL
     # `claude://` à la fin du flow OAuth. Sans cette policy, Chromium ouvre une
     # boîte de dialogue « Ouvrir Claude ? » à chaque fois et le retour se perd
