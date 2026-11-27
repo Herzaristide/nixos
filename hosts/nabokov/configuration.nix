@@ -62,8 +62,20 @@
 
   # Matériel (relevé le 2026-11-27) : HP OMEN 15 (carte 8259), i5-7300HQ
   # (Kaby Lake, 4c/4t), 8 Go, Intel HD 630 + GeForce GTX 1050 Mobile (Pascal,
-  # GP107), SSD SATA Samsung 128 Go (sda) + HDD HGST 1 To (sdb, non utilisé),
+  # GP107), SSD SATA Samsung 128 Go (sda) + HDD HGST 1 To (sdb, ci-dessous),
   # Wi-Fi Intel 7265, Ethernet RTL8111. UEFI.
+
+  # HDD de données : btrfs sur le disque entier, étiquette HDD, formaté à la
+  # main (`mkfs.btrfs -L HDD /dev/sdb`). nofail : démarre sans lui.
+  fileSystems."/mnt/hdd" = {
+    device = "/dev/disk/by-label/HDD";
+    fsType = "btrfs";
+    options = [
+      "compress=zstd"
+      "noatime"
+      "nofail"
+    ];
+  };
 
   # Primary monitor: built-in screen (laptop)
   primaryMonitor = "eDP-1";
